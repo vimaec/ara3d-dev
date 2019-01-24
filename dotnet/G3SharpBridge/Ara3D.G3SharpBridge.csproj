@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{82182A4D-2ACC-4F5F-B490-AEE4308D3719}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Ara3D.G3SharpBridge</RootNamespace>
+    <AssemblyName>Ara3D.G3SharpBridge</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="geometry3Sharp, Version=1.0.289.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\vimaec\vib\vib4\packages\geometry3Sharp.1.0.289\lib\net45\geometry3Sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="G3Helpers.cs" />
+    <Compile Include="G3SharpBridge.cs" />
+    <Compile Include="G3SharpIO.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
+      <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
+      <Name>Ara3D.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
+      <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
+      <Name>Ara3D.LinqArray</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Math3D\Ara3D.Math.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+      <Name>Ara3D.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
+      <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
+      <Name>Ara3D.DotNetUtilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

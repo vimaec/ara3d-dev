@@ -1,0 +1,97 @@
+﻿<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E89008FA-6D3F-48DE-900A-BE5A9D79F4AE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>Ara3D.Geometry</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>Ara3D.Geometry</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Core\ArrayExtensions.cs" />
+    <Compile Include="Core\ArrayOps.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ArrayOps.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Core\Geometry.cs" />
+    <Compile Include="Core\Mesh.cs" />
+    <Compile Include="Core\PointsExtensions.cs" />
+    <Compile Include="Core\SceneBuilder.cs" />
+    <Compile Include="Io\BasicMesh.cs" />
+    <Compile Include="Io\G3D.cs" />
+    <Compile Include="Io\GeometryWriter.cs" />
+    <Compile Include="Io\ObjData.cs" />
+    <Compile Include="Io\ObjEmitter.cs" />
+    <Compile Include="Io\RevitSceneData.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Core\ArrayOps.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ArrayOps.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
+      <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
+      <Name>Ara3D.LinqArray</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Math3D\Ara3D.Math.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+      <Name>Ara3D.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
+      <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
+      <Name>Ara3D.DotNetUtilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
