@@ -6,7 +6,7 @@
 sysEn = dotNetClass "System.Environment"
 speFo = dotNetClass "System.Environment+specialFolder"
 programDataPath = sysEn.getfolderPath speFo.commonApplicationData 
-bridgePath = programDataPath + @"\Ara3D\3dsMaxBridge\3dsMaxBridge.dll"
+bridgePath = programDataPath + @"\Ara3D\3dsMaxBridge\Ara3D.3dsMaxBridge.dll"
 
 --  showProperties speFo --There are a tonne of folders to choose from
 -- showProperties sysEn --Lots of useful info here too
@@ -45,7 +45,7 @@ if menuMan.registerMenuContext 0x572418f3 then
 	menuMan.updateMenuBar()
 )
 
-araGeometryPath = programDataPath + @"\Ara3D\3dsMaxBridge\AraGeometry.dll"
+araGeometryPath = programDataPath + @"\Ara3D\3dsMaxBridge\Ara3D.Geometry.dll"
 araGeometryAsm = dotNet.loadAssembly araGeometryPath
 
 AraAPI.ShowEditor ()

@@ -310,6 +310,7 @@ namespace Ara3D
             if (File.Exists(path))
             {
                 TextArea.Text = File.ReadAllText(path);
+                TextArea.SetSavePoint();
             }
         }
 
@@ -606,6 +607,7 @@ namespace Ara3D
             if (!CheckModifiedAndContinue())
                 return;
             TextArea.Text = OnNew();
+            TextArea.SetSavePoint();
         }
 
         public bool SaveAs()
@@ -613,6 +615,7 @@ namespace Ara3D
             if (saveFileDialog.ShowDialog() != DialogResult.OK)
                 return false;
             FileName = openFileDialog.FileName;
+            TextArea.SetSavePoint();
             return true;
         }
 

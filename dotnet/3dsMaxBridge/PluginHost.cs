@@ -20,12 +20,12 @@ namespace Ara3D
             // TODO: rename my DLLs to start with "Ara3D"
             var asmShortNames = new[] {
                 "System.Numerics.dll",
-                "3dsMaxBridge.dll",
-                "AraGeometry.dll",
-                "LinqArray.dll",
-                "Math3D.dll",
-                "DotNetUtilities.dll",
-                "G3SharpBridge.dll",
+                "Ara3D.3dsMaxBridge.dll",
+                "Ara3D.Geometry.dll",
+                "Ara3D.LinqArray.dll",
+                "Ara3D.Math.dll",
+                "Ara3D.DotNetUtilities.dll",
+                "Ara3D.G3SharpBridge.dll",
                 "geometry3Sharp.dll",
                 "Newtonsoft.Json.dll",
             };

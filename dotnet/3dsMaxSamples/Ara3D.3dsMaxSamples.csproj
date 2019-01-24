@@ -37,6 +37,9 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AcMPolygonMGD">
       <HintPath>$(ADSK_3DSMAX_x64_2019)\AcMPolygonMGD.dll</HintPath>

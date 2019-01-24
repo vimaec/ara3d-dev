@@ -34,6 +34,9 @@
   <PropertyGroup>
     <RootNamespace>Ara3D.Geometry</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
