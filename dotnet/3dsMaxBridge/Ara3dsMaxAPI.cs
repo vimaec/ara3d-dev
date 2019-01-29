@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using Autodesk.Max.MaxPlus;
+using Object = Autodesk.Max.MaxPlus.Object;
 
 namespace Ara3D
 {
@@ -13,9 +17,7 @@ namespace Ara3D
     public static class API
     {
         public static Vector3 ToVector(this Point3 pt)
-        {
-            return new Vector3(pt.X, pt.Y, pt.Z);
-        }
+            => new Vector3(pt.X, pt.Y, pt.Z);        
 
         public static Matrix4x4 ToMatrix(this Matrix3 mat)
         {
@@ -32,14 +34,10 @@ namespace Ara3D
         }
 
         public static IGeometry ToTransformedIGeometry(this INode node)
-        {
-            return node.ToIGeometry()?.Transform(node.GetWorldTM().ToMatrix());
-        }
+            => node.ToIGeometry()?.Transform(node.GetWorldTM().ToMatrix());
 
-        public static IGeometry MergeAllGeometry()
-        {
-            return GetAllNodes().Select(ToTransformedIGeometry).WhereNotNull().ToIArray().Merge();
-        }
+        public static IGeometry AllGeometry
+            => AllNodes.ToIGeometry();
 
         public static IEnumerable<INode> GetDescendants(this INode node)
         {
@@ -49,15 +47,26 @@ namespace Ara3D
             yield return node;
         }
 
-        public static IEnumerable<INode> GetAllNodes()
-        {
-            return GetDescendants(Core.GetRootNode());
-        }
+        public static IEnumerable<INode> AllNodes
+            => GetDescendants(Core.GetRootNode());
 
-        public static INode GetFirstSelectedNode()
-        {
-            return SelectionManager.GetCount() > 0 ? SelectionManager.GetNode(0) : null;
-        }
+        public static IArray<INode> SelectedNodes
+            => SelectionManager.GetCount().Select(SelectionManager.GetNode);
+
+        public static bool AreAnyNodesSelected
+            => SelectedNodes.Count > 0;
+
+        public static IEnumerable<INode> AllNodesOrJustSelected
+            => AreAnyNodesSelected ? SelectedNodes.ToEnumerable() : AllNodes;
+
+        public static IGeometry ToIGeometry(this IEnumerable<INode> nodes)
+            => nodes.Select(ToTransformedIGeometry).WhereNotNull().ToIArray().Merge();
+
+        public static IGeometry AllGeometryOrJustSelected
+            => AllNodesOrJustSelected.ToIGeometry();
+
+        public static INode FirstSelectedNode
+            => SelectionManager.GetCount() > 0 ? SelectionManager.GetNode(0) : null;        
 
         public static string GetNodeInfo(this INode node)
         {
@@ -65,16 +74,8 @@ namespace Ara3D
             if (!node._IsValidWrapper()) return "Invalid node wrapper";
             var sb = new StringBuilder();
             sb.AppendFormat("Node {0} {1}", node.Name, node.AnimHandle).AppendLine();
-
             var g = node.ToTransformedIGeometry();
-            if (g == null)
-            {
-                sb.AppendLine("no geometry");
-            }
-            else
-            {
-                sb.AppendLine(g.GetStats());
-            }
+            sb.AppendLine(g?.GetStats() ?? "no geometry");
             return sb.ToString();
         }
 
@@ -165,7 +166,8 @@ namespace Ara3D
 
             for (var i=0; i < numFaces; ++i)
             {
-                mesh.SetFaceVertexIndexes(i, triMesh.Indices[i * 3], triMesh.Indices[i * 3 + 1], triMesh.Indices[i * 3 + 2]);
+                var e = triMesh.Elements[i];
+                mesh.SetFaceVertexIndexes(i, e[0], e[1], e[2]);
                 // TODO: edge visibility
                 // TODO: smoothing group, material id 
             }
@@ -227,24 +229,45 @@ namespace Ara3D
 ";
         }
 
-        public static IList<string> EvalUtility(string code)
-        {
-            var host = new PluginHost<IUtilityPlugin>();
-            host.Compile(code);
-            if (host.CompiledSuccessfully)
-                host.Plugin.Evaluate();
-            return host.Errors;
-        }
-    
-        public static EditorCallback EditorCallback = new EditorCallback();
-
-        public static void ShowEditor()
+        public static Process ShowEditor()
         {
             // Launch the executable
-            ServiceLauncher.LaunchProcess();
+            var process = ServiceLauncher.LaunchProcess();
 
             // Connect to the service using our local callback
-            ServiceLauncher.Connect(EditorCallback);
+            ServiceConfig.OpenClientChannel(EditorClient.Instance);
+
+            return process;
+        }
+
+        public class MAXScriptConsoleWriter : TextWriter
+        {
+            public override Encoding Encoding => Encoding.Default;
+
+            public override void Write(char value)
+            {
+                Core.Write(value.ToString())
+;            }
+
+            public override void Write(string s)
+            {
+                Core.Write(s);
+            }
+
+            public override void WriteLine()
+            {
+                Core.WriteLine("");
+            }
+
+            public override void WriteLine(string s)
+            {
+                base.WriteLine(s);
+            }
+        }
+
+        public static void ConsoleToMAXScriptListener()
+        {
+            Console.SetOut(new MAXScriptConsoleWriter());
         }
     }
 }

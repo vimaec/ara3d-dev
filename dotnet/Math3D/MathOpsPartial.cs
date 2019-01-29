@@ -308,6 +308,11 @@ namespace Ara3D
             return b > 0 ? a / b : a > 0 ? float.PositiveInfinity : 0;
         }
 
+        public static int DivideRoundUp(this int a, int b)
+        {
+            return a / b + (a % b > 0 ? 1 : 0);
+        }
+
         public static bool Even(this int n)
         {
             return n % 2 == 0;

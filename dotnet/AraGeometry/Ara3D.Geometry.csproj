@@ -63,7 +63,6 @@
     <Compile Include="Core\PointsExtensions.cs" />
     <Compile Include="Core\SceneBuilder.cs" />
     <Compile Include="Io\BasicMesh.cs" />
-    <Compile Include="Io\G3D.cs" />
     <Compile Include="Io\GeometryWriter.cs" />
     <Compile Include="Io\ObjData.cs" />
     <Compile Include="Io\ObjEmitter.cs" />

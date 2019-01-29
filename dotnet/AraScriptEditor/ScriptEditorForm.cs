@@ -7,11 +7,11 @@ using ScintillaNET;
 using ScintillaNET.Demo.Utils;
 using System.Collections.Generic;
 using System.Linq;
+using Ara3D.ScriptEditor;
 
 namespace Ara3D
 {
     /// <summary>
-    /// TODO: I want to prevent weird non-text ASCII characters
     /// TODO: Menu hot keys don't seem to be supported automatically. 
     /// TODO: initialize with "new" or something else. 
     /// TODO: an output window for console logging would be nice.
@@ -32,16 +32,13 @@ namespace Ara3D
 
         Scintilla TextArea;
         string FileName;
-        Func<string, IList<string>> OnEval;
-        Func<string> OnNew;
-      
+
+        public IEditorClientCallback Client => EditorService.Callback;
+
         void MainForm_Load(object sender, EventArgs e)
         {
-            var client = EditorService.Client;
             //openFileDialog.InitialDirectory = initialDir;
             //saveFileDialog.InitialDirectory = initialDir;
-            OnEval = (text) => client.CompileAndRun(text);
-            OnNew = () => client.NewSnippet();
 
             // CREATE CONTROL
             TextArea = new Scintilla();
@@ -108,11 +105,20 @@ namespace Ara3D
             TextArea.ClearCmdKey(Keys.Control | Keys.H);
             TextArea.ClearCmdKey(Keys.Control | Keys.L);
             TextArea.ClearCmdKey(Keys.Control | Keys.U);
+
+            // Prevent Scinitilla from rendering certain keys 
+            TextArea.KeyPress += (object sender, KeyPressEventArgs e) =>
+            {
+                if (e.KeyChar < 32)
+                {
+                    // Prevent control characters from getting inserted into the text buffer
+                    e.Handled = true;
+                }
+            };
         }
 
         void InitSyntaxColoring()
         {
-
             // Configure the default style
             TextArea.StyleResetDefault();
             TextArea.Styles[Style.Default].Font = "Consolas";
@@ -151,8 +157,6 @@ namespace Ara3D
 
         }
 
-
-        #region Numbers, Bookmarks, Code Folding
 
         /// <summary>
         /// the background color of the text area
@@ -311,6 +315,7 @@ namespace Ara3D
             {
                 TextArea.Text = File.ReadAllText(path);
                 TextArea.SetSavePoint();
+                FileName = path;
             }
         }
 
@@ -501,9 +506,7 @@ namespace Ara3D
         {
             TextArea.Zoom = 0;
         }
-
-        #endregion
-
+        
         bool SearchIsOpen = false;
 
         void OpenSearch()
@@ -606,8 +609,8 @@ namespace Ara3D
         {
             if (!CheckModifiedAndContinue())
                 return;
-            TextArea.Text = OnNew();
-            TextArea.SetSavePoint();
+            TextArea.Text = Client.NewSnippet();
+            FileName = "";
         }
 
         public bool SaveAs()
@@ -665,11 +668,36 @@ namespace Ara3D
             printer.Print();
         }
 
-        void runToolStripMenuItem_Click(object sender, EventArgs e)
+        void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var box = new AboutBox1();
+            box.ShowDialog();
+        }
+
+        bool Compile()
         {
             errorListTextBox.Clear();
-            var errors = OnEval(TextArea.Text);
+            if (!CheckModifiedAndContinue())
+                return false;
+            var errors = Client.Compile(FileName);
             errorListTextBox.Lines = errors.ToArray();
+            return errors.Count == 0;
+        }
+
+        void compileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Compile();
+        }
+
+        void runToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Compile())
+                Client.Run(FileName);
+        }
+
+        private void ScriptEditorForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = !CheckModifiedAndContinue();
         }
     }
 }

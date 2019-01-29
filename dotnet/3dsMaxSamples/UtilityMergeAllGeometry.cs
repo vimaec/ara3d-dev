@@ -7,7 +7,7 @@ namespace Ara3D
     {
         public void Evaluate()
         {
-            API.MergeAllGeometry().ToNode();
+            API.AllGeometry.ToNode();
         }
     }
 }

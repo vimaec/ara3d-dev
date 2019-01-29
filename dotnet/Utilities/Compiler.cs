@@ -38,9 +38,12 @@ namespace Ara3D
             return (T)Activator.CreateInstance(c);
         }
 
-
+        /// <summary>
+        /// Compiles a C# script as a string or from a file. If "LoadAssemblies" is true, this call will try 
+        /// to manually load each assembly so that it is truly available on execution.
+        /// </summary>
         public static Assembly Compile(string codeOrFile, bool isCodeOrFile, IEnumerable<string> referencedAssemblies, List<string> outputErrors, bool loadAssemblies)
-        {
+        {            
             try
             {
                 if (loadAssemblies)

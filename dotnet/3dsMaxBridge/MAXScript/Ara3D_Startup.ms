@@ -48,6 +48,10 @@ if menuMan.registerMenuContext 0x572418f3 then
 araGeometryPath = programDataPath + @"\Ara3D\3dsMaxBridge\Ara3D.Geometry.dll"
 araGeometryAsm = dotNet.loadAssembly araGeometryPath
 
+araLinqPath = programDataPath + @"\Ara3D\3dsMaxBridge\Ara3D.LinqArray.dll"
+araLinqAsm = dotNet.loadAssembly araLinqPath
+
+
 AraAPI.ShowEditor ()
 -- f = dotNetObject "Ara3D.ScriptEditorForm"
 -- f.ShowDialog ()

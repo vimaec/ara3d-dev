@@ -6,19 +6,19 @@ namespace Ara3D
     /// Points to an unmanaged contiguous sequence of bytes in memory. Useful for working with unsafe and unmanaged code.
     /// Very Similar to the concept of a Span/Memory in the more recent libraries, but much simpler. 
     /// </summary>
-    public struct UnmanagedBytes
+    public struct ByteSpan : IByteSpan
     {
-        public readonly int Size;
-        public readonly IntPtr Ptr;
+        public int ByteCount { get; }
+        public IntPtr Ptr { get; }
 
-        public UnmanagedBytes(IntPtr pointer, int size)
+        public ByteSpan(IntPtr pointer, int size)
         {
-            Size = size;
+            ByteCount = size;
             Ptr = pointer;
         }
 
-        public UnmanagedBytes(IntPtr begin, IntPtr end)
-            : this(begin, (int)begin.PtrDistance(end))
+        public ByteSpan(IntPtr begin, IntPtr end)
+            : this(begin, (int)begin.Distance(end))
         {
         }
     }

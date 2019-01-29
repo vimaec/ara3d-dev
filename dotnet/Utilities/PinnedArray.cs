@@ -4,14 +4,18 @@ using System.Runtime.InteropServices;
 namespace Ara3D
 {
     /// <summary>
-    /// Pins an array of elements so that we can access the data as bytes. Manages a GCHandle around the array.
+    /// Pins an array of Blittable structs so that we can access the data as bytes. Manages a GCHandle around the array.
     /// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.unsafeaddrofpinnedarrayelement?view=netframework-4.7.2
     /// </summary>
-    public sealed class PinnedArray<T> : IDisposable
+    public sealed class PinnedArray<T> : IDisposable, IByteSpan
     {
         public GCHandle Handle { get; private set; }
         public T[] Array { get; private set; }
-        public UnmanagedBytes Bytes { get; private set; }
+        public ByteSpan Bytes { get; private set; }
+
+        // IByteSpan implementation
+        public int ByteCount => Bytes.ByteCount;
+        public IntPtr Ptr => Bytes.Ptr;
 
         public IntPtr ElementPointer(int n)
         {
@@ -25,8 +29,9 @@ namespace Ara3D
         public PinnedArray(T[] xs)
         {
             Array = xs;
+            // This will fail if the underlying type is not Blittable (e.g. not contiguous in memory)
             Handle = GCHandle.Alloc(xs, GCHandleType.Pinned);
-            Bytes = new UnmanagedBytes(ElementPointer(0), ElementPointer(Array.Length)); 
+            Bytes = new ByteSpan(ElementPointer(0), ElementPointer(Array.Length)); 
         }
 
         void DisposeImplementation()
@@ -34,7 +39,7 @@ namespace Ara3D
             if (Bytes.Ptr != IntPtr.Zero)
             {
                 Handle.Free();
-                Bytes = new UnmanagedBytes(IntPtr.Zero, 0);
+                Bytes = new ByteSpan(IntPtr.Zero, 0);
             }
         }
 
@@ -54,11 +59,15 @@ namespace Ara3D
     /// Pins an array of elements so that we can access the data as bytes. Manages a GCHandle around the array.
     /// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.unsafeaddrofpinnedarrayelement?view=netframework-4.7.2
     /// </summary>
-    public sealed class PinnedArray : IDisposable
+    public sealed class PinnedArray : IDisposable, IByteSpan
     {
         public GCHandle Handle { get; private set; }
         public Array Array { get; private set; }
-        public UnmanagedBytes Bytes { get; private set; }     
+        public ByteSpan Bytes { get; private set; }
+
+        // IByteSpan implementation
+        public int ByteCount => Bytes.ByteCount;
+        public IntPtr Ptr => Bytes.Ptr;        
 
         public PinnedArray(Array xs)
         {
@@ -72,7 +81,7 @@ namespace Ara3D
             if (Bytes.Ptr != IntPtr.Zero)
             {
                 Handle.Free();
-                Bytes = new UnmanagedBytes(IntPtr.Zero, 0);
+                Bytes = new ByteSpan(IntPtr.Zero, 0);
             }
         }
 

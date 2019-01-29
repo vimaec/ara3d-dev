@@ -45,9 +45,17 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BFast.cs" />
+    <Compile Include="BFastBytes.cs" />
+    <Compile Include="BFastBaseClass.cs" />
     <Compile Include="BFastBuilder.cs" />
+    <Compile Include="BFastFileReader.cs" />
     <Compile Include="BFastStructs.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
+      <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
+      <Name>Ara3D.DotNetUtilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

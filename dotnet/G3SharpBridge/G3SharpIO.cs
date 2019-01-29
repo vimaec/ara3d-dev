@@ -5,14 +5,14 @@ namespace Ara3D
 {
     public static class G3SharpIO
     {
-        public static IEnumerable<DMesh3> ReadGeometry(string path)
+        public static List<DMesh3> ReadGeometry(string path)
         {
             var builder = new DMesh3Builder();
             var reader = new StandardMeshReader { MeshBuilder = builder };
             var result = reader.Read(path, ReadOptions.Defaults);
             if (result.code == IOCode.Ok)
                 return builder.Meshes;
-            return new DMesh3[0];
+            return null;
         }
 
         public static bool WriteGeometry(string path, DMesh3 mesh)

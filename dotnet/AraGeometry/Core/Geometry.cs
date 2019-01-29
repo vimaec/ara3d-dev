@@ -627,8 +627,15 @@ namespace Ara3D
         }
 
         public static bool IsValid(this IGeometry self)
-        {
-            return self.AreAllIndicesValid();
-        }
+            => self.AreAllIndicesValid();
+
+        public static IGeometry CopyFaces(this IGeometry g, Func<int, bool> predicate)
+            => new Geometry(g.Arity, g.Vertices, g.Indices, g.Elements.WhereIndices(predicate).ToIArray());
+
+        public static IGeometry CopyFaces(this IGeometry g, int from, int count)
+            => g.CopyFaces(i => i >= from && i < from + count);
+
+        public static IArray<IGeometry> CopyFaceGroups(this IGeometry g, int size)
+            => g.Elements.Count.DivideRoundUp(size).Select(i => CopyFaces(g, i * size, size));
     }
 }

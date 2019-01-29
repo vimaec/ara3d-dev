@@ -168,23 +168,23 @@ namespace Ara3D
         /// <summary>
         /// Read data from the file to the buffer. Assumes enough space in the buffer. 
         /// </summary>
-        public static SafeFileHandle Read(this SafeFileHandle hFile, UnmanagedBytes bytes)
+        public static SafeFileHandle Read(this SafeFileHandle hFile, ByteSpan bytes)
         {
-            return Read(hFile, bytes.Ptr, bytes.Size);
+            return Read(hFile, bytes.Ptr, bytes.ByteCount);
         }
 
         /// <summary>
         /// Writes all data from the buffer to the file.
         /// </summary>
-        public static SafeFileHandle Write(this SafeFileHandle hFile, UnmanagedBytes bytes)
+        public static SafeFileHandle Write(this SafeFileHandle hFile, ByteSpan bytes)
         {
-            return Write(hFile, bytes.Ptr, bytes.Size);
+            return Write(hFile, bytes.Ptr, bytes.ByteCount);
         }
 
         /// <summary>
         /// Writes all data from the buffer to the file.
         /// </summary>
-        public static void WriteAllBytes(string filePath, UnmanagedBytes bytes)
+        public static void WriteAllBytes(string filePath, ByteSpan bytes)
         {
             using (var hFile = OpenForWriting(filePath))
             {

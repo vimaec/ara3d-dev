@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
+using System.IO.MemoryMappedFiles;
 
 namespace Ara3D
 {
@@ -376,7 +377,7 @@ namespace Ara3D
         /// <summary>
         /// Performs an action using the the underlying bytes of an array.
         /// </summary>
-        public static void UsingBytes<T>(this T[] self, Action<UnmanagedBytes> action)
+        public static void UsingBytes<T>(this T[] self, Action<ByteSpan> action)
         {
             using (var data = self.Pin())
                 action(data.Bytes);
@@ -425,7 +426,7 @@ namespace Ara3D
             return __makeref(value).ToIntPtr();
         }
 
-        public static long PtrDistance(this IntPtr a, IntPtr b)
+        public static long Distance(this IntPtr a, IntPtr b)
         {
             return Math.Abs(((byte*)b) - ((byte*)a));
         }
@@ -547,20 +548,20 @@ namespace Ara3D
         /// <summary>
         /// Copies the bytes to a buffer.
         /// </summary>
-        public static byte[] CopyToBuffer(this UnmanagedBytes self, byte[] buffer)
+        public static byte[] CopyToBuffer(this ByteSpan self, byte[] buffer)
         {
-            if (buffer.Length < self.Size)
+            if (buffer.Length < self.ByteCount)
                 throw new Exception("Buffer is too small");
-            Marshal.Copy(self.Ptr, buffer, 0, self.Size);
+            Marshal.Copy(self.Ptr, buffer, 0, self.ByteCount);
             return buffer;
         }
 
         /// <summary>
         /// Dynamically allocates a byte array and returns it.
         /// </summary>
-        public static byte[] ToByteArray(this UnmanagedBytes self)
+        public static byte[] ToByteArray(this ByteSpan self)
         {
-            var r = new byte[self.Size];
+            var r = new byte[self.ByteCount];
             self.CopyToBuffer(r);
             return r;
         }
@@ -568,9 +569,9 @@ namespace Ara3D
         /// <summary>
         /// Copies the bytes to the buffer if it is big enough or allocates a new byte array if necessary.
         /// </summary>
-        public static byte[] CopyToBufferOrAllocate(this UnmanagedBytes self, byte[] buffer)
+        public static byte[] CopyToBufferOrAllocate(this ByteSpan self, byte[] buffer)
         {
-            if (buffer == null || buffer.Length < self.Size)
+            if (buffer == null || buffer.Length < self.ByteCount)
                 return self.ToByteArray();
             return self.CopyToBuffer(buffer);
         }
@@ -625,7 +626,7 @@ namespace Ara3D
         /// </summary>
         public static long SizeOfPinnedArray(this Array self)
         {
-            return self.PinnedArrayBegin().PtrDistance(self.PinnedArrayEnd());
+            return self.PinnedArrayBegin().Distance(self.PinnedArrayEnd());
         }
 
         /// <summary>
@@ -657,18 +658,18 @@ namespace Ara3D
         /// <summary>
         /// If an array has been pinned (using GCHandle.Alloc) we can get an UnmanagedBytes structure that represents it. 
         /// </summary>
-        public static UnmanagedBytes PinnedArrayToBytes(this Array self)
+        public static ByteSpan PinnedArrayToBytes(this Array self)
         {
-            return new UnmanagedBytes(self.PinnedArrayBegin(), self.PinnedArrayEnd());
+            return new ByteSpan(self.PinnedArrayBegin(), self.PinnedArrayEnd());
         }
 
         /// <summary>
         /// Provides access to raw memory as an unmanaged memory stream.
         /// https://docs.microsoft.com/en-us/dotnet/api/system.io.unmanagedmemorystream?view=netframework-4.7.2
         /// </summary>
-        public static UnmanagedMemoryStream ToMemoryStream(this UnmanagedBytes self)
+        public static UnmanagedMemoryStream ToMemoryStream(this ByteSpan self)
         {
-            return new UnmanagedMemoryStream(self.Ptr.ToBytePtr(), self.Size);
+            return new UnmanagedMemoryStream(self.Ptr.ToBytePtr(), self.ByteCount);
         }
 
         /// <summary>
@@ -688,12 +689,12 @@ namespace Ara3D
         /// <summary>
         /// Writes raw bytes to the stream by createing a memory stream around it. 
         /// </summary>
-        public static BinaryWriter WriteBytes(this BinaryWriter self, UnmanagedBytes bytes)
+        public static BinaryWriter WriteBytes(this BinaryWriter self, ByteSpan bytes)
         {
-            self.Write(bytes.Size);
+            self.Write(bytes.ByteCount);
             //bytes.To\MemoryStream().CopyTo(self.BaseStream);
             var buffer = bytes.CopyToBufferOrAllocate(HelperWriterBuffer);
-            self.Write(buffer, 0, bytes.Size);
+            self.Write(buffer, 0, bytes.ByteCount);
             return self;
         }
 
@@ -793,7 +794,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// The read contract is a PITA, because it could return anywhere from 0 to the number of bytes
+        /// The official Stream.Read iis a PITA, because it could return anywhere from 0 to the number of bytes
         /// requested, even in mid-stream. This call will read everything it can until it reaches 
         /// the end of the stream of "count" bytes.
         /// </summary>
@@ -873,6 +874,69 @@ namespace Ara3D
 
         public static bool HashCompareFiles(string filePath1, string filePath2) {
             return CompareBuffers(FileSHA256(filePath1), FileSHA256(filePath2));
+        }       
+
+        /// <summary>
+        /// Executes an action capturing the console output.
+        /// Improved answer over: 
+        /// https://stackoverflow.com/questions/11911660/redirect-console-writeline-from-windows-application-to-a-string
+        /// </summary>
+        public static string RunCodeReturnConsoleOut(Action action)
+        {
+            var originalConsoleOut = Console.Out;
+            using (var writer = new StringWriter())
+            {
+                Console.SetOut(writer);
+                try
+                {
+                    action();
+                    writer.Flush();
+                    return writer.GetStringBuilder().ToString();
+                }
+                finally
+                {
+                    Console.SetOut(originalConsoleOut);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Perform some action when the current process shuts down. 
+        /// </summary>
+        public static void OnShutdown(Action action)
+        {
+            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) =>
+            {
+                action();
+            };
+        }
+
+        /// <summary>
+        /// Closes a process if it isin't null and hasn't already exited. 
+        /// </summary>
+        /// <param name="process"></param>
+        public static void SafeClose(this Process process) {
+            if (process != null && !process.HasExited) process.CloseMainWindow();
+        }
+
+        /// <summary>
+        /// Given a memory mapped file, creates a buffere, and reads data into it.
+        /// </summary>
+        public static byte[] ReadBytes(this MemoryMappedFile mmf, long offset, int count)
+        {
+            return mmf.ReadBytes(offset, new byte[count]);
+        }
+
+        /// <summary>
+        /// Given a memory mapped file and a buffer fills it with data from the given offset. 
+        /// </summary>
+        public static byte[] ReadBytes(this MemoryMappedFile mmf, long offset, byte[] buffer)
+        {
+            using (var view = mmf.CreateViewStream(offset, buffer.Length, MemoryMappedFileAccess.Read))
+            {
+                view.Read(buffer, 0, buffer.Length);
+                return buffer;
+            }
         }
     }
 }

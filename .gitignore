@@ -328,3 +328,12 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+# Ara3D specific
+
+# In the Ara3D project all 3rd party dependencies should be placed here 
+# These are typically binaries and other files too big to manage in Git.
+dependencies/
+
+# These are test files and other files not appropriate to store in Git 
+assets/ 

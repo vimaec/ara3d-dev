@@ -50,12 +50,6 @@ namespace Ara3D
         IGeometry LastValue { get; }
     }
 
-    public interface IUtilityPluginHost
-    {
-        object[] Args { get; }
-        int Time { get; }
-    }
-
     public interface IUtilityPlugin
     {
         void Evaluate();

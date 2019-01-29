@@ -15,9 +15,13 @@ namespace Ara3D
     /// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safebuffer?view=netframework-4.7.2
     /// https://github.com/Microsoft/referencesource/blob/master/mscorlib/system/runtime/interopservices/safebuffer.cs
     /// https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/Runtime/InteropServices/SafeBuffer.cs
-    public sealed class UnmanagedBuffer : IDisposable
+    public sealed class UnmanagedBuffer : IDisposable, IByteSpan
     {
-        public UnmanagedBytes Bytes;
+        public ByteSpan Bytes;
+
+        // IByteSpan implementation
+        public int ByteCount => Bytes.ByteCount;
+        public IntPtr Ptr => Bytes.Ptr;
 
         public UnmanagedBuffer(int size)
         {
@@ -25,7 +29,7 @@ namespace Ara3D
             // are not well documented. This is the recommended approach when we want to share data over COM calls, so 
             // I'm forced to assume it is slightly more general purpose. All is good as long as we use the appropriate
             // deallocator when disposing. 
-            Bytes = new UnmanagedBytes(Marshal.AllocCoTaskMem(size), size);
+            Bytes = new ByteSpan(Marshal.AllocCoTaskMem(size), size);
         }
 
         void DisposeImplementation()
@@ -33,7 +37,7 @@ namespace Ara3D
             if (Bytes.Ptr != IntPtr.Zero)
             {
                 Marshal.FreeCoTaskMem(Bytes.Ptr);
-                Bytes = new UnmanagedBytes();
+                Bytes = new ByteSpan();
             }
         }
 

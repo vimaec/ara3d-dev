@@ -1,13 +1,20 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.ServiceModel;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Ipc;
+using System.Runtime.Serialization.Formatters;
 using System.Windows.Forms;
 
 
 // https://docs.microsoft.com/en-us/dotnet/framework/wcf/migrating-from-net-remoting-to-wcf
 // https://dopeydev.com/wcf-interprocess-communication/
+// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.remoting.channels.ipc.ipcchannel?view=netframework-4.7.2
+
 namespace Ara3D
 {
     /// <summary>
@@ -16,39 +23,29 @@ namespace Ara3D
     /// </summary>
     public interface IEditorClientCallback
     {
-        [OperationContract]
-        string[] CompileAndRun(string text);
-
-        [OperationContract]
+        IList<string> Compile(string fileName);
+        bool Run(string fileName);
         string NewSnippet();
     }
 
     /// <summary>
     /// The editor service just needs to be connected to: the client will provide an IEditorCallbackService
     /// The client knows how to compile, the editor just knows how to edit. The Client also knows how to create new snippets
+    /// This is a singleton.
     /// </summary>
-    [ServiceContract(SessionMode = SessionMode.Required, CallbackContract = typeof(IEditorClientCallback))]
-    public interface IEditorService
+    public class EditorService : MarshalByRefObject
     {
-        [OperationContract]
-        void Connect();
-    }
+        public static IEditorClientCallback Callback { get; private set; }
 
-    /// <summary>
-    /// The concrete implementation of the EditorService
-    /// </summary>
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession)]
-    public class EditorService : IEditorService
-    {
-        /// <summary>
-        /// Nothing happens during the connect except recieving the callback contract from the client.
-        /// </summary>
-        public void Connect()
+        public override object InitializeLifetimeService()
         {
-            Client = OperationContext.Current.GetCallbackChannel<IEditorClientCallback>();
+            return null;
         }
 
-        public static IEditorClientCallback Client { get; set; }
+        public void Init(IEditorClientCallback callback)
+        {
+            Callback = callback;
+        }
     }
 
     /// <summary>
@@ -56,28 +53,15 @@ namespace Ara3D
     /// </summary>
     public static class ServiceLauncher
     {
-        public static void LaunchProcess()
+        public static Process LaunchProcess()
         {
-            using (var process = new Process())
-            {
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.FileName = GetExePath();
-                process.StartInfo.CreateNoWindow = true;
-                process.Start();
-                process.WaitForInputIdle();
-            }
-        }
-
-        public static void Connect(IEditorClientCallback callback)
-        {
-            // Connect to the service using WCF
-            var context = new InstanceContext(callback);
-            var pipeFactory = new DuplexChannelFactory<IEditorService>(
-                context,
-                new NetNamedPipeBinding(),
-                new EndpointAddress(ServiceConfig.EndPointURI));
-            var service = pipeFactory.CreateChannel();
-            service.Connect();
+            var process = new Process();
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.FileName = GetExePath();
+            process.StartInfo.CreateNoWindow = true;
+            process.Start();
+            process.WaitForInputIdle();
+            return process;
         }
 
         public static string GetExePath()
@@ -93,18 +77,59 @@ namespace Ara3D
     /// </summary>
     public static class ServiceConfig
     {
-        public static string URI = "net.pipe://localhost";
-        public static string EndPoint = "ScriptEditor";
-        public static string EndPointURI = $"{URI}/{EndPoint}";
+        public static string ServiceName = "ScriptEditor.rem";
+        public static string ClientPortName = "localhost:9090";
+        public static string ServerPortName = "localhost:9091";
+        public static string ServerUrl = $"ipc://{ServerPortName}/{ServiceName}";
+        public static string ClientUrl = $"ipc://{ClientPortName}/{ServiceName}";
+        public static IpcChannel ClientChannel;
+        public static IpcChannel ServerChannel;
+        public static string ConfigPath => ServiceLauncher.GetExePath() + ".config";
+        public static EditorService Service;
+
+        public static IpcChannel CreateChannel(string portName)
+        {
+            Hashtable properties = new Hashtable();
+            if (!string.IsNullOrEmpty(portName))
+                properties["portName"] = portName;
+
+            var serverProvider = new BinaryServerFormatterSinkProvider();
+            serverProvider.TypeFilterLevel = TypeFilterLevel.Full;
+
+            var clientProvider = new BinaryClientFormatterSinkProvider();
+            var r = new IpcChannel(properties, clientProvider, serverProvider);
+            
+            // Register the channel.
+            ChannelServices.RegisterChannel(r, false);
+            return r;
+        }
+
+        public static void OpenClientChannel(IEditorClientCallback client)
+        {
+            // Create a new channel on a separate port (this is used for the callbacks)
+            ClientChannel = CreateChannel(ClientPortName);
+
+            // Register as client for remote object.
+            var remoteType = new WellKnownClientTypeEntry(typeof(EditorService), ServerUrl);
+            RemotingConfiguration.RegisterWellKnownClientType(remoteType);
+
+            // Create an instance of the remote object.
+            Service = Activator.GetObject(typeof(EditorService), ServerUrl) as EditorService;
+
+            // Register the callback 
+            Service.Init(client);            
+        }
 
         /// <summary>
-        /// Starts the service and opens an end-point.
+        /// Called by server. 
         /// </summary>
-        public static void Start()
+        public static void OpenServerChannel()
         {
-            var host = new ServiceHost(typeof(EditorService), new Uri(URI));
-            host.AddServiceEndpoint(typeof(IEditorService), new NetNamedPipeBinding(), EndPoint);
-            host.Open();
+            // Create the server channel.
+            ServerChannel = CreateChannel(ServerPortName);
+
+            // Expose an object for remote calls.
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(EditorService), ServiceName, WellKnownObjectMode.Singleton);            
         }
     }
 
@@ -114,7 +139,7 @@ namespace Ara3D
     public static class Program
     {
         [DllImport("user32.dll", SetLastError = true)]
-        static extern bool SetProcessDPIAware();
+        static extern bool SetProcessDPIAware();       
 
         [STAThread]
         public static void Main()
@@ -122,7 +147,8 @@ namespace Ara3D
             // https://docs.microsoft.com/en-us/dotnet/framework/winforms/automatic-scaling-in-windows-forms
             // https://docs.microsoft.com/en-us/dotnet/framework/winforms/advanced/how-to-improve-performance-by-avoiding-automatic-scaling
             SetProcessDPIAware();
-            ServiceConfig.Start();
+
+            ServiceConfig.OpenServerChannel();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

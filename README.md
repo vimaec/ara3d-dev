@@ -18,3 +18,18 @@ Ara3D.sln is a solution file for all of the .NET projects:
 * Parakeet - A PEG style parsing library 
 * ScriptEditor - A Scintilla based editor that runs in its own process designed to be integrated into other applications (like 3ds Max)
 * Tests - All of the happy little tests in one place 
+
+## Folder Structure
+
+```
+\
+\3rdparty	- All 3rd party dependencies have to be placed here (e.g. FBX SDK / Assimp)
+\dotnet		- C# projects and source code
+\cpp		- C++ projects and source code 
+\packages	- contains Nuget packages
+```
+
+## Dependencies
+
+Some Ara3D projects have dependencies on FBX SDK and Assimp. 
+Some Ara3D 

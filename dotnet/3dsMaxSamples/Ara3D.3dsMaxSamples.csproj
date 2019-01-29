@@ -141,6 +141,7 @@
     <Compile Include="UtilityHelloWorld.cs" />
     <Compile Include="UtilityMergeAllGeometry.cs" />
     <Compile Include="UtilitySplitGeometry.cs" />
+    <Compile Include="UtilitySurfaceArea.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">

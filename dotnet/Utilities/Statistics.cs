@@ -119,7 +119,11 @@ namespace Ara3D
         /// </summary>
         public static Statistics Statistics<T>(this IEnumerable<T> self)
         {
-            return new Statistics(self.Cast<double>());
+            // https://stackoverflow.com/questions/3343551/how-to-cast-a-value-of-generic-type-t-to-double-without-boxing
+            // OPTIMIZATION: this can be made much faster by avoiding boxing.
+            // https://stackoverflow.com/questions/24259261/avoiding-boxing-in-generic-blackboard
+            // https://blogs.msdn.microsoft.com/bclteam/2005/03/15/avoiding-boxing-in-classes-implementing-generic-interfaces-through-reflection-dave-fetterman/
+            return new Statistics(self.Select(x => Convert.ToDouble(x)));
         }
 
         /// <summary>
@@ -157,6 +161,15 @@ namespace Ara3D
         public static double Median(this IReadOnlyList<double> sortedNumbers)
         {
             return sortedNumbers.Percentile(50);
+        }
+
+        /// <summary>
+        /// Returns a string summary of the statistics 
+        /// </summary>
+        public static string StatisticsSummaryReport<T>(this IEnumerable<T> values)
+        {
+            var stats = values.Statistics();
+            return $"count = {stats.Count}, sum = {stats.Sum}, avg = {stats.Average}, min = {stats.Min}, max = {stats.Max}, dev = {stats.StandardDeviation}";
         }
     }
 }
