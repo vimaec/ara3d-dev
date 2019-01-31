@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -32,7 +33,7 @@ namespace Ara3D
             return dest + Marshal.SizeOf(value);
         }
 
-        public static BFastBaseClass ToBFastBaseClass(this List<IByteSpan> buffers)
+        public static BFastBaseClass ToBFastBaseClass(this List<byte[]> buffers)
         {
             var r = new BFastBaseClass();
 
@@ -49,11 +50,11 @@ namespace Ara3D
                 Debug.Assert(IsAligned(curIndex));
 
                 r.Ranges[i].Begin = curIndex;
-                curIndex += buffers[i].ByteCount;
+                curIndex += buffers[i].Length;
                 r.Ranges[i].End = curIndex;
                 curIndex = ComputeNextAlignment(curIndex);
 
-                Debug.Assert(r.Ranges[i].Count == buffers[i].ByteCount);
+                Debug.Assert(r.Ranges[i].Count == buffers[i].Length);
             }
 
             // Finish with the header
@@ -66,7 +67,7 @@ namespace Ara3D
             return r;
         }
 
-        public static BFastBytes ToBFastBytes(this List<IByteSpan> buffers)
+        public static unsafe BFast ToBFastBytes(this List<byte[]> buffers)
         {
             var bfast = ToBFastBaseClass(buffers);
 
@@ -85,12 +86,19 @@ namespace Ara3D
             }
 
             // Copy the data-buffers
-            for (var i=0; i < buffers.Count; ++i)
+            fixed (byte* dest = &data[0])
             {
-                buffers[i].CopyTo(data, (int)bfast.Ranges[i].Begin, (int)bfast.Ranges[i].Count);
+                for (var i = 0; i < buffers.Count; ++i)
+                {
+                    fixed (byte* src = &(buffers[i])[0])
+                    {
+                        var range = bfast.Ranges[i];
+                        Buffer.MemoryCopy(src, dest + range.Begin, range.Count, range.Count);
+                    }
+                }
             }
 
-            return new BFastBytes(data);
+            return new BFast(data);
         }
     }
 }

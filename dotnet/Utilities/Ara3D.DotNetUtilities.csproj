@@ -49,6 +49,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ByteSpan.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="DictionaryOfLists.cs" />
     <Compile Include="IByteSpan.cs" />
@@ -56,18 +57,12 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Memoization.cs" />
     <Compile Include="PinnedArray.cs" />
+    <Compile Include="PinnedStruct.cs" />
     <Compile Include="SerializationHelpers.cs" />
     <Compile Include="Serializer.cs" />
     <Compile Include="SingletonRemotingObject.cs" />
-    <Compile Include="Span.cs" />
-    <Compile Include="Spans.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Spans.tt</DependentUpon>
-    </Compile>
     <Compile Include="Statistics.cs" />
     <Compile Include="UnmanagedBuffer.cs" />
-    <Compile Include="ByteSpan.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Win32FileIO.cs" />
   </ItemGroup>
@@ -78,13 +73,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Spans.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Spans.cs</LastGenOutput>
-    </Content>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <PackageReference Include="System.Memory">
+      <Version>4.5.2</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

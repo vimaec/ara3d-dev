@@ -337,8 +337,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Creates a pinned array that contains a pointer for unsafe access to the elements in memory.
-        /// Use in a "using" block. 
+        /// Creates a disposable pinned array that contains a pointer for unsafe access to the elements in memory.
         /// </summary>
         public static PinnedArray<T> Pin<T>(this T[] xs)
         {
@@ -346,12 +345,19 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Creates a pinned array that contains a pointer for unsafe access to the elements in memory.
-        /// Use in a "using" block. 
+        /// Creates a disposable pinned array that contains a pointer for unsafe access to the elements in memory. Use in a "using" block. 
         /// </summary>
         public static PinnedArray Pin(this Array xs)
         {
             return new PinnedArray(xs);
+        }
+
+        /// <summary>
+        /// Creates a disposable pinned struct that contains a pointer for unsafe access to the elements in memory. Use in a "using" block. 
+        /// </summary>
+        public static PinnedStruct<T> Pin<T>(this T x) where T: struct
+        {
+            return new PinnedStruct<T>(x);
         }
 
         /// <summary>
@@ -377,7 +383,7 @@ namespace Ara3D
         /// <summary>
         /// Performs an action using the the underlying bytes of an array.
         /// </summary>
-        public static void UsingBytes<T>(this T[] self, Action<ByteSpan> action)
+        public static void UsingBytes<T>(this T[] self, Action<Bytes> action)
         {
             using (var data = self.Pin())
                 action(data.Bytes);
@@ -546,41 +552,10 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Copies the bytes to a buffer.
-        /// </summary>
-        public static byte[] CopyToBuffer(this ByteSpan self, byte[] buffer)
-        {
-            if (buffer.Length < self.ByteCount)
-                throw new Exception("Buffer is too small");
-            Marshal.Copy(self.Ptr, buffer, 0, self.ByteCount);
-            return buffer;
-        }
-
-        /// <summary>
-        /// Dynamically allocates a byte array and returns it.
-        /// </summary>
-        public static byte[] ToByteArray(this ByteSpan self)
-        {
-            var r = new byte[self.ByteCount];
-            self.CopyToBuffer(r);
-            return r;
-        }
-
-        /// <summary>
-        /// Copies the bytes to the buffer if it is big enough or allocates a new byte array if necessary.
-        /// </summary>
-        public static byte[] CopyToBufferOrAllocate(this ByteSpan self, byte[] buffer)
-        {
-            if (buffer == null || buffer.Length < self.ByteCount)
-                return self.ToByteArray();
-            return self.CopyToBuffer(buffer);
-        }
-
-        /// <summary>
         /// Returns true if we can pin the type and copy its data using memory 
         /// https://stackoverflow.com/questions/10574645/the-fastest-way-to-check-if-a-type-is-blittable
         /// </summary>
-        public static bool IsBlittable<T>()
+        public static bool IsBlittable<T>() 
         {
             return IsBlittableCache<T>.Value;
         }
@@ -648,26 +623,18 @@ namespace Ara3D
         /// <summary>
         /// Uses marshalling to converts an array of structs to an array of bytes. 
         /// </summary>
-        public static byte[] MarshalBytes(this Array self)
+        public static byte[] ToBytes(this Array self)
         {
             if (self == null) return new byte[0];
             using (var pin = self.Pin())
-                return pin.Bytes.ToByteArray();
-        }
-
-        /// <summary>
-        /// If an array has been pinned (using GCHandle.Alloc) we can get an UnmanagedBytes structure that represents it. 
-        /// </summary>
-        public static ByteSpan PinnedArrayToBytes(this Array self)
-        {
-            return new ByteSpan(self.PinnedArrayBegin(), self.PinnedArrayEnd());
+                return pin.ToBytes();
         }
 
         /// <summary>
         /// Provides access to raw memory as an unmanaged memory stream.
         /// https://docs.microsoft.com/en-us/dotnet/api/system.io.unmanagedmemorystream?view=netframework-4.7.2
         /// </summary>
-        public static UnmanagedMemoryStream ToMemoryStream(this ByteSpan self)
+        public static UnmanagedMemoryStream ToMemoryStream(this IBytes self)
         {
             return new UnmanagedMemoryStream(self.Ptr.ToBytePtr(), self.ByteCount);
         }
@@ -689,7 +656,7 @@ namespace Ara3D
         /// <summary>
         /// Writes raw bytes to the stream by createing a memory stream around it. 
         /// </summary>
-        public static BinaryWriter WriteBytes(this BinaryWriter self, ByteSpan bytes)
+        public static BinaryWriter WriteBytes(this BinaryWriter self, IBytes bytes)
         {
             self.Write(bytes.ByteCount);
             //bytes.To\MemoryStream().CopyTo(self.BaseStream);
@@ -815,14 +782,21 @@ namespace Ara3D
             return r;
         }
 
-        public static bool CompareBuffers(byte[] buffer1, byte[] buffer2)
+        public static bool NaiveSequenceEqual<T>(T[] buffer1, T[] buffer2) where T : IEquatable<T>
         {
             if (buffer1 == buffer2) return true;
             if (buffer1 == null || buffer2 == null) return false;
             if (buffer1.Length != buffer2.Length) return false;
             for (var i = 0; i < buffer1.Length; ++i)
-                if (buffer1[i] != buffer2[i]) return false;
+                if (buffer1[i].Equals(buffer2[i])) return false;
             return true;
+        }
+
+        public static bool SequenceEqual<T>(T[] buffer1, T[] buffer2) where T: IEquatable<T>
+        {
+            if (buffer1 == buffer2) return true;
+            if (buffer1 == null || buffer2 == null) return false;
+            return buffer1.AsSpan().SequenceEqual(buffer2.AsSpan());
         }
 
         // Improved answer over: 
@@ -864,7 +838,7 @@ namespace Ara3D
         }
 
         public static bool NaiveCompareFiles(string filePath1, string filePath2) {
-            return CompareBuffers(
+            return SequenceEqual(
                 File.ReadAllBytes(filePath1), File.ReadAllBytes(filePath2));
         }
 
@@ -873,7 +847,7 @@ namespace Ara3D
         }
 
         public static bool HashCompareFiles(string filePath1, string filePath2) {
-            return CompareBuffers(FileSHA256(filePath1), FileSHA256(filePath2));
+            return SequenceEqual(FileSHA256(filePath1), FileSHA256(filePath2));
         }       
 
         /// <summary>

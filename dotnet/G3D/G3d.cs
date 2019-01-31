@@ -88,31 +88,28 @@ namespace Ara3D.G3D
 
     public interface IAttribute
     {
-        Memory<byte> Data { get; }
+        byte[] Data { get; }
         AttributeDescriptor Descriptor { get; }
     }
 
-    public class AttributeData<T> : IAttribute, IDisposable
+    public class AttributeData<T> : IAttribute where T : struct 
     {
-        public Memory<byte> Data;
+        public byte[] Data { get; }
         public AttributeDescriptor Descriptor { get; }
     
         public AttributeData(T[] data, AttributeDescriptor descriptor)
         {
-            System.Span<T>
-            Data = new Memory<byte>();
+            var span = data.AsSpan();
+            var bytesSpan = MemoryMarshal.Cast<T, byte>(span);
+            Data = new byte[bytesSpan.Length];
+            bytesSpan.CopyTo(Data);
             Descriptor = descriptor;
-        }
-
-        public void Dispose()
-        {
-            Data.Dispose();
         }
     }
 
     public static class AttributeBuilder
     {
-        public static AttributeData<T> Attribute<T>(T[] data, AttributeDescriptor desc)
+        public static AttributeData<T> Attribute<T>(T[] data, AttributeDescriptor desc) where T: struct
         {
             return new AttributeData<T>(data, desc);
         }
@@ -142,12 +139,12 @@ namespace Ara3D.G3D
             return Attribute(data, Association.assoc_vertex, AttributeType.attr_index);
         }
 
-        public static AttributeData<T> Attribute<T>(T[] data, Association assoc, AttributeType at, int index = 0)
+        public static AttributeData<T> Attribute<T>(T[] data, Association assoc, AttributeType at, int index = 0) where T : struct
         {
             return new AttributeData<T>(data, Descriptor<T>(assoc, at, index));
         }
 
-        public static AttributeDescriptor Descriptor<T>(Association assoc, AttributeType at, int index = 0)
+        public static AttributeDescriptor Descriptor<T>(Association assoc, AttributeType at, int index = 0) where T : struct
         {
             if (typeof(T) == typeof(float))
                 return Descriptor(assoc, at, index, DataType.dt_float32, 1);
@@ -182,9 +179,10 @@ namespace Ara3D.G3D
         }
     }
 
+    /*
     public class G3DBuilder
     {
-        public static BFastBytes ToBFast(IEnumerable<IAttribute> attributes)
+        public static BFast ToBFast(IEnumerable<IAttribute> attributes)
         {
             var descriptors = attributes.Select(a => a.Descriptor).ToArray();
             var descBytes = descriptors.ToBytes();
@@ -204,5 +202,5 @@ namespace Ara3D.G3D
                 // TODO: load each array 
             }
         }
-    }
+    }*/
 }

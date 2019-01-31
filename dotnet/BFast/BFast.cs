@@ -11,9 +11,8 @@ namespace Ara3D
     ///   * Ranges        - An array of pairs of offsets that point to the begin and end of each data arrays
     ///   * Array data    - All of the array data is contained in this section.
     /// </summary>
-    public class BFastBytes : BFastBaseClass
+    public class BFast : BFastBaseClass
     {
-        public long RawDataLength => RawData.LongLength;
         public byte[] RawData { get; }
         public bool SameEndianness => Header.Magic == Constants.SameEndian;
         public long Count => Header.NumArrays;
@@ -22,12 +21,12 @@ namespace Ara3D
         /// Creates a BFast structure from the data in memory. 
         /// </summary>
         /// <param name="data"></param>
-        public BFastBytes(byte[] data)
+        public BFast(byte[] data)
         {
             RawData = data;
 
             // Assure that the data is of sufficient size to get the header 
-            if (FileHeader.Size > RawDataLength)
+            if (FileHeader.Size > RawData.LongLength)
                 throw new Exception($"Data length ({data.Length}) is smaller than size of FileHeader ({FileHeader.Size})");
 
             // Get the header
@@ -38,9 +37,9 @@ namespace Ara3D
             ValidateRanges();
          }
 
-        public static BFastBytes ReadFile(string file)
+        public static BFast ReadFile(string file)
         {
-            return new BFastBytes(File.ReadAllBytes(file));
+            return new BFast(File.ReadAllBytes(file));
         }
 
         public byte[] GetBuffer(int n)

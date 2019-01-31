@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AraGeometryTests.cs" />
-    <Compile Include="BFastTests.cs" />
+    <Compile Include="UnmanagedDataTests.cs" />
     <Compile Include="EditorTests.cs" />
     <Compile Include="G3dTests.cs" />
     <Compile Include="LinqArrayTests.cs" />
@@ -107,9 +107,9 @@
       <Project>{4ce35b4d-4fa8-491e-b195-77520c1e8683}</Project>
       <Name>Ara3D.BFast</Name>
     </ProjectReference>
-    <ProjectReference Include="..\G3D\Ara3D.G3d.csproj">
+    <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
       <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
-      <Name>Ara3D.G3d</Name>
+      <Name>Ara3D.G3D</Name>
     </ProjectReference>
     <ProjectReference Include="..\G3SharpBridge\Ara3D.G3SharpBridge.csproj">
       <Project>{82182a4d-2acc-4f5f-b490-aee4308d3719}</Project>

@@ -168,7 +168,7 @@ namespace Ara3D
         /// <summary>
         /// Read data from the file to the buffer. Assumes enough space in the buffer. 
         /// </summary>
-        public static SafeFileHandle Read(this SafeFileHandle hFile, ByteSpan bytes)
+        public static SafeFileHandle Read(this SafeFileHandle hFile, IBytes bytes)
         {
             return Read(hFile, bytes.Ptr, bytes.ByteCount);
         }
@@ -176,7 +176,7 @@ namespace Ara3D
         /// <summary>
         /// Writes all data from the buffer to the file.
         /// </summary>
-        public static SafeFileHandle Write(this SafeFileHandle hFile, ByteSpan bytes)
+        public static SafeFileHandle Write(this SafeFileHandle hFile, IBytes bytes)
         {
             return Write(hFile, bytes.Ptr, bytes.ByteCount);
         }
@@ -184,7 +184,7 @@ namespace Ara3D
         /// <summary>
         /// Writes all data from the buffer to the file.
         /// </summary>
-        public static void WriteAllBytes(string filePath, ByteSpan bytes)
+        public static void WriteAllBytes(string filePath, Bytes bytes)
         {
             using (var hFile = OpenForWriting(filePath))
             {

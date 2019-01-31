@@ -411,11 +411,11 @@ namespace Ara3D
         /*
       public static IGeometry MergeCoplanar(this IGeometry self)
       {
-          if (self.Elements.Count <= 1) return self;
+          if (self.Elements.ByteCount <= 1) return self;
           var curPoly = new List<int>();
           var polys = new List<List<int>> { curPoly };
           var cur = 0;
-          for (var i=1; i < self.Elements.Count; ++i)
+          for (var i=1; i < self.Elements.ByteCount; ++i)
           {
               if (!self.CanMergeTris(cur, i))
               {
