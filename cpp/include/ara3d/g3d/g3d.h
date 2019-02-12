@@ -73,6 +73,7 @@ namespace g3d
         attr_pervertex,
         attr_mapchannel_data,
         attr_mapchannel_index,
+        attr_transform,
         attr_custom,
         attr_invalid,
     };

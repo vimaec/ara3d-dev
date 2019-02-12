@@ -1,7 +1,5 @@
 ﻿
-using Autodesk.Max;
 using Autodesk.Max.MaxPlus;
-using System.Text;
 
 namespace Ara3D
 {

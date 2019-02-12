@@ -21,11 +21,55 @@ var araUnaryOps = new[] { "Sqr", "Inverse", "Ceiling", "Floor", "Round", "Trunca
 var allUnaryOps = sysUnaryOps.Concat(araUnaryOps);
 #>
 
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 namespace Ara3D 
 {
+<# 
+foreach (var t in types) { 
+   var capName = char.ToUpper(t[0]) + t.Substring(1);
+   var typeName = "Unsafe" + capName + "Array";
+#>
+	public unsafe class <#= typeName #> : IArray< <#= t #> > 
+	{
+		public int Count { get; }
+		<#= t #>* Ptr { get; }
+		public static int ElementSize = sizeof(<#= t #>);
+		public <#= t #> this[int n] => Ptr[n];
+		public <#= typeName #>(IBytes bytes) 
+		  : this(bytes.Ptr.ToPointer(), bytes.ByteCount) 
+		{ } 		
+		public <#= typeName #>(void* ptr, int size) 
+			: this((<#= t #>*)ptr, size / ElementSize) {
+		}
+		public <#= typeName #>(<#= t #>* ptr, int count) {
+			Ptr = ptr;
+			Count = count;
+		} 
+		/// <summary>Returns an interface to the bytes, be careful that the internal memory does not last longer than the consumer expected</summary>
+		public IBytes ToBytes() {
+			return new IntPtrWrapper(new IntPtr(Ptr), Count * ElementSize);
+		}
+	}
+<#
+}
+#>
+	
+	public static class UnsafeArrayExtensions 
+	{
+<# 
+foreach (var t in types) { 
+   var capName = char.ToUpper(t[0]) + t.Substring(1);
+   var typeName = "Unsafe" + capName + "Array";
+#>
+		public static <#= typeName #> To<#= capName #>s(this IBytes bytes) => new <#= typeName #>(bytes);
+<#
+}
+#>
+	}
+
 	public static class ArrayOps
 	{
 	

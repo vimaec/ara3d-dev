@@ -17,16 +17,29 @@ using System.Numerics;
 namespace Ara3D  
 {
 <#
+	// Double versions of structs already in System.Numerics 	
+	CreateVectorStruct("DVector2", new[] { "X", "Y" }, "double");    
+	CreateVectorStruct("DVector3", new[] { "X", "Y", "Z" }, "double");    
+	CreateVectorStruct("DVector4", new[] { "X", "Y", "Z", "W", }, "double");    
+	CreateVectorStruct("DQuaternion", new[] { "X", "Y", "Z", "W" }, "double");
+	CreateStruct("DPlane", new[] { "Normal", "D" }, new[] { "DVector3", "double" });
+
 	// Various types of intervals (and bounding structs)
 	CreateRangeStruct("Interval", "float");
-	CreateRangeStruct("Box", "Vector3");    
 	CreateRangeStruct("Box2", "Vector2");    
+	CreateRangeStruct("Box", "Vector3");    
 	CreateRangeStruct("Box4", "Vector4"); 
+
+	CreateRangeStruct("DInterval", "double");
+	CreateRangeStruct("DBox2", "DVector2");    
+	CreateRangeStruct("DBox3", "DVector3");    
+	CreateRangeStruct("DBox4", "DVector4"); 
 
 	// These are common structs 
 	CreateStruct("Ray", new[] { "Position", "Direction" }, new[] { "Vector3", "Vector3" });
-	CreateStruct("Planed", new[] { "Normal", "D" }, new[] { "Vector3d", "double" });
+	CreateStruct("DRay", new[] { "Position", "Direction" }, new[] { "DVector3", "DVector3" });
 	CreateStruct("Sphere", new[] { "Center", "Radius" }, new[] { "Vector3", "float" });
+	CreateStruct("DSphere", new[] { "Center", "Radius" }, new[] { "DVector3", "double" });
 	
 	// These have surface areas and midpoints and bounding boxes
 	CreateShapeStruct("Line", new[] { "A", "B" }, "Vector3");    
@@ -35,11 +48,9 @@ namespace Ara3D
 	CreateShapeStruct("Quad", new[] { "A", "B", "C", "D" }, "Vector3");
 
 	// These are plain old vector types (they will need mathematical operators)
-	 CreateVectorStruct("Int2", new[] { "A", "B" }, "int");    
+	CreateVectorStruct("Int2", new[] { "A", "B" }, "int");    
 	CreateVectorStruct("Int3", new[] { "A", "B", "C" }, "int");    
 	CreateVectorStruct("Int4", new[] { "A", "B", "C", "D" }, "int");    	
-	CreateVectorStruct("Vector3d", new[] { "X", "Y", "Z" }, "double");    
-	CreateVectorStruct("Quaterniond", new[] { "X", "Y", "Z", "W" }, "double");
 
 	// TODO: the double operators are not yet finished.
 #>

@@ -126,7 +126,7 @@ namespace Ara3D
             var verts = numVerts.Select(v => mesh.GetVertex(v).ToVector()).Evaluate();
             var indices = (numFaces * 3).Select(f => mesh.GetFaceVertexIndex(f / 3, f % 3)).Evaluate();
 
-            return new TriMesh(verts, indices);
+            return Geometry.TriMesh(verts, indices);
         }
 
         public static T Validate<T>(this T x) where T: Wrapper
@@ -154,7 +154,7 @@ namespace Ara3D
         {
             var triMesh = g.ToTriMesh();
             var numVerts = g.Vertices.Count;
-            var numFaces = triMesh.Elements.Count;
+            var numFaces = triMesh.GetFaces().Count;
             mesh.SetNumVerts(numVerts);
             mesh.SetNumFaces(numFaces);
 
@@ -166,7 +166,7 @@ namespace Ara3D
 
             for (var i=0; i < numFaces; ++i)
             {
-                var e = triMesh.Elements[i];
+                var e = triMesh.GetFaces()[i];
                 mesh.SetFaceVertexIndexes(i, e[0], e[1], e[2]);
                 // TODO: edge visibility
                 // TODO: smoothing group, material id 

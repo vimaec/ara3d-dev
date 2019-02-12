@@ -20,6 +20,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>Ara3D.Geometry</RootNamespace>
@@ -52,29 +54,32 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\ArrayExtensions.cs" />
-    <Compile Include="Core\ArrayOps.cs">
+    <Compile Include="ArrayExtensions.cs" />
+    <Compile Include="ArrayOps.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ArrayOps.tt</DependentUpon>
     </Compile>
-    <Compile Include="Core\Geometry.cs" />
-    <Compile Include="Core\Mesh.cs" />
-    <Compile Include="Core\PointsExtensions.cs" />
-    <Compile Include="Core\SceneBuilder.cs" />
-    <Compile Include="Io\BasicMesh.cs" />
-    <Compile Include="Io\GeometryWriter.cs" />
-    <Compile Include="Io\ObjData.cs" />
-    <Compile Include="Io\ObjEmitter.cs" />
-    <Compile Include="Io\RevitSceneData.cs" />
+    <Compile Include="Geometry.cs" />
+    <Compile Include="PointsExtensions.cs" />
+    <Compile Include="Scene.cs" />
+    <Compile Include="SceneBuilder.cs" />
+    <Compile Include="G3DBridge.cs" />
+    <Compile Include="GeometryWriter.cs" />
+    <Compile Include="ObjData.cs" />
+    <Compile Include="ObjEmitter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Core\ArrayOps.tt">
+    <Content Include="ArrayOps.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ArrayOps.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
+      <Project>{4007804A-598F-495F-84F3-F2CF3136797D}</Project>
+      <Name>Ara3D.G3D</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
       <Name>Ara3D.LinqArray</Name>

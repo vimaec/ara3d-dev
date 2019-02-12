@@ -1,4 +1,5 @@
-﻿using Ara3D;
+﻿using System;
+using Ara3D;
 using NUnit.Framework;
 using System.Linq;
 using System.Numerics;
@@ -25,16 +26,29 @@ namespace Ara3D.Tests
             using (var pin = xs.Pin())
             {
                 var bytes = pin.ToBytes();
-                Assert.AreEqual(12 * 16, bytes.Length);
+                Assert.AreEqual(60, bytes.Length);
 
-                using (var buffer = new UnmanagedBuffer(12 * 16))
+                using (var buffer = new UnmanagedBuffer(bytes.Length))
                 {
                     pin.CopyTo(buffer);
 
                     Assert.IsTrue(pin.SequenceEqual(buffer));
+
+                    var ys = new Vector3[5];
+
+                    using (var pin2 = ys.Pin())
+                        pin.CopyTo(pin2);
+
+                    Assert.AreEqual(xs, ys);
+
+                    var zs = new float[15];
+                    using (var pin3 = zs.Pin())
+                        pin.CopyTo(pin3);
+
+                    Assert.AreEqual(4.0, zs[4], Double.Epsilon);
+                    Assert.AreEqual(11.0, zs[11], Double.Epsilon);
                 }
             }
-
         }
 
         [Test]

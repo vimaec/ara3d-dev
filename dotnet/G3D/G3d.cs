@@ -1,206 +1,126 @@
 ﻿/*
-    G3D Data Format Library
+    G3D Geometry Format Library
     Copyright 2018, Ara 3D, Inc.
     Usage licensed under terms of MIT License
+
+    The G3D format is a simple, generic, and efficient representation of geometry data. 
 */
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
 
-namespace Ara3D.G3D
-{
-    // NOTE: this has to be kept in synch with g3d.h 
-
-    // The different types of data types that can be used as elements. 
-    public enum DataType
+namespace Ara3D
+{ 
+    /// <summary>
+    /// The interface of an IG3D structure which is just a collection of Attributes.  
+    /// </summary>
+    public interface IG3D
     {
-        dt_uint8,
-        dt_uint16,
-        dt_uint32,
-        dt_uint64,
-        dt_uint128,
-        dt_int8,
-        dt_int16,
-        dt_int32,
-        dt_int64,
-        dt_int128,
-        dt_float16, 
-        dt_float32,
-        dt_float64,
-        dt_float128,
-        dt_invalid,
-    };
+        IEnumerable<IAttribute> Attributes { get; }
 
-    // What element each attribute is associated with 
-    public enum Association
-    {
-        assoc_vertex,
-        assoc_face,
-        assoc_corner,
-        assoc_edge,
-        assoc_object,
-        assoc_none,
-        assoc_invalid,
-    };
+        // All geometries must have a vertex buffer 
+        IAttribute VertexAttribute { get; }
 
-    // The type of the attribute
-    public enum AttributeType
-    {
-        attr_unknown,
-        attr_user,
-        attr_vertex,
-        attr_index,
-        attr_faceindex,
-        attr_facesize,
-        attr_normal,
-        attr_binormal,
-        attr_tangent,
-        attr_materialid,
-        attr_polygroup,
-        attr_uv,
-        attr_color,
-        attr_smoothing,
-        attr_crease,
-        attr_hole,
-        attr_visibility,
-        attr_selection,
-        attr_pervertex,
-        attr_mapchannel_data,
-        attr_mapchannel_index,
-        attr_custom,
-        attr_invalid,
-    };
+        // The index attribute is optional: if missing then we assume that all indices are detached 
+        IAttribute IndexAttribute { get; }
 
-    // Contains all the information necessary to parse an attribute data channel and associate it with geometry 
-    [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 32)]
-    public struct AttributeDescriptor
-    {
-        public int _association;            // Indicates the part of the geometry that this attribute is assoicated with 
-        public int _attribute_type;         // n integer values 
-        public int _attribute_type_index;   // each attribute type should have it's own index ( you can have uv0, uv1, etc. )
-        public int _data_arity;             // how many values associated with each element (e.g. UVs might be 2, geometry might be 3, quaternions 4, matrices 9 or 16)
-        public int _data_type;              // the type of individual values (e.g. int32, float64)
-        public int _pad0, _pad1, _pad2;     // ignored, used to bring the alignment up to a power of two.
+        // The face-size attribute is optional: if missing we assume a triangular mesh, if present it is either per-object or per-face. 
+        IAttribute FaceSizeAttribute { get; }
+
+        // The face-index attribute is optional: it should only be present when the face-size attribute is present and per-face. If missing in that case, it is computed from the FaceSizeAttribute.
+        IAttribute FaceIndexAttribute { get; }
     }
 
-    public interface IAttribute
+    /// <summary>
+    /// A wrapper around a memory buffer, or BFast struct containing attributes. 
+    /// </summary>
+    public class G3D : IG3D
     {
-        byte[] Data { get; }
-        AttributeDescriptor Descriptor { get; }
-    }
+        public static string DefaultHeader = new {
+            file = "g3d",
+            g3dversion = new G3DVersion(),
+        }.ToJson();
 
-    public class AttributeData<T> : IAttribute where T : struct 
-    {
-        public byte[] Data { get; }
-        public AttributeDescriptor Descriptor { get; }
-    
-        public AttributeData(T[] data, AttributeDescriptor descriptor)
-        {
-            var span = data.AsSpan();
-            var bytesSpan = MemoryMarshal.Cast<T, byte>(span);
-            Data = new byte[bytesSpan.Length];
-            bytesSpan.CopyTo(Data);
-            Descriptor = descriptor;
-        }
-    }
+        public IEnumerable<IAttribute> Attributes { get; }
 
-    public static class AttributeBuilder
-    {
-        public static AttributeData<T> Attribute<T>(T[] data, AttributeDescriptor desc) where T: struct
-        {
-            return new AttributeData<T>(data, desc);
-        }
+        public IAttribute VertexAttribute { get; }
+        public IAttribute IndexAttribute { get; }
+        public IAttribute FaceSizeAttribute { get; }
+        public IAttribute FaceIndexAttribute { get; }
 
-        public static IAttribute Vertices(Vector3[] data)
-        {
-            return Attribute(data, Association.assoc_vertex, AttributeType.attr_vertex);
-        }
+        public string Header { get; }
 
-        public static IAttribute Indices(int[] data)
-        {
-            return Attribute(data, Association.assoc_corner, AttributeType.attr_index);
-        }
+        /// <summary>
+        /// Optional BFast buffer
+        /// </summary>
+        public readonly BFast Buffer;
 
-        public static IAttribute UVs(Vector2[] data, int index = 0)
+        public G3D(IEnumerable<IAttribute> attributes, BFast buffer = null, string header = null)
         {
-            return Attribute(data, Association.assoc_corner, AttributeType.attr_index);
-        }
+            Buffer = buffer;
+            Header = header;
+            Attributes = attributes.WhereNotNull();
 
-        public static IAttribute UVWs(Vector3[] data, int index = 0)
-        {
-            return Attribute(data, Association.assoc_vertex, AttributeType.attr_index);
-        }
+            VertexAttribute = this.FindAttribute(AttributeType.attr_vertex);
+            if (VertexAttribute.Descriptor.Association != Association.assoc_vertex)
+                throw new Exception("Vertex buffer is not associated with vertex: " + VertexAttribute.Descriptor);
 
-        public static IAttribute VertexNormals(Vector3[] data, int index = 0)
-        {
-            return Attribute(data, Association.assoc_vertex, AttributeType.attr_index);
-        }
+            if (VertexAttribute.Descriptor.DataArity != 3)
+                throw new Exception("Vertices should have an arity of 3");
 
-        public static AttributeData<T> Attribute<T>(T[] data, Association assoc, AttributeType at, int index = 0) where T : struct
-        {
-            return new AttributeData<T>(data, Descriptor<T>(assoc, at, index));
-        }
-
-        public static AttributeDescriptor Descriptor<T>(Association assoc, AttributeType at, int index = 0) where T : struct
-        {
-            if (typeof(T) == typeof(float))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 1);
-            if (typeof(T) == typeof(double))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 1);
-            if (typeof(T) == typeof(int))
-                return Descriptor(assoc, at, index, DataType.dt_int32, 1);
-            if (typeof(T) == typeof(long))
-                return Descriptor(assoc, at, index, DataType.dt_int64, 1);
-            if (typeof(T) == typeof(Vector2))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 2);
-            if (typeof(T) == typeof(Vector3))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 3);
-            if (typeof(T) == typeof(Vector4))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 4);
-            if (typeof(T) == typeof(Quaternion))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 4);
-            if (typeof(T) == typeof(Matrix4x4))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 16);
-            throw new Exception($"Unhandled type {typeof(T)}");
-        }
-
-        public static AttributeDescriptor Descriptor(Association assoc, AttributeType at, int index, DataType dt, int arity)
-        {
-            return new AttributeDescriptor
+            IndexAttribute = this.FindAttribute(AttributeType.attr_index, false);
+            if (IndexAttribute != null)
             {
-                _association = (int) assoc,
-                _attribute_type = (int) at,
-                _data_arity = (int) arity,
-                _data_type = (int) dt,
-            };
-        }
-    }
-
-    /*
-    public class G3DBuilder
-    {
-        public static BFast ToBFast(IEnumerable<IAttribute> attributes)
-        {
-            var descriptors = attributes.Select(a => a.Descriptor).ToArray();
-            var descBytes = descriptors.ToBytes();
-            var header = "{ type: \"g3d\" }";
-            var buffers = descBytes.ToByteRange();
-            BFastBuilder.ToBFastBytes(
-        }
-
-        // https://stackoverflow.com/questions/7956167/how-can-i-quickly-read-bytes-from-a-memory-mapped-file-in-net
-        public static G3D Read(string filePath)
-        {
-            using (var file = new BFastMemoryMappedFile(filePath))
-            {
-                // TODO: map to a bfast struct
-                // TODO: get the attributes list 
-                // TODO: get all the arrays 
-                // TODO: load each array 
+                if (IndexAttribute.Descriptor.Association != Association.assoc_corner)
+                    throw new Exception("Index buffer is not associated with index: " + IndexAttribute.Descriptor);
+                if (IndexAttribute.Descriptor.DataArity != 1)
+                    throw new Exception("Index buffer should have an arity of 1");
             }
+
+            FaceSizeAttribute = this.FindAttribute(AttributeType.attr_facesize, false);
+            if (FaceSizeAttribute != null)
+            {
+                if (FaceSizeAttribute.Descriptor.Association != Association.assoc_face)
+                    throw new Exception("Face size attribute is not associated with faces: " + FaceSizeAttribute.Descriptor);
+                if (FaceSizeAttribute.Descriptor.DataArity != 1)
+                    throw new Exception("Expected an arity of 1");
+                if (FaceSizeAttribute.Descriptor.DataType != DataType.dt_int32)
+                    throw new Exception("Face size attribute is expected to be a 32 bit integer");
+            }
+
+            FaceIndexAttribute = this.FindAttribute(AttributeType.attr_faceindex, false);
+            if (FaceIndexAttribute != null)
+            {
+                if (FaceIndexAttribute.Descriptor.Association != Association.assoc_face)
+                    throw new Exception("Face index attribute is not associated with faces: " + FaceIndexAttribute.Descriptor);
+                if (FaceIndexAttribute.Descriptor.DataArity != 1)
+                    throw new Exception("Expected an arity of 1");
+                if (FaceIndexAttribute.Descriptor.DataType != DataType.dt_int32)
+                    throw new Exception("Face size attribute is expected to be a 32 bit integer");
+            }
+            
+            // NOW: compute the number of faces, and make sure that all of the attributes make sense. This is going to be a lot of work!! 
         }
-    }*/
+
+        public static G3D Create(BFast bfast)
+        {
+            if (bfast.Buffers.Count < 2)
+                throw new Exception("Expected at least two data buffers in file: header, and attribute descriptor array");                
+
+            var header = bfast.Buffers[0].ToBytes().ToUtf8();
+            var descriptors = bfast.Buffers[1].ToStructs<AttributeDescriptor>();
+            var buffers = bfast.Buffers.Skip(2).ToArray();
+            if (descriptors.Length != buffers.Length)
+                throw new Exception("Incorrect number of descriptors");
+
+            return new G3D(buffers.Zip(descriptors, G3DExtensions.ToAttribute), bfast, header);
+        }
+
+        public static G3D Create(byte[] bytes)
+            => Create(new Memory<byte>(bytes));
+
+        public static G3D Create(Memory<byte> memory)
+            => Create(new BFast(memory));
+    }
 }

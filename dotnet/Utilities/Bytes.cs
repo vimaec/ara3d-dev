@@ -1,22 +1,49 @@
 ﻿using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ara3D
 {
-    public interface IBytes
+    public interface IBytes 
     {
         int ByteCount { get; }
         IntPtr Ptr { get; }
     }
 
-    public static class BytesExtensions
+    public class IntPtrWrapper : IBytes
     {
-        public static byte[] ToUtf8Bytes(this string s)
+        public int ByteCount { get; }
+        public IntPtr Ptr { get; }
+
+        public IntPtrWrapper(IntPtr ptr, int count)
         {
-            return Encoding.UTF8.GetBytes(s);
+            Ptr = ptr;
+            ByteCount = count;
+        }
+    }
+
+    public unsafe class MemoryHandleWrapper : IBytes, IDisposable
+    {
+        public int ByteCount { get; }
+        public IntPtr Ptr { get; }
+        public MemoryHandle Handle { get; }
+
+        public MemoryHandleWrapper(MemoryHandle h, int count)
+        {
+            Handle = h;
+            ByteCount = count;
+            Ptr = new IntPtr(h.Pointer);
         }
 
+        public void Dispose()
+        {
+            Handle.Dispose();
+        }
+    }
+
+    public static class BytesExtensions
+    {
         public static bool Contains(this IBytes self, IntPtr ptr)
         {
             var dist = self.Ptr.Distance(ptr);
@@ -39,32 +66,47 @@ namespace Ara3D
             return other;
         }
 
-        public static byte[] CopyTo(this IBytes span, byte[] array)
+        public static byte[] CopyTo(this IBytes bytes, byte[] array)
         {
-            Marshal.Copy(span.Ptr, array, 0, Math.Min(span.ByteCount, array.Length));
+            Marshal.Copy(bytes.Ptr, array, 0, Math.Min(bytes.ByteCount, array.Length));
             return array;
         }
 
-        public static byte[] CopyTo(this IBytes span, byte[] array, int offset, int size)
+        public static byte[] CopyTo(this IBytes bytes, byte[] array, int offset, int size)
         {
-            Marshal.Copy(span.Ptr, array, offset, Math.Min(span.ByteCount, size));
+            Marshal.Copy(bytes.Ptr, array, offset, Math.Min(bytes.ByteCount, size));
             return array;
         }
 
-        public static IBytes CopyTo(this byte[] array, IBytes span)
+        public static IBytes CopyTo(this byte[] array, IBytes bytes)
         {
-            Marshal.Copy(array, 0, span.Ptr, Math.Min(span.ByteCount, array.Length));
-            return span;
+            Marshal.Copy(array, 0, bytes.Ptr, Math.Min(bytes.ByteCount, array.Length));
+            return bytes;
         }
 
-        public static byte[] ToBytes(this IBytes span)
+        public static byte[] ToBytes(this IBytes bytes)
         {
-            return span.CopyTo(new byte[span.ByteCount]);
+            return bytes.CopyTo(new byte[bytes.ByteCount]);
         }
 
-        public static unsafe Span<byte> ToSpan(this IBytes span)
+        public static unsafe Span<T> ToSpan<T>(this IBytes span)
         {
-            return new Span<byte>((void*)span.Ptr, span.ByteCount);
+            return new Span<T>((void*)span.Ptr, span.ByteCount);
+        }
+
+        public static T[] ToStructs<T>(this IBytes bytes) where T : struct
+        {
+            return bytes.ToSpan<T>().ToArray();
+        }
+
+        public static IBytes ToIBytes(this Memory<byte> bytes, int offset, int count)
+        {
+            return bytes.Slice(offset, count).ToIBytes();
+        }
+
+        public static IBytes ToIBytes(this Memory<byte> bytes)
+        {
+            return new MemoryHandleWrapper(bytes.Pin(), bytes.Length);
         }
 
         /// <summary>
@@ -77,14 +119,14 @@ namespace Ara3D
             // Compare to PInvoke
             if (self.ByteCount != other.ByteCount)
                 return false;
-            return self.ToSpan().SequenceEqual(other.ToSpan());
+            return self.ToSpan<byte>().SequenceEqual(other.ToSpan<byte>());
         }
 
         /*
         /// <summary>
         /// Copies the bytes to a buffer.
         /// </summary>
-        public static byte[] CopyToBuffer(this Bytes self, byte[] buffer)
+        public static byte[] CopyToBuffer(this IntPtrWrapper self, byte[] buffer)
         {
             if (buffer.Length < self.ByteCount)
                 throw new Exception("Buffer is too small");
@@ -95,7 +137,7 @@ namespace Ara3D
         /// <summary>
         /// Copies the bytes to the buffer if it is big enough or allocates a new byte array if necessary.
         /// </summary>
-        public static byte[] CopyToBufferOrAllocate(this Bytes self, byte[] buffer)
+        public static byte[] CopyToBufferOrAllocate(this IntPtrWrapper self, byte[] buffer)
         {
             if (buffer == null || buffer.Length < self.ByteCount)
                 return self.ToByteArray();

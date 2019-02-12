@@ -1,13 +1,8 @@
-﻿using Autodesk.Max;
-using Autodesk.Max.MaxPlus;
+﻿using Autodesk.Max.MaxPlus;
 using System;
 
 namespace Ara3D
 {
-    public static class GeometryExtensions
-    {
-    }
-
     public class UtilitySplitGeometry : IUtilityPlugin
     {
         public void Evaluate()

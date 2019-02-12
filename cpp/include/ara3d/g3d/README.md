@@ -23,13 +23,43 @@ OBJ and various tools written in different languages. It serves as the core geom
 ## Attributes 
 
 G3D is organized as a collection of attribute channels. Each attributes describe what part of the mesh they are associated with:
+
 * point
 * face
 * corner
 * edge
 * whole object 
 
-Attributes also have a "type" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements.
+Attributes also have a "type" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements. The attribute types are: 
+
+* unknown,
+* user,
+* coordinate,
+* index,
+* faceindex,
+* facesize,
+* normal,
+* binormal,
+* tangent,
+* materialid,
+* polygroup,
+* uv,
+* color,
+* smoothing,
+* crease,
+* hole,
+* visibility, 
+* selection,
+* pervertex,
+* mapchannel_data,
+* mapchannel_index,
+* transform,
+* custom,
+* invalid
+
+The only attribute required to be present is a vertex attribute. There can only be one vertex attribute. 
+
+If no facesize attribute is present then the geometry is assumed to be triangular. 
 
 Attributes are groups of one or more data values. The number of data values per associate element is called the "arity". 
 The individual data values can be integers, unsigned integers, or floating point values of various widths from 1 to 128 bytes.
@@ -82,13 +112,14 @@ minimal processing.
 
 # Recommended reading:
 
-* http://assimp.sourceforge.net/lib_html/structai_mesh.html
-* http://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_5EDC0280_E000_4B0B_88DF_5D215A589D5E_htm
-* https://help.autodesk.com/cloudhelp/2017/ENU/Max-SDK/cpp_ref/class_mesh.html
-* https://help.autodesk.com/view/3DSMAX/2016/ENU/?guid=__files_GUID_CBBA20AD_F7D5_46BC_9F5E_5EDA109F9CF4_htm
-* http://paulbourke.net/dataformats/
-* http://paulbourke.net/dataformats/obj/
-* http://paulbourke.net/dataformats/ply/
-* http://paulbourke.net/dataformats/3ds/
-* https://github.com/KhronosGroup/gltf
-* http://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_class_fbx_layer_element_html
+* Assimp Mesh class - http://assimp.sourceforge.net/lib_html/structai_mesh.html
+* FBX Mesh class http://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_5EDC0280_E000_4B0B_88DF_5D215A589D5E_htm
+* FBX Layer Element reference http://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_class_fbx_layer_element_html
+* 3ds Max Mesh class https://help.autodesk.com/cloudhelp/2017/ENU/Max-SDK/cpp_ref/class_mesh.html
+* 3ds Max docs (Understanding Texture Coordinates and Vertex Colors) https://help.autodesk.com/view/3DSMAX/2016/ENU/?guid=__files_GUID_CBBA20AD_F7D5_46BC_9F5E_5EDA109F9CF4_htm
+* Unity Mesh class - https://docs.unity3d.com/ScriptReference/Mesh.html
+* Paul Bourke 3d File Formats - http://paulbourke.net/dataformats/
+* Paul Bourke OBJ reference http://paulbourke.net/dataformats/obj/
+* Paul Bourke PLY reference http://paulbourke.net/dataformats/ply/
+* Paul Bourke 3ds reference http://paulbourke.net/dataformats/3ds/
+* Gltf references - https://github.com/KhronosGroup/gltf

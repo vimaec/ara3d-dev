@@ -22,6 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +33,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -47,7 +51,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayCast.cs" />
+    <Compile Include="AttributeDescriptor.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="G3D.cs" />
+    <Compile Include="G3DExtensions.cs" />
+    <Compile Include="IAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +67,10 @@
     <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-F3E7-4D54-8552-2A65FBEBEE85}</Project>
       <Name>Ara3D.LinqArray</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Math3D\Ara3D.Math.csproj">
+      <Project>{F9430261-9426-4D6B-A1B8-9D3F2BFBB501}</Project>
+      <Name>Ara3D.Math</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
       <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>

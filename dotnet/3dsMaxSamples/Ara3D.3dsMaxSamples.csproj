@@ -25,6 +25,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -155,6 +157,10 @@
     <ProjectReference Include="..\3dsMaxBridge\Ara3D.3dsMaxBridge.csproj">
       <Project>{64860ec8-b0eb-44bb-b5bb-039200ada53e}</Project>
       <Name>Ara3D.3dsMaxBridge</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
+      <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
+      <Name>Ara3D.G3D</Name>
     </ProjectReference>
     <ProjectReference Include="..\G3SharpBridge\Ara3D.G3SharpBridge.csproj">
       <Project>{82182a4d-2acc-4f5f-b490-aee4308d3719}</Project>

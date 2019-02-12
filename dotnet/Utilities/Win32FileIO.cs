@@ -99,7 +99,7 @@ namespace Ara3D
         /// <summary>
         /// Attempts to write n bytes to the stream, returning the number of bytes actually written.
         /// </summary>
-        public static int WriteFile(this SafeFileHandle hFile, IntPtr pBuffer, int nBytesToWrite)
+        public static int WriteFile(SafeFileHandle hFile, IntPtr pBuffer, int nBytesToWrite)
         {
             if (hFile.IsInvalid) throw new Exception("Invalid file handle");
             if (!WriteFile(hFile, pBuffer, nBytesToWrite, out var nBytesWritten, IntPtr.Zero))
@@ -118,7 +118,7 @@ namespace Ara3D
             return hFile;
         }
 
-        public static int ReadFile(this SafeFileHandle hFile, IntPtr pBuffer, int nBytesToRead)
+        public static int ReadFile(SafeFileHandle hFile, IntPtr pBuffer, int nBytesToRead)
         {
             if (hFile.IsInvalid) throw new Exception("Invalid file handle");
             if (!ReadFile(hFile, pBuffer, nBytesToRead, out var nBytesRead, IntPtr.Zero))
@@ -166,6 +166,32 @@ namespace Ara3D
         }
 
         /// <summary>
+        /// Writes all data from the buffer to the file.
+        /// </summary>
+        public static SafeFileHandle Write(this SafeFileHandle hFile, IBytes bytes)
+        {
+            return Write(hFile, bytes.Ptr, bytes.ByteCount);
+        }
+
+        /// <summary>
+        /// Writes all data from the struct to the file.
+        /// </summary>
+        public static SafeFileHandle Write<T>(this SafeFileHandle hFile, T x) where T: struct
+        {
+            using (var p = x.Pin())
+                return hFile.Write(p);
+        }
+
+        /// <summary>
+        /// Writes all data from the structs to the file.
+        /// </summary>
+        public static SafeFileHandle Write<T>(this SafeFileHandle hFile, T[] x) where T : struct
+        {
+            using (var p = x.Pin())
+                return hFile.Write(p);
+        }
+
+        /// <summary>
         /// Read data from the file to the buffer. Assumes enough space in the buffer. 
         /// </summary>
         public static SafeFileHandle Read(this SafeFileHandle hFile, IBytes bytes)
@@ -176,15 +202,7 @@ namespace Ara3D
         /// <summary>
         /// Writes all data from the buffer to the file.
         /// </summary>
-        public static SafeFileHandle Write(this SafeFileHandle hFile, IBytes bytes)
-        {
-            return Write(hFile, bytes.Ptr, bytes.ByteCount);
-        }
-
-        /// <summary>
-        /// Writes all data from the buffer to the file.
-        /// </summary>
-        public static void WriteAllBytes(string filePath, Bytes bytes)
+        public static void WriteAllBytes(string filePath, IBytes bytes)
         {
             using (var hFile = OpenForWriting(filePath))
             {
@@ -199,7 +217,7 @@ namespace Ara3D
         public static void WriteAllBytes(string filePath, byte[] bytes)
         {
             using (var pin = bytes.Pin())
-                WriteAllBytes(filePath, pin.Bytes);
+                WriteAllBytes(filePath, pin);
         }
 
         /// <summary>
@@ -209,7 +227,7 @@ namespace Ara3D
         {
             var r = new byte[size];
             using (var pin = r.Pin())
-                hFile.Read(pin.Bytes);
+                hFile.Read(pin);
             return r;
         }
 
@@ -219,7 +237,7 @@ namespace Ara3D
         public static UnmanagedBuffer ReadUnmanaged(this SafeFileHandle hFile, int size)
         {
             var r = new UnmanagedBuffer(size);
-            hFile.Read(r.Bytes);
+            hFile.Read(r);
             return r;
         }
 

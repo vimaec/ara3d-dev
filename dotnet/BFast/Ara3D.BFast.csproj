@@ -20,6 +20,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>Ara3D.BFast</RootNamespace>
@@ -52,10 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BFast.cs" />
-    <Compile Include="BFastBaseClass.cs" />
-    <Compile Include="BFastBuilder.cs" />
-    <Compile Include="BFastFileReader.cs" />
-    <Compile Include="BFastStructs.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">

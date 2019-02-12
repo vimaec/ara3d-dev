@@ -63,11 +63,11 @@ namespace Ara3D
             return ray.Origin.Distance(ray.PointAt(intr.RayParameter));
         }
 
-        public static g3.Vector3d NearestPoint(this DMeshAABBTree3 tree, g3.Vector3d point)
+        public static Vector3d NearestPoint(this DMeshAABBTree3 tree, Vector3d point)
         {
             var tid = tree.FindNearestTriangle(point);
             if (tid == DMesh3.InvalidID)
-                return new g3.Vector3d();
+                return new Vector3d();
 
             var dist = MeshQueries.TriangleDistance(tree.Mesh, tid, point);
             return dist.TriangleClosest;

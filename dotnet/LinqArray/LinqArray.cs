@@ -159,7 +159,7 @@ namespace Ara3D
         /// </summary>
         public static Func<int, bool> ToPredicate(this IArray<bool> self)
         {
-            return self.ToFunction(false);
+            return self.ToFunction();
         }
         
         /// <summary>
@@ -228,7 +228,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Returns an array given a function that generates an IArray from each memeber.
+        /// Returns an array given a function that generates an IArray from each member. Eager evaluation.
         /// </summary>
         public static IArray<U> SelectMany<T, U>(this IArray<T> self, Func<T, IArray<U>> func)
         {
@@ -236,6 +236,55 @@ namespace Ara3D
             for (var i = 0; i < self.Count; ++i)
                 func(self[i]).AddTo(xs);
             return xs.ToIArray();
+        }
+
+        /// <summary>
+        /// Returns an array given a function that generates a tuple from each member. Eager evaluation.
+        /// </summary>
+        public static IArray<U> SelectMany<T, U>(this IArray<T> self, Func<T, Tuple<U,U>> func)
+        {
+            var r = new U[self.Count * 2];
+            for (var i = 0; i < self.Count; ++i)
+            {
+                var tmp = func(self[i]);
+                r[i * 2] = tmp.Item1;
+                r[i * 2 + 1] = tmp.Item2;
+            }
+
+            return r.ToIArray();
+        }
+
+        /// <summary>
+        /// Returns an array given a function that generates a tuple from each member. Eager evaluation.
+        /// </summary>
+        public static IArray<U> SelectMany<T, U>(this IArray<T> self, Func<T, Tuple<U, U, U>> func)
+        {
+            var r = new U[self.Count * 3];
+            for (var i = 0; i < self.Count; ++i)
+            {
+                var tmp = func(self[i]);
+                r[i * 3] = tmp.Item1;
+                r[i * 3 + 1] = tmp.Item2;
+                r[i * 3 + 2] = tmp.Item3;
+            }
+            return r.ToIArray();
+        }
+
+        /// <summary>
+        /// Returns an array given a function that generates a tuple from each member. Eager evaluation.
+        /// </summary>
+        public static IArray<U> SelectMany<T, U>(this IArray<T> self, Func<T, Tuple<U, U, U, U>> func)
+        {
+            var r = new U[self.Count * 4];
+            for (var i = 0; i < self.Count; ++i)
+            {
+                var tmp = func(self[i]);
+                r[i * 4] = tmp.Item1;
+                r[i * 4 + 1] = tmp.Item2;
+                r[i * 4 + 2] = tmp.Item3;
+                r[i * 4 + 3] = tmp.Item3;
+            }
+            return r.ToIArray();
         }
 
         /// <summary>
@@ -378,6 +427,15 @@ namespace Ara3D
         }
 
         /// <summary>
+        /// Returns an array of SubArrays.
+        /// xs.SubArrays(n).SelectMany == xs
+        /// </summary>
+        public static IArray<IArray<T>> SubArrays<T>(this IArray<T> self, int size)
+        {
+            return (self.Count / size).Select(i => self.SubArray(i, size));
+        }
+
+        /// <summary>
         /// Returns n elements of the list starting from a given index.  
         /// </summary>
         public static IArray<T> SubArray<T>(this IArray<T> self, int from, int count)
@@ -450,7 +508,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Uses the new array to access elements of the first array.
+        /// Uses the provided indices to select elements from the array.
         /// </summary>
         public static IArray<T> SelectByIndex<T>(this IArray<T> self, IArray<int> indices)
         {
@@ -458,8 +516,25 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Similiar to take, if count is less than the number of items in the array, otherwise 
-        /// uses a modulo operation. 
+        /// Given indices of sub-arrays groups, this will convert it to arrays of indices (e.g. [0, 2] with a group size of 3 becomes [0, 1, 2, 6, 7, 8])
+        /// </summary>
+        public static IArray<int> GroupIndicesToIndices(this IArray<int> indices, int groupSize)
+        {
+            if (groupSize == 1) return indices;
+            return (indices.Count * groupSize).Select(i => indices[i / groupSize] * groupSize + i % groupSize);
+        }
+
+        /// <summary>
+        /// Uses the provided indices to select groups of contiguous elements from the array.
+        /// This is equivalent to self.SubArrays(groupSize).SelectByIndex(indices).SelectMany();
+        /// </summary>
+        public static IArray<T> SelectGroupsByIndex<T>(this IArray<T> self, int groupSize, IArray<int> indices)
+        {
+            return self.SelectByIndex(indices.GroupIndicesToIndices(groupSize));
+        }
+
+        /// <summary>
+        /// Similar to take, if count is less than the number of items in the array, otherwise uses a modulo operation. 
         /// </summary>
         public static IArray<T> Resize<T>(this IArray<T> self, int count)
         {
@@ -472,6 +547,14 @@ namespace Ara3D
         public static IArray<T> Empty<T>(this IArray<T> self)
         {
             return self.Take(0);
+        }
+
+        /// <summary>
+        /// Returns an array of the same type with no elements. 
+        /// </summary>
+        public static IArray<T> Empty<T>()
+        {
+            return default(T).Repeat(0);
         }
 
         /// <summary>
@@ -565,7 +648,7 @@ namespace Ara3D
         /// </summary>
         public static int CountWhere<T>(this IArray<T> self, Func<T, bool> p)
         {
-            return self.Aggregate(0, (n, x) => n += p(x) ? 1 : 0);
+            return self.Aggregate(0, (n, x) => n + (p(x) ? 1 : 0));
         }
 
         /// <summary>
@@ -729,6 +812,30 @@ namespace Ara3D
         {
             // TODO: add a type check here. If already evaluated, this could be a huge savings!
             return x.ToArray().ToIArray();
+        }
+
+        /// <summary>
+        /// Maps pairs of elements to a new array.
+        /// </summary>
+        public static IArray<U> SelectPairs<T, U>(this IArray<T> xs, Func<T, T, U> f)
+        {
+            return (xs.Count / 2).Select(i => f(xs[i * 2], xs[i * 2 + 1]));
+        }
+
+        /// <summary>
+        /// Maps every 3 elements to a new array.
+        /// </summary>
+        public static IArray<U> SelectTriplets<T, U>(this IArray<T> xs, Func<T, T, T, U> f)
+        {
+            return (xs.Count / 3).Select(i => f(xs[i * 3], xs[i * 3 + 1], xs[i *3+2]));
+        }
+
+        /// <summary>
+        /// Maps every 4 elements to a new array.
+        /// </summary>
+        public static IArray<U> SelectQuartets<T, U>(this IArray<T> xs, Func<T, T, T, T, U> f)
+        {
+            return (xs.Count / 4).Select(i => f(xs[i * 4], xs[i * 4 + 1], xs[i * 4 + 2], xs[i * 4 + 3]));
         }
     }
 }

@@ -9,6 +9,86 @@ using System;
 using System.Numerics;   
 namespace Ara3D  
 {
+	public readonly partial struct DVector2 : IEquatable< DVector2 >
+	{ 
+		public readonly double X;
+		public readonly double Y;
+		public DVector2(double x, double y) { X = x; Y = y; }
+		public override bool Equals(object obj) => obj is DVector2 x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(X.GetHashCode(), Y.GetHashCode());
+		public override string ToString() => $"DVector2(X = {X}, Y = {Y})";
+		public bool Equals(DVector2 x) => X == x.X && Y == x.Y;
+		public static bool operator ==(DVector2 x0, DVector2 x1) => x0.Equals(x1);
+		public static bool operator !=(DVector2 x0, DVector2 x1) => !x0.Equals(x1);
+		public DVector2 SetX(double x) => new DVector2(x, Y);
+		public DVector2 SetY(double x) => new DVector2(X, x);
+	}
+	public readonly partial struct DVector3 : IEquatable< DVector3 >
+	{ 
+		public readonly double X;
+		public readonly double Y;
+		public readonly double Z;
+		public DVector3(double x, double y, double z) { X = x; Y = y; Z = z; }
+		public override bool Equals(object obj) => obj is DVector3 x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(X.GetHashCode(), Y.GetHashCode(), Z.GetHashCode());
+		public override string ToString() => $"DVector3(X = {X}, Y = {Y}, Z = {Z})";
+		public bool Equals(DVector3 x) => X == x.X && Y == x.Y && Z == x.Z;
+		public static bool operator ==(DVector3 x0, DVector3 x1) => x0.Equals(x1);
+		public static bool operator !=(DVector3 x0, DVector3 x1) => !x0.Equals(x1);
+		public DVector3 SetX(double x) => new DVector3(x, Y, Z);
+		public DVector3 SetY(double x) => new DVector3(X, x, Z);
+		public DVector3 SetZ(double x) => new DVector3(X, Y, x);
+	}
+	public readonly partial struct DVector4 : IEquatable< DVector4 >
+	{ 
+		public readonly double X;
+		public readonly double Y;
+		public readonly double Z;
+		public readonly double W;
+		public DVector4(double x, double y, double z, double w) { X = x; Y = y; Z = z; W = w; }
+		public override bool Equals(object obj) => obj is DVector4 x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(X.GetHashCode(), Y.GetHashCode(), Z.GetHashCode(), W.GetHashCode());
+		public override string ToString() => $"DVector4(X = {X}, Y = {Y}, Z = {Z}, W = {W})";
+		public bool Equals(DVector4 x) => X == x.X && Y == x.Y && Z == x.Z && W == x.W;
+		public static bool operator ==(DVector4 x0, DVector4 x1) => x0.Equals(x1);
+		public static bool operator !=(DVector4 x0, DVector4 x1) => !x0.Equals(x1);
+		public DVector4 SetX(double x) => new DVector4(x, Y, Z, W);
+		public DVector4 SetY(double x) => new DVector4(X, x, Z, W);
+		public DVector4 SetZ(double x) => new DVector4(X, Y, x, W);
+		public DVector4 SetW(double x) => new DVector4(X, Y, Z, x);
+	}
+	public readonly partial struct DQuaternion : IEquatable< DQuaternion >
+	{ 
+		public readonly double X;
+		public readonly double Y;
+		public readonly double Z;
+		public readonly double W;
+		public DQuaternion(double x, double y, double z, double w) { X = x; Y = y; Z = z; W = w; }
+		public override bool Equals(object obj) => obj is DQuaternion x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(X.GetHashCode(), Y.GetHashCode(), Z.GetHashCode(), W.GetHashCode());
+		public override string ToString() => $"DQuaternion(X = {X}, Y = {Y}, Z = {Z}, W = {W})";
+		public bool Equals(DQuaternion x) => X == x.X && Y == x.Y && Z == x.Z && W == x.W;
+		public static bool operator ==(DQuaternion x0, DQuaternion x1) => x0.Equals(x1);
+		public static bool operator !=(DQuaternion x0, DQuaternion x1) => !x0.Equals(x1);
+		public DQuaternion SetX(double x) => new DQuaternion(x, Y, Z, W);
+		public DQuaternion SetY(double x) => new DQuaternion(X, x, Z, W);
+		public DQuaternion SetZ(double x) => new DQuaternion(X, Y, x, W);
+		public DQuaternion SetW(double x) => new DQuaternion(X, Y, Z, x);
+	}
+	public readonly partial struct DPlane : IEquatable< DPlane >
+	{ 
+		public readonly DVector3 Normal;
+		public readonly double D;
+		public DPlane(DVector3 normal, double d) { Normal = normal; D = d; }
+		public override bool Equals(object obj) => obj is DPlane x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Normal.GetHashCode(), D.GetHashCode());
+		public override string ToString() => $"DPlane(Normal = {Normal}, D = {D})";
+		public bool Equals(DPlane x) => Normal == x.Normal && D == x.D;
+		public static bool operator ==(DPlane x0, DPlane x1) => x0.Equals(x1);
+		public static bool operator !=(DPlane x0, DPlane x1) => !x0.Equals(x1);
+		public DPlane SetNormal(DVector3 x) => new DPlane(x, D);
+		public DPlane SetD(double x) => new DPlane(Normal, x);
+	}
 	public readonly partial struct Interval : IEquatable< Interval >
 	{ 
 		public readonly float Min;
@@ -22,20 +102,6 @@ namespace Ara3D
 		public static bool operator !=(Interval x0, Interval x1) => !x0.Equals(x1);
 		public Interval SetMin(float x) => new Interval(x, Max);
 		public Interval SetMax(float x) => new Interval(Min, x);
-	}
-	public readonly partial struct Box : IEquatable< Box >
-	{ 
-		public readonly Vector3 Min;
-		public readonly Vector3 Max;
-		public Box(Vector3 min, Vector3 max) { Min = min; Max = max; }
-		public override bool Equals(object obj) => obj is Box x && Equals(x);
-		public override int GetHashCode() => Hash.Combine(Min.GetHashCode(), Max.GetHashCode());
-		public override string ToString() => $"Box(Min = {Min}, Max = {Max})";
-		public bool Equals(Box x) => Min == x.Min && Max == x.Max;
-		public static bool operator ==(Box x0, Box x1) => x0.Equals(x1);
-		public static bool operator !=(Box x0, Box x1) => !x0.Equals(x1);
-		public Box SetMin(Vector3 x) => new Box(x, Max);
-		public Box SetMax(Vector3 x) => new Box(Min, x);
 	}
 	public readonly partial struct Box2 : IEquatable< Box2 >
 	{ 
@@ -51,6 +117,20 @@ namespace Ara3D
 		public Box2 SetMin(Vector2 x) => new Box2(x, Max);
 		public Box2 SetMax(Vector2 x) => new Box2(Min, x);
 	}
+	public readonly partial struct Box : IEquatable< Box >
+	{ 
+		public readonly Vector3 Min;
+		public readonly Vector3 Max;
+		public Box(Vector3 min, Vector3 max) { Min = min; Max = max; }
+		public override bool Equals(object obj) => obj is Box x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Min.GetHashCode(), Max.GetHashCode());
+		public override string ToString() => $"Box(Min = {Min}, Max = {Max})";
+		public bool Equals(Box x) => Min == x.Min && Max == x.Max;
+		public static bool operator ==(Box x0, Box x1) => x0.Equals(x1);
+		public static bool operator !=(Box x0, Box x1) => !x0.Equals(x1);
+		public Box SetMin(Vector3 x) => new Box(x, Max);
+		public Box SetMax(Vector3 x) => new Box(Min, x);
+	}
 	public readonly partial struct Box4 : IEquatable< Box4 >
 	{ 
 		public readonly Vector4 Min;
@@ -64,6 +144,62 @@ namespace Ara3D
 		public static bool operator !=(Box4 x0, Box4 x1) => !x0.Equals(x1);
 		public Box4 SetMin(Vector4 x) => new Box4(x, Max);
 		public Box4 SetMax(Vector4 x) => new Box4(Min, x);
+	}
+	public readonly partial struct DInterval : IEquatable< DInterval >
+	{ 
+		public readonly double Min;
+		public readonly double Max;
+		public DInterval(double min, double max) { Min = min; Max = max; }
+		public override bool Equals(object obj) => obj is DInterval x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Min.GetHashCode(), Max.GetHashCode());
+		public override string ToString() => $"DInterval(Min = {Min}, Max = {Max})";
+		public bool Equals(DInterval x) => Min == x.Min && Max == x.Max;
+		public static bool operator ==(DInterval x0, DInterval x1) => x0.Equals(x1);
+		public static bool operator !=(DInterval x0, DInterval x1) => !x0.Equals(x1);
+		public DInterval SetMin(double x) => new DInterval(x, Max);
+		public DInterval SetMax(double x) => new DInterval(Min, x);
+	}
+	public readonly partial struct DBox2 : IEquatable< DBox2 >
+	{ 
+		public readonly DVector2 Min;
+		public readonly DVector2 Max;
+		public DBox2(DVector2 min, DVector2 max) { Min = min; Max = max; }
+		public override bool Equals(object obj) => obj is DBox2 x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Min.GetHashCode(), Max.GetHashCode());
+		public override string ToString() => $"DBox2(Min = {Min}, Max = {Max})";
+		public bool Equals(DBox2 x) => Min == x.Min && Max == x.Max;
+		public static bool operator ==(DBox2 x0, DBox2 x1) => x0.Equals(x1);
+		public static bool operator !=(DBox2 x0, DBox2 x1) => !x0.Equals(x1);
+		public DBox2 SetMin(DVector2 x) => new DBox2(x, Max);
+		public DBox2 SetMax(DVector2 x) => new DBox2(Min, x);
+	}
+	public readonly partial struct DBox3 : IEquatable< DBox3 >
+	{ 
+		public readonly DVector3 Min;
+		public readonly DVector3 Max;
+		public DBox3(DVector3 min, DVector3 max) { Min = min; Max = max; }
+		public override bool Equals(object obj) => obj is DBox3 x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Min.GetHashCode(), Max.GetHashCode());
+		public override string ToString() => $"DBox3(Min = {Min}, Max = {Max})";
+		public bool Equals(DBox3 x) => Min == x.Min && Max == x.Max;
+		public static bool operator ==(DBox3 x0, DBox3 x1) => x0.Equals(x1);
+		public static bool operator !=(DBox3 x0, DBox3 x1) => !x0.Equals(x1);
+		public DBox3 SetMin(DVector3 x) => new DBox3(x, Max);
+		public DBox3 SetMax(DVector3 x) => new DBox3(Min, x);
+	}
+	public readonly partial struct DBox4 : IEquatable< DBox4 >
+	{ 
+		public readonly DVector4 Min;
+		public readonly DVector4 Max;
+		public DBox4(DVector4 min, DVector4 max) { Min = min; Max = max; }
+		public override bool Equals(object obj) => obj is DBox4 x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Min.GetHashCode(), Max.GetHashCode());
+		public override string ToString() => $"DBox4(Min = {Min}, Max = {Max})";
+		public bool Equals(DBox4 x) => Min == x.Min && Max == x.Max;
+		public static bool operator ==(DBox4 x0, DBox4 x1) => x0.Equals(x1);
+		public static bool operator !=(DBox4 x0, DBox4 x1) => !x0.Equals(x1);
+		public DBox4 SetMin(DVector4 x) => new DBox4(x, Max);
+		public DBox4 SetMax(DVector4 x) => new DBox4(Min, x);
 	}
 	public readonly partial struct Ray : IEquatable< Ray >
 	{ 
@@ -79,19 +215,19 @@ namespace Ara3D
 		public Ray SetPosition(Vector3 x) => new Ray(x, Direction);
 		public Ray SetDirection(Vector3 x) => new Ray(Position, x);
 	}
-	public readonly partial struct Planed : IEquatable< Planed >
+	public readonly partial struct DRay : IEquatable< DRay >
 	{ 
-		public readonly Vector3d Normal;
-		public readonly double D;
-		public Planed(Vector3d normal, double d) { Normal = normal; D = d; }
-		public override bool Equals(object obj) => obj is Planed x && Equals(x);
-		public override int GetHashCode() => Hash.Combine(Normal.GetHashCode(), D.GetHashCode());
-		public override string ToString() => $"Planed(Normal = {Normal}, D = {D})";
-		public bool Equals(Planed x) => Normal == x.Normal && D == x.D;
-		public static bool operator ==(Planed x0, Planed x1) => x0.Equals(x1);
-		public static bool operator !=(Planed x0, Planed x1) => !x0.Equals(x1);
-		public Planed SetNormal(Vector3d x) => new Planed(x, D);
-		public Planed SetD(double x) => new Planed(Normal, x);
+		public readonly DVector3 Position;
+		public readonly DVector3 Direction;
+		public DRay(DVector3 position, DVector3 direction) { Position = position; Direction = direction; }
+		public override bool Equals(object obj) => obj is DRay x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Position.GetHashCode(), Direction.GetHashCode());
+		public override string ToString() => $"DRay(Position = {Position}, Direction = {Direction})";
+		public bool Equals(DRay x) => Position == x.Position && Direction == x.Direction;
+		public static bool operator ==(DRay x0, DRay x1) => x0.Equals(x1);
+		public static bool operator !=(DRay x0, DRay x1) => !x0.Equals(x1);
+		public DRay SetPosition(DVector3 x) => new DRay(x, Direction);
+		public DRay SetDirection(DVector3 x) => new DRay(Position, x);
 	}
 	public readonly partial struct Sphere : IEquatable< Sphere >
 	{ 
@@ -106,6 +242,20 @@ namespace Ara3D
 		public static bool operator !=(Sphere x0, Sphere x1) => !x0.Equals(x1);
 		public Sphere SetCenter(Vector3 x) => new Sphere(x, Radius);
 		public Sphere SetRadius(float x) => new Sphere(Center, x);
+	}
+	public readonly partial struct DSphere : IEquatable< DSphere >
+	{ 
+		public readonly DVector3 Center;
+		public readonly double Radius;
+		public DSphere(DVector3 center, double radius) { Center = center; Radius = radius; }
+		public override bool Equals(object obj) => obj is DSphere x && Equals(x);
+		public override int GetHashCode() => Hash.Combine(Center.GetHashCode(), Radius.GetHashCode());
+		public override string ToString() => $"DSphere(Center = {Center}, Radius = {Radius})";
+		public bool Equals(DSphere x) => Center == x.Center && Radius == x.Radius;
+		public static bool operator ==(DSphere x0, DSphere x1) => x0.Equals(x1);
+		public static bool operator !=(DSphere x0, DSphere x1) => !x0.Equals(x1);
+		public DSphere SetCenter(DVector3 x) => new DSphere(x, Radius);
+		public DSphere SetRadius(double x) => new DSphere(Center, x);
 	}
 	public readonly partial struct Line : IEquatable< Line >
 	{ 
@@ -218,39 +368,5 @@ namespace Ara3D
 		public Int4 SetB(int x) => new Int4(A, x, C, D);
 		public Int4 SetC(int x) => new Int4(A, B, x, D);
 		public Int4 SetD(int x) => new Int4(A, B, C, x);
-	}
-	public readonly partial struct Vector3d : IEquatable< Vector3d >
-	{ 
-		public readonly double X;
-		public readonly double Y;
-		public readonly double Z;
-		public Vector3d(double x, double y, double z) { X = x; Y = y; Z = z; }
-		public override bool Equals(object obj) => obj is Vector3d x && Equals(x);
-		public override int GetHashCode() => Hash.Combine(X.GetHashCode(), Y.GetHashCode(), Z.GetHashCode());
-		public override string ToString() => $"Vector3d(X = {X}, Y = {Y}, Z = {Z})";
-		public bool Equals(Vector3d x) => X == x.X && Y == x.Y && Z == x.Z;
-		public static bool operator ==(Vector3d x0, Vector3d x1) => x0.Equals(x1);
-		public static bool operator !=(Vector3d x0, Vector3d x1) => !x0.Equals(x1);
-		public Vector3d SetX(double x) => new Vector3d(x, Y, Z);
-		public Vector3d SetY(double x) => new Vector3d(X, x, Z);
-		public Vector3d SetZ(double x) => new Vector3d(X, Y, x);
-	}
-	public readonly partial struct Quaterniond : IEquatable< Quaterniond >
-	{ 
-		public readonly double X;
-		public readonly double Y;
-		public readonly double Z;
-		public readonly double W;
-		public Quaterniond(double x, double y, double z, double w) { X = x; Y = y; Z = z; W = w; }
-		public override bool Equals(object obj) => obj is Quaterniond x && Equals(x);
-		public override int GetHashCode() => Hash.Combine(X.GetHashCode(), Y.GetHashCode(), Z.GetHashCode(), W.GetHashCode());
-		public override string ToString() => $"Quaterniond(X = {X}, Y = {Y}, Z = {Z}, W = {W})";
-		public bool Equals(Quaterniond x) => X == x.X && Y == x.Y && Z == x.Z && W == x.W;
-		public static bool operator ==(Quaterniond x0, Quaterniond x1) => x0.Equals(x1);
-		public static bool operator !=(Quaterniond x0, Quaterniond x1) => !x0.Equals(x1);
-		public Quaterniond SetX(double x) => new Quaterniond(x, Y, Z, W);
-		public Quaterniond SetY(double x) => new Quaterniond(X, x, Z, W);
-		public Quaterniond SetZ(double x) => new Quaterniond(X, Y, x, W);
-		public Quaterniond SetW(double x) => new Quaterniond(X, Y, Z, x);
 	}
 }

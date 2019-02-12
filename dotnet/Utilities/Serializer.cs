@@ -51,7 +51,7 @@ namespace Ara3D
         public static void FastWriteBytes(BinaryWriter bw, Array xs)
         {
             using (var pin = xs.Pin())
-                Win32FileIO.Write((bw.BaseStream as FileStream).SafeFileHandle, pin.Bytes);
+                Win32FileIO.Write((bw.BaseStream as FileStream).SafeFileHandle, pin);
         }
 
         public static Action<object, BinaryWriter> ComputeSerializer(this Type t)
@@ -93,7 +93,7 @@ namespace Ara3D
                     else
                     {
                         bw.Write(xs.Length);
-                        bw.WriteBytes(xs);
+                        bw.Write(xs);
                         //FastWriteBytes(bw, xs);
                     }
                 };

@@ -10,25 +10,26 @@ namespace Ara3D
     {
         public GCHandle Handle { get; }
         public T Value{ get; }
-        public Bytes Bytes { get; private set; }
 
         // IBytes implementation
-        public int ByteCount => Bytes.ByteCount;
-        public IntPtr Ptr => Bytes.Ptr;
+        public int ByteCount { get; private set; }
+        public IntPtr Ptr { get; private set; }        
 
         public PinnedStruct(T x)
         {
             Value = x;
             Handle = GCHandle.Alloc(Value, GCHandleType.Pinned);
-            Bytes = new Bytes(Handle.AddrOfPinnedObject(), typeof(T).SizeOf());
+            Ptr = Handle.AddrOfPinnedObject();
+            ByteCount = typeof(T).SizeOf();
         }
 
         void DisposeImplementation()
         {
-            if (Bytes.Ptr != IntPtr.Zero)
+            if (Ptr != IntPtr.Zero)
             {
                 Handle.Free();
-                Bytes = new Bytes(IntPtr.Zero, 0);
+                Ptr = IntPtr.Zero;
+                ByteCount = 0;
             }
         }
 

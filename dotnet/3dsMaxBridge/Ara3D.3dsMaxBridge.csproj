@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -96,6 +98,10 @@
     <ProjectReference Include="..\AraScriptEditor\Ara3D.ScriptEditor.csproj">
       <Project>{e52b90c6-9f2f-4c5f-baff-bf4f46e9c6a0}</Project>
       <Name>Ara3D.ScriptEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
+      <Project>{4007804A-598F-495F-84F3-F2CF3136797D}</Project>
+      <Name>Ara3D.G3D</Name>
     </ProjectReference>
     <ProjectReference Include="..\G3SharpBridge\Ara3D.G3SharpBridge.csproj">
       <Project>{82182a4d-2acc-4f5f-b490-aee4308d3719}</Project>

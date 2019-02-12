@@ -11,6 +11,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.IO.MemoryMappedFiles;
+using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace Ara3D
 {
@@ -25,12 +27,14 @@ namespace Ara3D
 
     public static unsafe class Util
     {
-        public static IEnumerable<T> ForEach<T, U>(this IEnumerable<T> xs, Func<T, U> f) {
+        public static IEnumerable<T> ForEach<T, U>(this IEnumerable<T> xs, Func<T, U> f)
+        {
             foreach (var x in xs) f(x);
             return xs;
         }
 
-        public static string ToIdentifier(this string self) {
+        public static string ToIdentifier(this string self)
+        {
             return string.IsNullOrEmpty(self) ? "_" : self.ReplaceNonAlphaNumeric("_");
         }
 
@@ -40,39 +44,48 @@ namespace Ara3D
         }
 
         // https://stackoverflow.com/questions/4959722/c-sharp-datatable-to-csv
+
         #region Writing CSV Data C# 
 
-        public static string EscapeQuotes(this string self) {
+        public static string EscapeQuotes(this string self)
+        {
             return self?.Replace("\"", "\"\"") ?? "";
         }
 
-        public static string Surround(this string self, string before, string after) {
+        public static string Surround(this string self, string before, string after)
+        {
             return $"{before}{self}{after}";
         }
 
-        public static string Quoted(this string self, string quotes = "\"") {
+        public static string Quoted(this string self, string quotes = "\"")
+        {
             return self.Surround(quotes, quotes);
         }
 
-        public static string QuotedCSVFieldIfNecessary(this string self) {
+        public static string QuotedCSVFieldIfNecessary(this string self)
+        {
             return (self == null) ? "" : self.Contains('"') || self.Contains(',') ? self.Quoted() : self;
         }
 
-        public static string ToCsvField(this string self) {
+        public static string ToCsvField(this string self)
+        {
             return self.EscapeQuotes().QuotedCSVFieldIfNecessary();
         }
 
-        public static string ToCsvRow(this IEnumerable<string> self) {
+        public static string ToCsvRow(this IEnumerable<string> self)
+        {
             return string.Join(",", self.Select(ToCsvField));
         }
 
-        public static IEnumerable<string> ToCsvRows(this DataTable self) {
+        public static IEnumerable<string> ToCsvRows(this DataTable self)
+        {
             yield return self.Columns.OfType<object>().Select(c => c.ToString()).ToCsvRow();
             foreach (var dr in self.Rows.OfType<DataRow>())
                 yield return dr.ItemArray.Select(i => ToCsvField(i.ToString())).ToCsvRow();
         }
 
-        public static void ToCsvFile(this DataTable self, string path) {
+        public static void ToCsvFile(this DataTable self, string path)
+        {
             File.WriteAllLines(path, self.ToCsvRows());
         }
 
@@ -85,10 +98,13 @@ namespace Ara3D
         {
             self.PropertiesToDataTable().ToCsvFile(path);
         }
-        #endregion       
+
+        #endregion
 
         // https://stackoverflow.com/questions/4823467/using-linq-to-find-the-cumulative-sum-of-an-array-of-numbers-in-c-sharp/
+
         #region LINQ to find the cumulative sum of an array 
+
         public static IEnumerable<U> Accumulate<T, U>(this IEnumerable<T> self, U init, Func<U, T, U> f)
         {
             foreach (var x in self)
@@ -109,6 +125,7 @@ namespace Ara3D
         {
             return self.Accumulate((x, y) => x + y);
         }
+
         #endregion
 
         #region Reflection to create a DataTable from a Class?
@@ -151,7 +168,8 @@ namespace Ara3D
         /// Given a dictionary creates a datatable from the values of the properties or fields 
         /// of the classes in the values, and a first column made from the keys of the dictionary
         /// </summary>
-        public static DataTable PropertiesOrFieldsToDataTable<K, V>(this IDictionary<K, V> self, string keyColumnName = "keys", bool propertiesOrFields = true)
+        public static DataTable PropertiesOrFieldsToDataTable<K, V>(this IDictionary<K, V> self,
+            string keyColumnName = "keys", bool propertiesOrFields = true)
         {
             var dt = propertiesOrFields
                 ? self.Values.PropertiesToDataTable()
@@ -205,6 +223,7 @@ namespace Ara3D
         {
             return dc.DataType.CanCastToDouble();
         }
+
         #endregion
 
         /// <summary>
@@ -213,7 +232,7 @@ namespace Ara3D
         /// </summary>
         public static IEnumerable<T> ColumnValues<T>(this DataColumn self)
         {
-            return self.Table.Select().Select(dr => (T)Convert.ChangeType(dr[self], typeof(T)));
+            return self.Table.Select().Select(dr => (T) Convert.ChangeType(dr[self], typeof(T)));
         }
 
         public static string IfEmpty(this string self, string other)
@@ -303,22 +322,38 @@ namespace Ara3D
 
         public static Action ToAction<R>(Func<R> f)
         {
-            return () => { f(); return; };
+            return () =>
+            {
+                f();
+                return;
+            };
         }
 
         public static Action<A0> ToAction<A0, R>(Func<A0, R> f)
         {
-            return (x) => { f(x); return; };
+            return (x) =>
+            {
+                f(x);
+                return;
+            };
         }
 
         public static Action<A0, A1> ToAction<A0, A1, R>(Func<A0, A1, R> f)
         {
-            return (x0, x1) => { f(x0, x1); return; };
+            return (x0, x1) =>
+            {
+                f(x0, x1);
+                return;
+            };
         }
 
         public static Func<bool> ToFunction(this Action action)
         {
-            return () => { action(); return true; };
+            return () =>
+            {
+                action();
+                return true;
+            };
         }
 
         public static void TimeIt(this Action action, string label = "")
@@ -332,7 +367,8 @@ namespace Ara3D
             sw.Start();
             var r = function();
             sw.Stop();
-            Console.WriteLine($"{label}: time elapsed {sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}");
+            Console.WriteLine(
+                $"{label}: time elapsed {sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}");
             return r;
         }
 
@@ -355,7 +391,7 @@ namespace Ara3D
         /// <summary>
         /// Creates a disposable pinned struct that contains a pointer for unsafe access to the elements in memory. Use in a "using" block. 
         /// </summary>
-        public static PinnedStruct<T> Pin<T>(this T x) where T: struct
+        public static PinnedStruct<T> Pin<T>(this T x) where T : struct
         {
             return new PinnedStruct<T>(x);
         }
@@ -383,41 +419,32 @@ namespace Ara3D
         /// <summary>
         /// Performs an action using the the underlying bytes of an array.
         /// </summary>
-        public static void UsingBytes<T>(this T[] self, Action<Bytes> action)
+        public static void UsingBytes<T>(this T[] self, Action<IBytes> action)
         {
             using (var data = self.Pin())
-                action(data.Bytes);
+                action(data);
         }
 
         /// <summary>
         /// Converts a struct to bytes. 
         /// </summary>
-        public static byte[] StructToBytes<T>(this T self) where T : struct
+        public static byte[] ToBytes<T>(this T self) where T : struct
         {
-            return self.StructToBytes();
+            return StructToBytes(self);
         }
 
         /// <summary>
         /// Converts a struct instance to a series of bytes 
         /// </summary>
-        public static byte[] StructToBytes(this object self)
+        public static byte[] StructToBytes(object self)
         {
             if (self == null) return null;
             var t = self.GetType();
             var r = new byte[Marshal.SizeOf(t)];
             using (var pin = r.Pin())
-                Marshal.StructureToPtr(self, pin.Bytes.Ptr, false);
+                Marshal.StructureToPtr(self, pin.Ptr, false);
             return r;
-        }
-
-        /// <summary>
-        /// Converts many different things to bytes
-        /// </summary>
-        public static byte[] ToBytes(this object o)
-        {
-            if (o == null) return new byte[0];
-            return ToBytes(o);
-        }
+        }     
 
         // Make-ref routines 
         // http://benbowen.blog/post/fun_with_makeref/
@@ -434,23 +461,24 @@ namespace Ara3D
 
         public static long Distance(this IntPtr a, IntPtr b)
         {
-            return Math.Abs(((byte*)b) - ((byte*)a));
+            return Math.Abs(((byte*) b) - ((byte*) a));
         }
 
         public static IntPtr ToIntPtr(this TypedReference self)
         {
-            return *(IntPtr*)&self;
+            return *(IntPtr*) &self;
         }
 
         public static byte* ToBytePtr(this IntPtr self)
         {
-            return (byte*)self;
+            return (byte*) self;
         }
 
         public static byte* ToBytePtr(this TypedReference self)
         {
             return self.ToIntPtr().ToBytePtr();
         }
+        
 
         /// <summary>
         /// Given a dictionary looks up the key, or uses the function to add to the dictionary, and returns that result.  
@@ -477,7 +505,7 @@ namespace Ara3D
             var gen = method.GetILGenerator();
             gen.Emit(OpCodes.Sizeof, t);
             gen.Emit(OpCodes.Ret);
-            var func = (Func<int>)method.CreateDelegate(typeof(Func<int>));
+            var func = (Func<int>) method.CreateDelegate(typeof(Func<int>));
             return func();
         }
 
@@ -527,7 +555,7 @@ namespace Ara3D
         {
             var dest = default(TDest);
             var destRef = __makeref(dest);
-            *(IntPtr*)&destRef = self;
+            *(IntPtr*) &destRef = self;
             return __refvalue(destRef, TDest);
         }
 
@@ -555,7 +583,7 @@ namespace Ara3D
         /// Returns true if we can pin the type and copy its data using memory 
         /// https://stackoverflow.com/questions/10574645/the-fastest-way-to-check-if-a-type-is-blittable
         /// </summary>
-        public static bool IsBlittable<T>() 
+        public static bool IsBlittable<T>()
         {
             return IsBlittableCache<T>.Value;
         }
@@ -571,6 +599,7 @@ namespace Ara3D
                 var elem = type.GetElementType();
                 return elem.IsValueType && IsBlittable(elem);
             }
+
             try
             {
                 var instance = FormatterServices.GetUninitializedObject(type);
@@ -589,11 +618,11 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// USes marshalling to converts an array of structs to an array of bytes. 
+        /// Converts an array of blittable structs to an array of bytes. 
         /// </summary>
-        public static byte[] MarshalBytes<T>(this T[] self) where T : struct
+        public static byte[] ToBytes<T>(this T[] self) where T : struct
         {
-            return (self as Array).MarshalBytes();
+            return (self as Array).ToBytes();
         }
 
         /// <summary>
@@ -649,29 +678,38 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Allocate a 4MB helper buffer
+        /// Writes raw bytes to the stream by creating a memory stream around it. 
         /// </summary>
-        static byte[] HelperWriterBuffer = new byte[4 * 1024 * 1024];
+        public static void Write(this BinaryWriter self, IBytes bytes)
+        {
+            self.Write(bytes.ToBytes());
+        }
 
         /// <summary>
-        /// Writes raw bytes to the stream by createing a memory stream around it. 
+        /// Writes a struct to a stream without any size
         /// </summary>
-        public static BinaryWriter WriteBytes(this BinaryWriter self, IBytes bytes)
+        public static void Write<T>(this BinaryWriter self, T value) where T: struct
         {
-            self.Write(bytes.ByteCount);
-            //bytes.To\MemoryStream().CopyTo(self.BaseStream);
-            var buffer = bytes.CopyToBufferOrAllocate(HelperWriterBuffer);
-            self.Write(buffer, 0, bytes.ByteCount);
-            return self;
+            using (var pin = value.Pin())
+                self.Write(pin);
+        }
+
+        /// <summary>
+        /// Writes an array of structs to a stream without any count
+        /// </summary>
+        public static void Write<T>(this BinaryWriter self, T[] value) where T : struct
+        {
+            using (var pin = value.Pin())
+                self.Write(pin);
         }
 
         /// <summary>
         /// Given an array of blittable types writes the contents out as a raw array. 
         /// </summary>
-        public static BinaryWriter WriteBytes(this BinaryWriter self, Array xs)
+        public static void Write(this BinaryWriter self, Array xs)
         {
             using (var pin = xs.Pin())
-                return self.WriteBytes(pin.Bytes);
+                self.Write(pin);
         }
 
         /// <summary>
@@ -688,7 +726,7 @@ namespace Ara3D
         public static bool InstanceOfGenericInterface(this Type self, Type ifaceType)
         {
             return self.InstanceOfGenericType(ifaceType)
-                || self.GetInterfaces().Any(i => i.InstanceOfGenericType(ifaceType));
+                   || self.GetInterfaces().Any(i => i.InstanceOfGenericType(ifaceType));
         }
 
         /// <summary>
@@ -745,9 +783,9 @@ namespace Ara3D
         public static bool CanCastToDouble(this Type typeSrc)
         {
             return typeSrc.IsPrimitive
-                && typeSrc != typeof(char)
-                && typeSrc != typeof(decimal)
-                && typeSrc != typeof(bool);
+                   && typeSrc != typeof(char)
+                   && typeSrc != typeof(decimal)
+                   && typeSrc != typeof(bool);
         }
 
         public static FileStream OpenFileStreamWriting(string filePath, int bufferSize)
@@ -779,6 +817,7 @@ namespace Ara3D
                     r += tmp;
                 }
             }
+
             return r;
         }
 
@@ -788,11 +827,12 @@ namespace Ara3D
             if (buffer1 == null || buffer2 == null) return false;
             if (buffer1.Length != buffer2.Length) return false;
             for (var i = 0; i < buffer1.Length; ++i)
-                if (buffer1[i].Equals(buffer2[i])) return false;
+                if (buffer1[i].Equals(buffer2[i]))
+                    return false;
             return true;
         }
 
-        public static bool SequenceEqual<T>(T[] buffer1, T[] buffer2) where T: IEquatable<T>
+        public static bool SequenceEqual<T>(T[] buffer1, T[] buffer2) where T : IEquatable<T>
         {
             if (buffer1 == buffer2) return true;
             if (buffer1 == null || buffer2 == null) return false;
@@ -837,18 +877,21 @@ namespace Ara3D
             return true;
         }
 
-        public static bool NaiveCompareFiles(string filePath1, string filePath2) {
+        public static bool NaiveCompareFiles(string filePath1, string filePath2)
+        {
             return SequenceEqual(
                 File.ReadAllBytes(filePath1), File.ReadAllBytes(filePath2));
         }
 
-        public static byte[] FileSHA256(string filePath) {
+        public static byte[] FileSHA256(string filePath)
+        {
             return SHA256.Create().ComputeHash(File.OpenRead(filePath));
         }
 
-        public static bool HashCompareFiles(string filePath1, string filePath2) {
+        public static bool HashCompareFiles(string filePath1, string filePath2)
+        {
             return SequenceEqual(FileSHA256(filePath1), FileSHA256(filePath2));
-        }       
+        }
 
         /// <summary>
         /// Executes an action capturing the console output.
@@ -879,17 +922,15 @@ namespace Ara3D
         /// </summary>
         public static void OnShutdown(Action action)
         {
-            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) =>
-            {
-                action();
-            };
+            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => { action(); };
         }
 
         /// <summary>
         /// Closes a process if it isin't null and hasn't already exited. 
         /// </summary>
         /// <param name="process"></param>
-        public static void SafeClose(this Process process) {
+        public static void SafeClose(this Process process)
+        {
             if (process != null && !process.HasExited) process.CloseMainWindow();
         }
 
@@ -912,6 +953,90 @@ namespace Ara3D
                 return buffer;
             }
         }
+
+        /// <summary>
+        /// Outputs information about the current memory state to the passed textWriter, or standard out if null. 
+        /// </summary>
+        public static void SnapshotMemory(TextWriter tw = null)
+        {
+            var process = Process.GetCurrentProcess();
+            tw = tw ?? Console.Out;
+            if (process != null)
+            {
+                long memsize = process.PrivateMemorySize64 >> 10;
+                tw.WriteLine("Private memory: " + memsize.ToString("n"));
+                memsize = process.WorkingSet64 >> 10;
+                tw.WriteLine("Working set: " + memsize.ToString("n"));
+                memsize = process.PeakWorkingSet64 >> 10;
+                tw.WriteLine("Peak working set: " + memsize.ToString("n"));
+            }
+        }
+
+        public static string EnumName<T>(this T x) where T: Enum
+        {
+            return Enum.GetName(typeof(T), x);
+        }
+
+        public static T ToStruct<T>(this byte[] bytes) where T : struct
+        {
+            return bytes.ToStructs<T>()[0];
+        }
+
+        public static T ToStruct<T>(this Span<byte> span) where T : struct
+        {
+            return span.ToStructs<T>()[0];
+        }
+
+        public static Span<T> Cast<T>(this Span<byte> span) where T : struct
+        {
+            return MemoryMarshal.Cast<byte, T>(span);
+        }
+
+        public static Span<byte> AsBytes<T>(this Span<T> span) where T : struct
+        {
+            return MemoryMarshal.AsBytes(span);
+        }
+
+        public static Memory<T> ToMemory<T>(this T[] data) where T : struct
+        {
+            return new Memory<T>(data);
+        }
+
+        public static T[] ToStructs<T>(this Span<byte> span) where T : struct
+        {
+            return span.Cast<T>().ToArray();
+        }
+
+        public static T[] ToStructs<T>(this byte[] bytes) where T : struct
+        {
+            return bytes.AsSpan().ToStructs<T>();
+        }
+
+        public static string ToUtf8(this byte[] bytes)
+        {
+            return Encoding.UTF8.GetString(bytes);
+        }
+
+        public static string ToAscii(this byte[] bytes)
+        {
+            return Encoding.ASCII.GetString(bytes);
+        }
+
+        public static byte[] ToBytesUtf8(this string s)
+        {
+            return Encoding.UTF8.GetBytes(s);
+        }
+
+        public static byte[] ToBytesAscii(this string s)
+        {
+            return Encoding.ASCII.GetBytes(s);
+        }
+
+        public static string ToJson(this object o)
+        {
+            return JObject.FromObject(o).ToString();
+        }
     }
 }
+
 

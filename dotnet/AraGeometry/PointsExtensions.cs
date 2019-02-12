@@ -62,7 +62,7 @@ namespace Ara3D
                     indices.Add(d);
                 }
             }
-            return new QuadMesh(verts.ToIArray(), indices.ToIArray());
+            return Geometry.QuadMesh(verts.ToIArray(), indices.ToIArray());
         }
     }
 }

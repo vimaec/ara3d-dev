@@ -11,7 +11,7 @@ namespace Ara3D
             return (self.Length / 3).Select(i => new Vector3((float)self[i * 3], (float)self[i * 3 + 1], (float)self[i * 3 + 2]));
         }
 
-        public static Vector3 ToNumerics(this g3.Vector3d self)
+        public static Vector3 ToNumerics(this Vector3d self)
         {
             return new Vector3((float)self.x, (float)self.y, (float)self.z);
         }
@@ -21,17 +21,17 @@ namespace Ara3D
             self.CompactInPlace();
             var verts = self.Vertices().Select(ToNumerics).ToIArray();
             var indices = self.TrianglesBuffer.ToIArray();
-            return new TriMesh(verts, indices);
+            return Geometry.TriMesh(verts, indices);
         }
 
-        public static g3.Vector3d ToVector3D(this Vector3 self)
+        public static Vector3d ToVector3D(this Vector3 self)
         {
-            return new g3.Vector3d(self.X, self.Y, self.Z);
+            return new Vector3d(self.X, self.Y, self.Z);
         }
 
-        public static g3.Vector3d ToG3(this Vector3 self)
+        public static Vector3d ToG3(this Vector3 self)
         {
-            return new g3.Vector3d(self.X, self.Y, self.Z);
+            return new Vector3d(self.X, self.Y, self.Z);
         }
 
         public static DMesh3 ToG3(this IGeometry self)

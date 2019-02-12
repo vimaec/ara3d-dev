@@ -93,7 +93,7 @@ namespace Ara3D
 
                 var g = fg.Geometry;
                 var sb = new StringBuilder();
-                foreach (var e in g.Elements.ToEnumerable())
+                foreach (var e in g.GetFaces().ToEnumerable())
                 {
                     sb.Append("f");
                     foreach (var p in e.ToEnumerable())

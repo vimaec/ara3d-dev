@@ -30,6 +30,8 @@ namespace Ara3D
                 "Ara3D.Math.dll",
                 "Ara3D.DotNetUtilities.dll",
                 "Ara3D.G3SharpBridge.dll",
+                "vib3.dll",
+                "VimTools.exe",
                 "geometry3Sharp.dll",
                 "Newtonsoft.Json.dll",
             };
