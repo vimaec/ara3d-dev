@@ -73,8 +73,8 @@ namespace Ara3D
 
         public static IArray<Matrix4x4> ToMatrices<T>(this IArray<T> xs) =>
             xs is IArray<Matrix4x4> r
-                ? r
-                : throw new NotImplementedException();
+                ? r 
+                : throw new NotImplementedException(); // TODO: I could implement this if I really wanted. 
 
         public static IArray<DVector2> ToDVector2s<T>(this IArray<T> xs) =>
             xs is IArray<DVector2> r

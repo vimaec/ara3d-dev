@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Ara3D
@@ -120,5 +121,8 @@ namespace Ara3D
 
         public static G3D Create(Memory<byte> memory)
             => Create(new BFast(memory));
+
+        public static G3D ReadFile(string filePath)
+            => Create(File.ReadAllBytes(filePath));
     }
 }

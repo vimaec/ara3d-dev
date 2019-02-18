@@ -29,7 +29,7 @@ namespace Ara3D
     {
         public Func<int, T> Function { get; }
         public int Count { get; }
-        public T this[int n] { get { return Function(n); } }
+        public T this[int n] => Function(n);
         public FunctionalArray(int count, Func<int, T> function) { Count = count; Function = function; }
     }
 
