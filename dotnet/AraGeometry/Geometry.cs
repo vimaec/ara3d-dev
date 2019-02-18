@@ -17,6 +17,45 @@ namespace Ara3D
         IArray<int> FaceIndices { get; } 
     }
 
+    // https://www.scratchapixel.com/lessons/advanced-rendering/introduction-acceleration-structure/introduction
+    // https://stackoverflow.com/questions/99796/when-to-use-binary-space-partitioning-quadtree-octree
+    // http://gamma.cs.unc.edu/RS/paper_rt07.pdf
+    public interface IGeometryAccelerations
+    {
+        Box Box { get; }
+        object BVH { get; }
+        object Octree { get; }
+        IArray<int> VertexIndexLookup { get; }
+        object BSP { get; }
+        object AABBTree { get; }
+        object RayStrips { get; }
+    }
+
+    public interface ICommonAttributeData
+    {
+        IArray<Vector2> Uvs(int n);
+        IArray<Vector3> Uvws(int n);
+        IArray<Vector3> Vertices { get; }
+        IArray<int> Indices { get; }
+        IArray<int> FaceSizes { get; }
+        IArray<int> FaceIndices { get; }
+        IArray<Vector3> MapChannelData(int n);
+        IArray<int> MapChannelIndices(int n);
+        IArray<Vector3> FaceNormals { get; }
+        IArray<Vector3> VertexNormals { get; }
+        IArray<Vector3> VertexBinormals { get; }
+        IArray<Vector3> VertexTangents { get; }
+        IArray<int> MaterialIds { get; }
+        IArray<int> PolyGroups { get; }
+        IArray<float> PerVertex(int n);
+        IArray<Vector3> VertexColors { get; }
+        IArray<int> SmoothingGroups { get; }
+        IArray<byte> EdgeVisibility { get; }
+        IArray<float> FaceSelection { get; }
+        IArray<float> EdgeSelection { get; }
+        IArray<float> VertexSelection { get; }
+    }
+
     public struct Face : IArray<int>
     {
         public IGeometry Geometry { get; }
@@ -232,7 +271,8 @@ namespace Ara3D
             // TODO: surface area of bounding box on ground plane
             var tris = self.Triangles();
             sb.AppendLine($"Triangles {tris.Count}");
-            sb.AppendLine($"Distinct triangles {tris.ToEnumerable().Distinct().Count()}");
+            // TODO: this did not return actual distinct triangles and it is slow!!!
+            //sb.AppendLine($"Distinct triangles {tris.ToEnumerable().Distinct().Count()}");
             var smallArea = 0.00001;
             sb.AppendLine($"Triangles with small area {tris.CountWhere(tri => tri.Area < smallArea)}");
             return sb.ToString();

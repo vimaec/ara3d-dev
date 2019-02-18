@@ -62,6 +62,7 @@
     </Compile>
     <Compile Include="Geometry.cs" />
     <Compile Include="PointsExtensions.cs" />
+    <Compile Include="Primitives.cs" />
     <Compile Include="Scene.cs" />
     <Compile Include="SceneBuilder.cs" />
     <Compile Include="G3DBridge.cs" />

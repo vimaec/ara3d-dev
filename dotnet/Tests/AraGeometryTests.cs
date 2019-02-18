@@ -24,7 +24,7 @@ namespace Ara3D.Tests
         [Test]
         public static void TestReadingBigFile()
         {
-            var path = @"C:\Users\ara3d\vimaec.com\Magnopus - Documents\Input Files\VIM Files";
+            var path = @"C:\tmp\test.obj";
             foreach (var f in Directory.GetFiles(path))
             {
                 Console.WriteLine($"Reading file {f}");

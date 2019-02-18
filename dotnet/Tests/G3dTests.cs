@@ -27,7 +27,29 @@ namespace Ara3D.Tests
             {
                 var meshes = f.TimeIt();
                 if (meshes == null) Console.WriteLine("Failed to open file");
-                else Console.WriteLine($"Success, {meshes.Count} meshes found");
+                else
+                {
+                    Console.WriteLine($"Success, {meshes.Count} meshes found");
+                    foreach (var m in meshes)
+                    {
+                        var g = m.ToIGeometry();
+                        var stats = g.GetStats();
+                        Console.WriteLine(stats);
+
+                        // TODO: time it, trap exceptions, add an assertion
+                        var tmpOBJFile = Path.ChangeExtension(Path.GetTempFileName(), ".obj");
+                        g.WriteObj(tmpOBJFile);
+                        
+                        // TODO: time it, trap exceptions, add an assertion
+                        var tmpG3DFile = Path.ChangeExtension(Path.GetTempFileName(), ".g3d");
+                        g.WriteToFile(tmpG3DFile);
+
+                        // TODO: view it (or draw it or something)
+
+                        //var tmp = g.ToG3D();
+                        //var g3 = tmp.ToIGeometry();*
+                    }
+                }
             }
             catch (Exception e)
             {

@@ -68,9 +68,6 @@ namespace Ara3D
                 throw new Exception("Number of items does not divide by item size properly");
 
             Count = Bytes.ByteCount / Descriptor.ItemSize;
-
-            if (Count != bytes.ByteCount)
-                throw new Exception("Incorrect computation of number of items");
         }
 
         public IArray<int> ToInts() => Count.Select(i => ((int*)Bytes.Ptr)[i]);

@@ -81,8 +81,6 @@ namespace Ara3D
             FaceSizeAttribute = this.FindAttribute(AttributeType.attr_facesize, false);
             if (FaceSizeAttribute != null)
             {
-                if (FaceSizeAttribute.Descriptor.Association != Association.assoc_face)
-                    throw new Exception("Face size attribute is not associated with faces: " + FaceSizeAttribute.Descriptor);
                 if (FaceSizeAttribute.Descriptor.DataArity != 1)
                     throw new Exception("Expected an arity of 1");
                 if (FaceSizeAttribute.Descriptor.DataType != DataType.dt_int32)

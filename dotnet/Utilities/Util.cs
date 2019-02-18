@@ -12,6 +12,7 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.IO.MemoryMappedFiles;
 using System.Text;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Ara3D
@@ -35,7 +36,7 @@ namespace Ara3D
 
         public static string ToIdentifier(this string self)
         {
-            return string.IsNullOrEmpty(self) ? "_" : self.ReplaceNonAlphaNumeric("_");
+            return String.IsNullOrEmpty(self) ? "_" : self.ReplaceNonAlphaNumeric("_");
         }
 
         public static string ReplaceNonAlphaNumeric(this string self, string replace)
@@ -74,7 +75,7 @@ namespace Ara3D
 
         public static string ToCsvRow(this IEnumerable<string> self)
         {
-            return string.Join(",", self.Select(ToCsvField));
+            return String.Join(",", self.Select(ToCsvField));
         }
 
         public static IEnumerable<string> ToCsvRows(this DataTable self)
@@ -237,7 +238,7 @@ namespace Ara3D
 
         public static string IfEmpty(this string self, string other)
         {
-            return string.IsNullOrWhiteSpace(self) ? other : self;
+            return String.IsNullOrWhiteSpace(self) ? other : self;
         }
 
         public static string ElidedSubstring(this string self, int start, int length, int max)
@@ -1032,9 +1033,32 @@ namespace Ara3D
             return Encoding.ASCII.GetBytes(s);
         }
 
+        public static JObject ToJObject(this object o)
+            => JObject.FromObject(o);
+
         public static string ToJson(this object o)
+            => o?.ToJObject()?.ToString() ?? "null";
+
+        public static void ToJsonFile(this object o, string filePath)
         {
-            return JObject.FromObject(o).ToString();
+            using (var tw = File.CreateText(filePath))
+                new JsonSerializer { Formatting = Formatting.Indented }.Serialize(tw, o);
+        }
+
+        public static string PrettifyJson(this string s)
+        {
+            return JToken.Parse(s).ToString();
+        }
+
+        /// <summary>
+        /// Useful quick test to assure that we can create a file in the folder and write to it.
+        /// </summary>
+        /// <param name="di"></param>
+        public static void TestWrite(this DirectoryInfo di)
+        {
+            var fileName = Path.Combine(di.FullName, "_deleteme_.tmp");
+            File.WriteAllText(fileName, "test");
+            File.Delete(fileName);
         }
     }
 }

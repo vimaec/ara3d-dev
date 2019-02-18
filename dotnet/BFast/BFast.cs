@@ -103,7 +103,7 @@ namespace Ara3D
             if (Header.NumArrays < 0)
                 throw new Exception($"Number of arrays {Header.NumArrays} is not a positive number");
 
-            if (Header.RangesEnd < Header.DataStart)
+            if (Header.RangesEnd > Header.DataStart)
                 throw new Exception($"Computed arrays ranges end must be less than the start of data {Header.DataStart}");
         }
 
@@ -171,6 +171,9 @@ namespace Ara3D
             _header.NumArrays = buffers.Count;
             _header.DataStart = ComputeNextAlignment(Header.RangesEnd);
             // DataEnd is computed after iterating over all buffers
+
+            // Allocate the data for the ranges
+            _ranges = new Range[_header.NumArrays];
 
             // Compute the offsets for the data buffers
             var curIndex = Header.DataStart;

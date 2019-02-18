@@ -30,9 +30,10 @@
     {
         assoc_vertex,
         assoc_face,
-        assoc_corner,
+        assoc_corner, 
         assoc_edge,
         assoc_object,
+        assoc_instance, 
         assoc_none,
         assoc_invalid,
     };
@@ -41,7 +42,6 @@
     public enum AttributeType
     {
         attr_unknown,
-        attr_user,
         attr_vertex,
         attr_index,
         attr_faceindex,
