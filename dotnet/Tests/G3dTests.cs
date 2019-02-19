@@ -5,12 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using g3;
 
 namespace Ara3D.Tests
 {
     // TODO: look at other file readers
     // * https://github.com/stefangordon/ObjParser
     // * https://github.com/chrisjansson/ObjLoader/tree/master/source/CjClutter.ObjLoader.Loader
+    // * C:\dev\sdks\helix-toolkit-develop\Source\HelixToolkit.Wpf\Importers\ModelImporter.cs
     [TestFixture]
     public static class G3dTests
     {
@@ -55,6 +57,43 @@ namespace Ara3D.Tests
             {
                 Console.WriteLine(e.Message);
             }
+        }
+
+        public static void CompareMeshes(DMesh3 m, IGeometry g, double tolerance = 0.00001)
+        {
+            Assert.AreEqual(3, g.PointsPerFace);
+            Assert.AreEqual(m.VertexCount, g.Vertices.Count);
+            Assert.AreEqual(m.TriangleCount, g.Indices.Count);
+            var i = 0;
+            foreach (var tri in m.Triangles())
+            {
+                Assert.AreEqual(tri.a, g.Indices[i++]);
+                Assert.AreEqual(tri.b, g.Indices[i++]);
+                Assert.AreEqual(tri.c, g.Indices[i++]);
+            }
+
+            i = 0;
+            foreach (var v in m.Vertices())
+            {
+                var v2 = g.Vertices[i++];
+                Assert.AreEqual(v.x, v2.X, tolerance);
+                Assert.AreEqual(v.y, v2.Y, tolerance);
+                Assert.AreEqual(v.z, v2.Z, tolerance);
+            }
+        }
+
+        [Test, Explicit]
+        public static void TestObjReaderAndWriter()
+        {
+            var baseFolder = @"..\..\..\..\testdata";
+            if (!Directory.Exists(baseFolder))
+                throw new Exception("Could not find input folder for test data");
+            var path = @"C:\dev\assets\obj\angel.obj";
+            var meshes = G3SharpIO.ReadGeometry(path);
+            var mesh = meshes[0];
+            CompareMeshes(mesh, mesh.ToIGeometry());
+
+            // TODO: try writing the damn thing out, and reading it 
         }
 
         [Test, Explicit]

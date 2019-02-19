@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.Revit.DevPlugin", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.UnityBridge", "dotnet\UnityBridge\Ara3D.UnityBridge.csproj", "{1DB0B1DC-9823-4F64-8208-5D097FC93A5D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.WPFBridge", "dotnet\WPFBridge\Ara3D.WPFBridge.csproj", "{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (DLL)|Any CPU = Debug (DLL)|Any CPU
@@ -415,6 +417,30 @@ Global
 		{1DB0B1DC-9823-4F64-8208-5D097FC93A5D}.Release|x64.Build.0 = Release|Any CPU
 		{1DB0B1DC-9823-4F64-8208-5D097FC93A5D}.Release|x86.ActiveCfg = Release|Any CPU
 		{1DB0B1DC-9823-4F64-8208-5D097FC93A5D}.Release|x86.Build.0 = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug (DLL)|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug (DLL)|Any CPU.Build.0 = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug (DLL)|x64.ActiveCfg = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug (DLL)|x64.Build.0 = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug (DLL)|x86.ActiveCfg = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug (DLL)|x86.Build.0 = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug|x64.Build.0 = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Debug|x86.Build.0 = Debug|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release (DLL)|Any CPU.ActiveCfg = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release (DLL)|Any CPU.Build.0 = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release (DLL)|x64.ActiveCfg = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release (DLL)|x64.Build.0 = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release (DLL)|x86.ActiveCfg = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release (DLL)|x86.Build.0 = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release|x64.ActiveCfg = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release|x64.Build.0 = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release|x86.ActiveCfg = Release|Any CPU
+		{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

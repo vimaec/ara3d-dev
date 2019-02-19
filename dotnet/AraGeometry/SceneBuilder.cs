@@ -2,37 +2,38 @@
 using System.Numerics;
 
 namespace Ara3D
-{
-    public class SceneBuilder
+{    
+    public class SceneBuilder : IScene
     {
+        public SceneNode AddNode(string name, SceneNode parent, Matrix4x4 localTransform, int materialId, IGeometry g = null)
+        {
+            var sn = new SceneNode
+            {
+                Name = name,
+                Id = NodeList.Count,
+                GeometryId = g == null ? -1 : GeometrySet.Add(g),
+                ParentId = parent?.Id ?? -1,
+                Transform = parent != null ? parent.Transform * localTransform : localTransform,
+                MaterialId = materialId,
+            };
+            NodeList.Add(sn);
+            return sn;
+        }
+
+        public IndexedSet<IGeometry> GeometrySet;
+        public List<ISceneObject> NodeList;
+
+        public IArray<IGeometry> Geometries => GeometrySet.Keys.ToIArray();
+        public IArray<ISceneObject> Objects => NodeList.ToIArray();
     }
 
-    public class Scene
+    public class SceneNode : ISceneObject
     {
-        public readonly IArray<SceneNode> Nodes;
-        public readonly IArray<GeometryNode> Geometries;
-        public readonly IArray<PropertySet> PropertySets;
-    }
-
-    public class SceneNode
-    {
-        public readonly int Id;
-        public readonly int ParentId;
-        public readonly Matrix4x4 GlobalTransform;
-        public readonly int GeometryId;
-        public readonly int MaterialId;
-        public readonly int PropertySetId;
-    }
-
-    public class PropertySet
-    {
-        public readonly IDictionary<string, string> Dictionary = new Dictionary<string, string>();
-    }
-
-    public class GeometryNode 
-    {
-        public readonly int Id;
-        public readonly IGeometry Geometry;
-        public Box BoundingBox { get; }
+        public string Name { get; set; }
+        public int Id { get; set; }
+        public int ParentId { get; set; }
+        public Matrix4x4 Transform { get; set; }
+        public int GeometryId { get; set; }
+        public int MaterialId { get; set; }
     }
 }
