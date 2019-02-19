@@ -77,6 +77,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BFast\Ara3D.BFast.csproj">
+      <Project>{4ce35b4d-4fa8-491e-b195-77520c1e8683}</Project>
+      <Name>Ara3D.BFast</Name>
+    </ProjectReference>
     <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
       <Project>{4007804A-598F-495F-84F3-F2CF3136797D}</Project>
       <Name>Ara3D.G3D</Name>

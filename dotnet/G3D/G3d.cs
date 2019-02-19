@@ -124,5 +124,11 @@ namespace Ara3D
 
         public static G3D ReadFile(string filePath)
             => Create(File.ReadAllBytes(filePath));
+
+        public static G3D Create(IEnumerable<IAttribute> attributes)
+            => new G3D(attributes);
+
+        public static G3D Create(params IAttribute[] attributes)
+            => new G3D(attributes);
     }
 }

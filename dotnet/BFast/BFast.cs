@@ -28,7 +28,7 @@ namespace Ara3D
         IBytes GetBuffer(int n);
     }
 
-    public static class Constants
+    public static class BFastConstants
     {
         public const ushort Magic = 0xBFA5;
         public const ushort SameEndian = Magic;
@@ -74,7 +74,7 @@ namespace Ara3D
         /// <summary>
         /// Returns true if the producer of the BFast file has the same endianness as the current library
         /// </summary>
-        public bool SameEndian => Magic == Constants.SameEndian;
+        public bool SameEndian => Magic == BFastConstants.SameEndian;
     };
 
     /// <summary>
@@ -91,7 +91,7 @@ namespace Ara3D
         public void ValidateHeader()
         {
             // Check each value in the header
-            if (Header.Magic != Constants.SameEndian && Header.Magic != Constants.SwappedEndian)
+            if (Header.Magic != BFastConstants.SameEndian && Header.Magic != BFastConstants.SwappedEndian)
                 throw new Exception($"Invalid magic number {Header.Magic}");
 
             if (Header.DataStart < FileHeader.Size)
@@ -167,7 +167,7 @@ namespace Ara3D
             Buffers = buffers;
 
             // Construct the header
-            _header.Magic = Constants.Magic;
+            _header.Magic = BFastConstants.Magic;
             _header.NumArrays = buffers.Count;
             _header.DataStart = ComputeNextAlignment(Header.RangesEnd);
             // DataEnd is computed after iterating over all buffers

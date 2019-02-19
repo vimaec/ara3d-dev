@@ -13,7 +13,7 @@ namespace Ara3D
         public int _data_type;              // the type of individual values (e.g. int32, float64)
         public int _pad0, _pad1, _pad2;     // ignored, used to bring the alignment up to a power of two.
 
-        public int ItemSize => DataTypeSize(_data_type);
+        public int ItemSize => DataTypeSize(_data_type) * _data_arity;
 
         public Association Association => (Association) _association;
         public AttributeType AttributeType => (AttributeType)_attribute_type;
