@@ -179,6 +179,7 @@ namespace Ara3D
             if (g3D is G3D g)
                 return g.Buffer;
             var buffers = new List<IBytes>();
+            buffers.Add(G3D.DefaultHeader.ToBytesAscii().Pin());
             var descriptors = g3D.Descriptors().ToArray().Pin();
             buffers.Add(descriptors);
             foreach (var attr in g3D.Attributes)
