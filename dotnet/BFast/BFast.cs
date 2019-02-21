@@ -148,13 +148,18 @@ namespace Ara3D
             : this(new Memory<byte>(data))
         { }
 
-        public const int Alignment = 64;
+        public const int Alignment = 32;
 
         public static long ComputeNextAlignment(long n)
         {
             if (IsAligned(n))
                 return n;
             return n + Alignment - (n % Alignment);
+        }
+
+        public static long ComputePadding(long n)
+        {
+            return ComputeNextAlignment(n) - n;
         }
 
         public static bool IsAligned(long n)
@@ -216,7 +221,7 @@ namespace Ara3D
             ValidateRanges();
 
             // Get the buffers
-            Buffers = _ranges.Select(r => memory.ToIBytes((int)r.Begin, (int)r.End)).ToList();
+            Buffers = _ranges.Select(r => memory.ToIBytes((int)r.Begin, (int)r.Count)).ToList();
         }
 
         public IBytes GetBuffer(int n)
@@ -236,15 +241,27 @@ namespace Ara3D
                 yield return bf.GetBuffer(i);
         }
 
+        public static void WritePadding(BinaryWriter bw)
+        {
+            var padding = BFast.ComputePadding(bw.BaseStream.Position);
+            for (var i = 0; i < padding; ++i)
+                bw.Write((byte) 0);
+        }
+
         public static void WriteToFile(this IBFast bf, string path)
         {
             using (var f = File.OpenWrite(path))
             using (var bw = new BinaryWriter(f))
             {
                 bw.Write(bf.Header);
+                WritePadding(bw);
                 bw.Write(bf.Ranges);
+                WritePadding(bw);
                 foreach (var b in bf.GetBuffers())
+                {
                     bw.Write(b);
+                    WritePadding(bw);
+                }
             }
         }
 
