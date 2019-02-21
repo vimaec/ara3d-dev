@@ -89,9 +89,9 @@ namespace Ara3D
             return bytes.CopyTo(new byte[bytes.ByteCount]);
         }
 
-        public static unsafe Span<T> ToSpan<T>(this IBytes span)
+        public static unsafe Span<T> ToSpan<T>(this IBytes span) where T: struct
         {
-            return new Span<T>((void*)span.Ptr, span.ByteCount);
+            return new Span<T>((void*)span.Ptr, span.ByteCount/ typeof(T).SizeOf());
         }
 
         public static T[] ToStructs<T>(this IBytes bytes) where T : struct

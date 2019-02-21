@@ -107,9 +107,10 @@ namespace Ara3D.Tests
             var b = g.ToBFast();
             var g2 = b.ToG3D();
             CheckTestTetrahedron(g2.ToIGeometry());
-
-            // TODO: test reading and writing to a file. 
-
+            var tmpPath = Path.GetTempFileName();
+            g.WriteToFile(tmpPath);
+            var g3 = G3DExtensions.ReadFromFile(tmpPath);
+            CheckTestTetrahedron(g3.ToIGeometry());
 
             // TODO: IGeometry comparison tools 
         }

@@ -73,6 +73,8 @@ namespace Ara3D.Tests
             Assert.AreEqual(16, typeof(Vector4).SizeOf());
             Assert.AreEqual(16, typeof(Quaternion).SizeOf());
 
+            Assert.AreEqual(FileHeader.Size, typeof(FileHeader).SizeOf());
+
             Assert.AreEqual(64, typeof(Matrix4x4).SizeOf());
         }
 
