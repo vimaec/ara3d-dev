@@ -1,11 +1,13 @@
 ﻿using g3;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 
 namespace Ara3D
 {
-    public static class G3Helpers
+    public static class G3Sharp
     {
         // https://github.com/gradientspace/geometry3Sharp/issues/3
         public static DMesh3 Compact(this DMesh3 mesh)
@@ -71,6 +73,68 @@ namespace Ara3D
 
             var dist = MeshQueries.TriangleDistance(tree.Mesh, tid, point);
             return dist.TriangleClosest;
+        }
+        public static List<DMesh3> LoadGeometry(string path)
+        {
+            var builder = new DMesh3Builder();
+            var reader = new StandardMeshReader { MeshBuilder = builder };
+            var result = reader.Read(path, ReadOptions.Defaults);
+            if (result.code == IOCode.Ok)
+                return builder.Meshes;
+            return null;
+        }
+
+        public static bool WriteGeometry(string path, DMesh3 mesh)
+        {
+            var writer = new StandardMeshWriter();
+            var m = new WriteMesh(mesh);
+            var opts = new WriteOptions();
+            // NOTE: Some fun options to play with in opts
+            var result = writer.Write(path, new List<WriteMesh> { m }, opts);
+            return result.Equals(IOWriteResult.Ok);
+        }
+        public static IArray<Vector3> ToVectors(this DVector<double> self)
+        {
+            return (self.Length / 3).Select(i => new Vector3((float)self[i * 3], (float)self[i * 3 + 1], (float)self[i * 3 + 2]));
+        }
+
+        public static Vector3 ToNumerics(this Vector3d self)
+        {
+            return new Vector3((float)self.x, (float)self.y, (float)self.z);
+        }
+
+        public static IGeometry ToIGeometry(this DMesh3 self)
+        {
+            self.CompactInPlace();
+            var verts = self.Vertices().Select(ToNumerics).ToIArray();
+            var indices = self.TrianglesBuffer.ToIArray();
+            return Geometry.TriMesh(verts, indices);
+        }
+
+        public static Vector3d ToVector3D(this Vector3 self)
+        {
+            return new Vector3d(self.X, self.Y, self.Z);
+        }
+
+        public static Vector3d ToG3Sharp(this Vector3 self)
+        {
+            return new Vector3d(self.X, self.Y, self.Z);
+        }
+
+        public static DMesh3 ToG3Sharp(this IGeometry self)
+        {
+            var r = new DMesh3();
+            foreach (var v in self.Vertices.ToEnumerable())
+                r.AppendVertex(v.ToVector3D());
+            var indices = self.ToTriMesh().Indices;
+            for (var i = 0; i < indices.Count; i += 3)
+                r.AppendTriangle(i, i + 1, i + 2);
+            return r;
+        }
+
+        public static IGeometry Reduce(this IGeometry self, float percent)
+        {
+            return self.ToG3Sharp().Reduce(percent).ToIGeometry();
         }
     }
 }

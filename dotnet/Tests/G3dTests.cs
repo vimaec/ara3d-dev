@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using g3;
+using WPFBridge;
 
 namespace Ara3D.Tests
 {
@@ -18,11 +19,31 @@ namespace Ara3D.Tests
     public static class G3dTests
     {
         // TODO: make this an environment variable
-        public static string BaseAssetFolder = @"c:\dev\assets";
+        public static string TestInputFolder = @"C:\dev\repos\_test_input";
+        public static string TestOutputFolder = @"C:\dev\repos\_test_ouput";
 
-        public static IEnumerable<string> GetAssetFiles(string ext)
+        public static IEnumerable<string> GetInputFiles(string ext)
         {
-            return Directory.GetFiles(BaseAssetFolder, ext, SearchOption.AllDirectories).OrderBy(a => a);
+            return Directory.GetFiles(TestInputFolder, ext, SearchOption.AllDirectories).OrderBy(a => a);
+        }
+
+        public static void OutputDMeshStats(DMesh3 m)
+        {
+            Console.WriteLine($"Vertex count {m.VertexCount}");
+            Console.WriteLine($"Triangle count {m.TriangleCount}");
+            Console.WriteLine($"Edge count {m.EdgeCount}");
+            Console.WriteLine($"Max Vertex ID {m.MaxVertexID}");
+            Console.WriteLine($"Max Triangle ID {m.MaxTriangleID}");
+            Console.WriteLine($"Max Edge ID {m.MaxEdgeID}");
+            Console.WriteLine($"Max Group ID {m.MaxGroupID}");
+        }
+
+        public static void OutputIGeometryStats(IGeometry g)
+        {
+            var stats = g.GetStats();
+            Console.WriteLine(stats);
+            Assert.IsTrue(g.AreAllIndicesValid());
+            // Attributes present? 
         }
 
         public static void G3SharpReaderTest(Func<List<g3.DMesh3>> f) {
@@ -35,6 +56,8 @@ namespace Ara3D.Tests
                     Console.WriteLine($"Success, {meshes.Count} meshes found");
                     foreach (var m in meshes)
                     {
+                        OutputDMeshStats(m);
+
                         var g = m.ToIGeometry();
                         var stats = g.GetStats();
                         Console.WriteLine(stats);
@@ -111,8 +134,6 @@ namespace Ara3D.Tests
             g.WriteToFile(tmpPath);
             var g3 = G3DExtensions.ReadFromFile(tmpPath);
             CheckTestTetrahedron(g3.ToIGeometry());
-
-            // TODO: IGeometry comparison tools 
         }
 
         public static void CompareMeshes(DMesh3 m, IGeometry g, double tolerance = 0.00001)
@@ -139,19 +160,58 @@ namespace Ara3D.Tests
             }
         }
 
+        public static void WriteFileStats(string file)
+        {
+            var fi = new FileInfo(file);
+            Console.WriteLine($"File name: {file}");
+            Console.WriteLine($"Extension: {Path.GetExtension(file).ToLowerInvariant()}");
+            Console.WriteLine($"File size: {fi.Length}");
+            Console.WriteLine($"File last modified: {File.GetLastWriteTime(file)}");
+            Console.WriteLine($"File last accessed: {File.GetLastAccessTime(file)}");
+            Console.WriteLine($"File created: {File.GetCreationTime(file)}");
+        }
+
+        public static void TestGeometry(IGeometry g)
+        {
+            // Try writing to an OBJ: using DMesh, using Helix, using my OBJ writer 
+            // Try writing to a G3D
+            // Time the different writing 
+            // Try conversions back from the different forms. and the reading. 
+            // 
+            OutputIGeometryStats(g);
+
+            var tmpOBJFile = Path.ChangeExtension(Path.GetTempFileName(), ".obj");
+            Util.TimeIt(() => g.WriteObj(tmpOBJFile), $"Writing to {tmpOBJFile}");
+
+            // TODO: time it, trap exceptions, add an assertion
+            var tmpG3DFile = Path.ChangeExtension(Path.GetTempFileName(), ".g3d");
+            Util.TimeIt(() => g.WriteToFile(tmpG3DFile), $"Writing to {tmpG3DFile}");
+        }
+
         [Test, Explicit]
         public static void TestObjReaderAndWriter()
         {
-            var baseFolder = @"C:\dev\repos\_testdata";
-            if (!Directory.Exists(baseFolder))
-                throw new Exception("Could not find input folder for test data");
-            var path = Path.Combine(baseFolder, "angel.obj");
-            var meshes = G3SharpIO.ReadGeometry(path);
-            Assert.AreEqual(1, meshes.Count);
-            var mesh = meshes[0];
-            CompareMeshes(mesh, mesh.ToIGeometry());
+            foreach (var f in GetInputFiles("*.obj"))
+            {
+                WriteFileStats(f);
 
-            // TODO: try writing the damn thing out, and reading it 
+                var helixObjModel3DGroup = Util.TimeIt(
+                    () => Helix.LoadFileModel3DGroup(f), "Loading OBJ with Helix");
+
+                var gFromHelix = helixObjModel3DGroup.ToIGeometry();
+                TestGeometry(gFromHelix);
+
+                var g3SharpObjList = Util.TimeIt(
+                    () => G3Sharp.LoadGeometry(f), $"Loading OBJ with G3D sharp");
+
+                var gFromG3SharpObjList = g3SharpObjList.Select(G3Sharp.ToIGeometry).Merge();
+                TestGeometry(gFromG3SharpObjList);
+
+                // How long does it take to write an obj using Helix bridge
+                // How long does it take to write an obj using DMesh 
+                // Are there invalid indices? 
+                // What attributes are present? 
+            }
         }
 
         [Test, Explicit]
@@ -160,24 +220,24 @@ namespace Ara3D.Tests
             Console.WriteLine("Testing G3 Sharp ");
 
             Console.WriteLine("Testing G3Sharp OBJ reader");           
-            foreach (var f in GetAssetFiles("*.obj"))
+            foreach (var f in GetInputFiles("*.obj"))
             {
                 Console.WriteLine($"Opening: {f}");
-                G3SharpReaderTest(() => G3SharpIO.ReadGeometry(f));
+                G3SharpReaderTest(() => G3Sharp.LoadGeometry(f));
             }
 
             Console.WriteLine("Testing G3Sharp OFF reader");
-            foreach (var f in GetAssetFiles("*.off"))
+            foreach (var f in GetInputFiles("*.off"))
             {
                 Console.WriteLine($"Opening: {f}");
-                G3SharpReaderTest(() => G3SharpIO.ReadGeometry(f));
+                G3SharpReaderTest(() => G3Sharp.LoadGeometry(f));
             }
 
             Console.WriteLine("Testing G3Sharp STL reader");
-            foreach (var f in GetAssetFiles("*.stl"))
+            foreach (var f in GetInputFiles("*.stl"))
             {
                 Console.WriteLine($"Opening: {f}");
-                G3SharpReaderTest(() => G3SharpIO.ReadGeometry(f));
+                G3SharpReaderTest(() => G3Sharp.LoadGeometry(f));
             }
         }
     }

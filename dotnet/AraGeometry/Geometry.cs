@@ -301,21 +301,24 @@ namespace Ara3D
             return TriMesh(self.Vertices, indices.ToIArray());
         }
 
+        public static IGeometry Merge(this IEnumerable<IGeometry> geometries)
+        {
+            return geometries.ToIArray().Merge();
+        }
+
         public static IGeometry Merge(this IArray<IGeometry> geometries)
         {
-            throw new Exception("Not implemented");
-            /*
-            var verts = new Vector3[geometries.Sum(g => g.Vertices.Count)];
-            var faces = new List<IArray<int>>();
+            var triMeshes = geometries.Select(g => g.ToTriMesh());
+            var verts = new Vector3[triMeshes.Sum(g => g.Vertices.Count)];
+            var indices = new List<int>();
             var offset = 0;
-            foreach (var g in geometries.ToEnumerable())
+            foreach (var g in triMeshes.ToEnumerable())
             {
                 g.Vertices.CopyTo(verts, offset);
-                g.GetFaces().Select(e => e.Add(offset)).AddTo(faces);
+                g.Indices.Add(offset).AddTo(indices);
                 offset += g.Vertices.Count;
             }
-            return PolyMesh(verts.ToIArray(), faces.ToIArray());
-            */
+            return TriMesh(verts.ToIArray(), indices.ToIArray());
         }
 
         public static bool AreAllIndicesValid(this IGeometry self)

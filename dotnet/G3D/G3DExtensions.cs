@@ -205,14 +205,17 @@ namespace Ara3D
         public static BFast ToBFast(this IEnumerable<IAttribute> attributes)
             => attributes.ToG3D().ToBFast();
 
+        public static bool IsSameAttribute(this AttributeDescriptor desc, AttributeDescriptor other)
+            => desc.AttributeType == other.AttributeType && desc.Association == other.Association && desc.AttributeTypeIndex == other.AttributeTypeIndex;
+
+        public static bool IsSameAttribute(this IAttribute attribute, IAttribute other)
+            => attribute.Descriptor.IsSameAttribute(other.Descriptor);
+
         public static IEnumerable<IAttribute> AttributesExcept(this IG3D g3d, AttributeDescriptor desc)
             => g3d.Attributes.Where(attr => !attr.Descriptor.Equals(desc));
 
-        public static IG3D RemoveAttribute(this IG3D g3d, AttributeDescriptor desc)
-            => g3d.AttributesExcept(desc).ToG3D();
-
-        public static IG3D ReplaceAttribute(this IG3D g3d, IAttribute attribute)
-            => g3d.RemoveAttribute(attribute.Descriptor).AddAttributes(attribute);
+        public static IG3D ReplaceAttribute(this IG3D g3d, IAttribute attr)
+            => g3d.AttributesExcept(attr.Descriptor).Concat(new[] {attr}).ToG3D();
 
         public static IG3D AddAttributes(this IG3D g3d, params IAttribute[] attributes)
             => g3d.Attributes.Concat(attributes).ToG3D();

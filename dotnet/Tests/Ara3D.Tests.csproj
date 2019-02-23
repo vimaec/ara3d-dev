@@ -77,10 +77,7 @@
     <Compile Include="Math3DTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tester.cs" />
-    <Compile Include="ViewerTestModel.cs" />
-    <Compile Include="ViewerTestWindow.xaml.cs">
-      <DependentUpon>ViewerTestWindow.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="WpfTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.1">
@@ -126,6 +123,10 @@
       <Project>{82182a4d-2acc-4f5f-b490-aee4308d3719}</Project>
       <Name>Ara3D.G3SharpBridge</Name>
     </ProjectReference>
+    <ProjectReference Include="..\HelixBridge\Ara3D.HelixBridge.csproj">
+      <Project>{91BAFDF7-5A40-4FE2-BEF3-4397EC6022B0}</Project>
+      <Name>Ara3D.HelixBridge</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
       <Name>Ara3D.LinqArray</Name>
@@ -141,6 +142,10 @@
     <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
       <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
       <Name>Ara3D.DotNetUtilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WPFBridge\Ara3D.WPFBridge.csproj">
+      <Project>{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}</Project>
+      <Name>Ara3D.WPFBridge</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -159,12 +164,6 @@
     <PackageReference Include="NUnit3TestAdapter">
       <Version>3.12.0</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="ViewerTestWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
