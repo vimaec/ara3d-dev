@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -57,7 +54,7 @@ namespace Ara3D
             => view.SaveBitmap(fileName, background, overSamplingMultiplier, BitmapExporter.OutputFormat.Jpg);
 
         public static void RenderToBmp(Viewport3D view, string fileName, Brush background = null, int overSamplingMultiplier = 1)
-            => view.SaveBitmap(fileName, background, 1, BitmapExporter.OutputFormat.Bmp);        
+            => view.SaveBitmap(fileName, background, overSamplingMultiplier, BitmapExporter.OutputFormat.Bmp);        
 
         public static string[] ValidExportExtensions = {".obj", ".stl", ".dae", ".xaml", ".xml", ".x3d", ".jpg", ".png" };
 

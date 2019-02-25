@@ -1,8 +1,5 @@
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Printing;
-using System.Runtime.InteropServices;
 using System.ComponentModel;
 
 namespace ScintillaPrinting

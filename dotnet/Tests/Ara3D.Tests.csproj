@@ -70,9 +70,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AraGeometryTests.cs" />
+    <Compile Include="TestGeometries.cs" />
     <Compile Include="UnmanagedDataTests.cs" />
     <Compile Include="EditorTests.cs" />
-    <Compile Include="G3dTests.cs" />
+    <Compile Include="IOTests.cs" />
     <Compile Include="LinqArrayTests.cs" />
     <Compile Include="Math3DTests.cs" />
     <Compile Include="Program.cs" />

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Numerics;
 using System.Text;
 
@@ -17,6 +16,7 @@ namespace Ara3D
         IArray<int> FaceIndices { get; } 
     }
 
+    /*
     // https://www.scratchapixel.com/lessons/advanced-rendering/introduction-acceleration-structure/introduction
     // https://stackoverflow.com/questions/99796/when-to-use-binary-space-partitioning-quadtree-octree
     // http://gamma.cs.unc.edu/RS/paper_rt07.pdf
@@ -55,6 +55,7 @@ namespace Ara3D
         IArray<float> EdgeSelection { get; }
         IArray<float> VertexSelection { get; }
     }
+    */
 
     public struct Face : IArray<int>
     {
@@ -150,7 +151,7 @@ namespace Ara3D
             if (self.Count < 3) return Triangle.Zero.Repeat(0);
             var pts = self.Points();
             if (self.Count == 3) return new Triangle(pts[0], pts[1], pts[2]).Repeat(1);
-            return (self.Count - 2).Select(i => new Triangle(pts[0], pts[i], pts[i + 1]));
+            return (self.Count - 2).Select(i => new Triangle(pts[0], pts[i + 1], pts[i + 2]));
         }
 
         // https://en.wikipedia.org/wiki/Coplanarity
@@ -247,21 +248,31 @@ namespace Ara3D
             => self.Deform(v => v.Transform(m));
         
         public static IGeometry Translate(this IGeometry self, Vector3 offset)
-            => self.Deform(v => v + offset);        
+            => self.Deform(v => v + offset);
+
+        public static IGeometry Scale(this IGeometry self, float amount)
+            => self.Deform(v => v * amount);
 
         public static Box BoundingBox(this IArray<Vector3> vertices)
             => Box.Create(vertices.ToEnumerable());        
 
         public static Box BoundingBox(this IGeometry self)
-            => self.Vertices.BoundingBox();        
+            => self.Vertices.BoundingBox();
 
+        public static bool IsPolyMesh(this IGeometry self)
+            => !self.HasFixedFaceSize();
+        
         public static string GetStats(this IGeometry self)
         {
             var sb = new StringBuilder();
+            sb.AppendLine($"Points per face {self.PointsPerFace}");
+            sb.AppendLine($"Is PolyMesh {self.IsPolyMesh()}");
             sb.AppendLine($"Number of vertices {self.Vertices.Count}");
+            sb.AppendLine($"Number of used vertices {self.UsedVertices().Count}");
             sb.AppendLine($"Number of indices {self.Indices.Count}");
-            sb.AppendLine($"Number of elements {self.GetFaces().Count}");
+            sb.AppendLine($"Number of faces  {self.GetFaces().Count}");
             sb.AppendLine($"Bounding box {self.BoundingBox()}");
+            sb.AppendLine($"Averge vertex {self.Vertices.Average()}");
             // TODO: distance from ground plane (box extent)
             // TODO: closest distance to origin (from box extent)
             // TODO: standard deviation 
@@ -269,6 +280,8 @@ namespace Ara3D
             // TODO: number of distinct vertices 
             // TODO: volume of bounding box
             // TODO: surface area of bounding box on ground plane
+            // TODO: average vertex 
+            // TODO: average normal and average UV 
             var tris = self.Triangles();
             sb.AppendLine($"Triangles {tris.Count}");
             // TODO: this did not return actual distinct triangles and it is slow!!!
@@ -277,6 +290,9 @@ namespace Ara3D
             sb.AppendLine($"Triangles with small area {tris.CountWhere(tri => tri.Area < smallArea)}");
             return sb.ToString();
         }
+
+        public static double Area(this IGeometry g)
+            => g.Triangles().Sum(t => t.Area);
 
         public static IArray<Triangle> Triangles(this IGeometry self)
             => self.GetFaces().SelectMany(e => e.Triangles());       
@@ -301,10 +317,8 @@ namespace Ara3D
             return TriMesh(self.Vertices, indices.ToIArray());
         }
 
-        public static IGeometry Merge(this IEnumerable<IGeometry> geometries)
-        {
-            return geometries.ToIArray().Merge();
-        }
+        public static IGeometry Merge(this IEnumerable<IGeometry> geometries) 
+            => geometries.ToIArray().Merge();
 
         public static IGeometry Merge(this IArray<IGeometry> geometries)
         {
@@ -375,5 +389,24 @@ namespace Ara3D
 
         public static IArray<Face> GetFaces(this IGeometry g) 
             => g.NumFaces.Select(i => new Face(g, i));
+
+        public static IGeometry Merge(this IGeometry g, params IGeometry[] others)
+        {
+            var gs = others.ToList();
+            gs.Insert(0, g);
+            return gs.Merge();
+        }
+
+        public static IEnumerable<IAttribute> SortedAttributes(this IGeometry g)
+            => g.Attributes.OrderBy(attr => attr.Descriptor.ToString());
+
+        public static IGeometry ToIGeometry(this IEnumerable<IAttribute> attributes)
+            => attributes.ToG3D().ToIGeometry();
+
+        public static IGeometry ToIGeometry(this IG3D g)
+            => new G3DAdapter(g);
+
+        public static IG3D ToG3D(this IGeometry g)
+            => g.Attributes.ToG3D();
     }
 }

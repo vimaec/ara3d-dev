@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using System.Drawing.Printing;
 using ScintillaNET;
 
 namespace ScintillaPrinting

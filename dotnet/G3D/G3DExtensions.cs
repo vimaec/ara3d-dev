@@ -187,7 +187,7 @@ namespace Ara3D
             return new BFast(buffers);
         }
              
-        public static void WriteToFile(this IG3D g3D, string filePath) 
+        public static void WriteG3D(this IG3D g3D, string filePath) 
             => g3D.ToBFast().WriteToFile(filePath);
 
         public static IG3D ToG3D(this IEnumerable<IAttribute> attributes)
@@ -223,6 +223,12 @@ namespace Ara3D
         public static IEnumerable<IAttribute> Attributes(this IG3D g3d, Association assoc)
             => g3d.Attributes.Where(attr => attr.Descriptor.Association == assoc);
 
+        public static IEnumerable<IAttribute> Attributes(this IG3D g3d, AttributeType attrType)
+            => g3d.Attributes.Where(attr => attr.Descriptor.AttributeType == attrType);
+
+        public static IEnumerable<IAttribute> Attributes(this IG3D g3d, Association assoc, AttributeType attrType)
+            => g3d.Attributes.Where(attr => attr.Descriptor.Association == assoc && attr.Descriptor.AttributeType == attrType);
+
         public static IEnumerable<IAttribute> VertexAttributes(this IG3D g3d)
             => g3d.Attributes(Association.assoc_vertex);
 
@@ -240,6 +246,12 @@ namespace Ara3D
 
         public static IEnumerable<IAttribute> NoneAttributes(this IG3D g3d)
             => g3d.Attributes(Association.assoc_none);
+
+        public static IEnumerable<IAttribute> UVAttributes(this IG3D g3D)
+            => g3D.Attributes(AttributeType.attr_uv);
+
+        public static IEnumerable<IAttribute> NormalAttributes(this IG3D g3D)
+            => g3D.Attributes(AttributeType.attr_normal);
 
         public static IAttribute Remap(this IAttribute attr, IArray<int> indices)
         {
@@ -261,6 +273,236 @@ namespace Ara3D
             }
 
             throw new Exception("Not a recognized data type");
+        }
+
+        public static IArray<int> CornerVertexIndices(this IG3D g3d)
+            => g3d.IndexAttribute == null
+                ? g3d.VertexCount().Range()
+                : g3d.IndexAttribute.ToInts();
+
+        public static bool HasFixedFaceSize(this IG3D g3d)
+            => g3d.FaceSizeAttribute == null || 
+               g3d.FaceSizeAttribute.Descriptor.Association == Association.assoc_object;
+
+        public static int FirstFaceSize(this IG3D g3d)
+            => g3d.FaceSizeAttribute?.ToInts()[0] ?? 3;
+
+        public static int FaceCount(this IG3D g3d)
+            => g3d.HasFixedFaceSize()
+                ? g3d.CornerVertexIndices().Count / g3d.FirstFaceSize()
+                : g3d.FaceSizeAttribute.ToInts().Count;
+
+        public static int VertexCount(this IG3D g3d)
+            => g3d.VertexAttribute.Count;
+
+        public static Dictionary<string, IAttribute> ToDictionary(this IEnumerable<IAttribute> attributes)
+            => attributes.ToDictionary(attr => attr.Descriptor.ToString(), attr => attr);
+
+        public static IArray<int> FaceSizes(this IG3D g3d)
+            => g3d.HasFixedFaceSize()
+                ? g3d.FaceCount().Select(i => g3d.FirstFaceSize())
+                : g3d.FaceSizeAttribute.ToInts();
+
+        public static IList<IAttribute> ValidateAssociation(this IList<IAttribute> attrs, params Association[] assocs)
+        {
+            foreach (var attr in attrs)
+                if (!assocs.Contains(attr.Descriptor.Association))
+                    throw new Exception($"Attribute {attr.Descriptor} does not have a valid association");
+            return attrs;
+        }
+
+        public static IList<IAttribute> ValidateDataType(this IList<IAttribute> attrs, params DataType[] dataTypes)
+        {
+            foreach (var attr in attrs)
+                if (!dataTypes.Contains(attr.Descriptor.DataType))
+                    throw new Exception($"Attribute {attr.Descriptor} does not have a valid data type");
+            return attrs;
+        }
+
+        public static IList<IAttribute> ValidateArity(this IList<IAttribute> attrs, params int[] arities)
+        {
+            foreach (var attr in attrs)
+                if (!arities.Contains(attr.Descriptor.DataArity))
+                    throw new Exception($"Attribute {attr.Descriptor} does not have a valid arity");
+            return attrs;
+        }
+
+        public static IList<IAttribute> ValidateMaxOne(this IList<IAttribute> attrs)
+            => attrs.Count > 1 ? throw new Exception("Expected only one attribute of the specified type") : attrs;
+
+        public static IList<IAttribute> ValidateNone(this IList<IAttribute> attrs)
+            => attrs.Count > 1 ? throw new Exception("Expected only one attribute of the specified type") : attrs;
+
+        public static IList<IAttribute> ValidateExactlyOne(this IList<IAttribute> attrs)
+            => attrs.Count != 1 ? throw new Exception("Expected exactly one attribute") : attrs;
+
+        public static void ValidateIG3D(this IG3D g3d)
+        {
+            // Check that no attributes are null
+            var n = g3d.Attributes.Count(attr => attr == null);
+            if (n > 0)
+                throw new Exception("Attributes cannot be null");
+
+            // Assure that there are no duplicates
+            g3d.Attributes.ToDictionary();
+
+            // Validate the descriptors
+            foreach (var attr in g3d.Attributes)
+                attr.Descriptor.Validate();
+
+            // Compute the number of faces
+            var faceCount = g3d.FaceCount();
+
+            // Assure that there is a vertex attribute
+            if (g3d.VertexAttribute.Descriptor.Association != Association.assoc_vertex)
+                throw new Exception("Vertex buffer is not associated with vertex: " + g3d.VertexAttribute.Descriptor);
+
+            if (g3d.VertexAttribute.Descriptor.DataArity != 3)
+                throw new Exception("Vertices should have an arity of 3");
+
+            if (g3d.Attributes(AttributeType.attr_vertex).Count() > 1)
+                throw new Exception("There can only be one vertex data set");
+
+            // Compute the number of vertices
+            var vertexCount = g3d.VertexCount();
+
+            // Computes the number of corners 
+            var cornerCount = g3d.CornerVertexIndices().Count;
+            
+            // Check the number of items in each attribute
+            foreach (var attr in g3d.Attributes)
+            {
+                switch (attr.Descriptor.Association)
+                {
+                    case Association.assoc_vertex:
+                        if (attr.Count != vertexCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {vertexCount}");
+                        break;
+                    case Association.assoc_face:
+                        if (attr.Count != faceCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {faceCount}");
+                        break;
+                    case Association.assoc_corner:
+                        if (attr.Count != cornerCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {cornerCount}");
+                        break;
+                    case Association.assoc_edge:
+                        if (attr.Count != cornerCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {cornerCount}");
+                        break;
+                    case Association.assoc_object:
+                        if (attr.Count != 1)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected 1");
+                        break;
+                    case Association.assoc_instance:
+                        break;
+                    case Association.assoc_none:
+                        break;
+                    default:
+                        throw new Exception($"Attribute {attr.Descriptor} has invalid association");
+                }
+            }
+
+            // The following rules are stricter than absolutely necessary, but respecting them 
+            // will make coding geometry libraries easier to write on top of the thing.
+
+            g3d.Attributes(AttributeType.attr_binormal).ToList()
+                .ValidateDataType(DataType.dt_float32)
+                .ValidateArity(3)
+                .ValidateAssociation(Association.assoc_vertex);
+
+            g3d.Attributes(AttributeType.attr_tangent).ToList()
+                .ValidateDataType(DataType.dt_float32)
+                .ValidateArity(3)
+                .ValidateAssociation(Association.assoc_vertex);
+
+            g3d.Attributes(AttributeType.attr_normal).ToList()
+                .ValidateDataType(DataType.dt_float32)
+                .ValidateArity(3)
+                .ValidateAssociation(Association.assoc_face, Association.assoc_corner, Association.assoc_vertex,
+                    Association.assoc_object);
+
+            g3d.Attributes(AttributeType.attr_color).ToList()
+                .ValidateArity(1, 3, 4)
+                .ValidateAssociation(Association.assoc_face, Association.assoc_corner, Association.assoc_vertex,
+                    Association.assoc_object);
+
+            g3d.Attributes(AttributeType.attr_visibility).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int8, DataType.dt_int32, DataType.dt_float32);
+
+            g3d.Attributes(AttributeType.attr_faceindex).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_face, Association.assoc_corner)
+                .ValidateMaxOne();
+
+            g3d.Attributes(AttributeType.attr_facesize).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_face, Association.assoc_corner, Association.assoc_object)
+                .ValidateMaxOne();
+
+            g3d.Attributes(AttributeType.attr_index).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_corner)
+                .ValidateMaxOne();
+
+            g3d.Attributes(AttributeType.attr_uv).ToList()
+                .ValidateArity(2, 3)
+                .ValidateDataType(DataType.dt_float32)
+                .ValidateAssociation(Association.assoc_vertex, Association.assoc_corner);
+
+            g3d.Attributes(AttributeType.attr_invalid).ToList()
+                .ValidateNone();
+
+            g3d.Attributes(AttributeType.attr_index).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_corner)
+                .ValidateMaxOne();
+
+            g3d.Attributes(AttributeType.attr_mapchannel_data).ToList()
+                .ValidateArity(3)
+                .ValidateDataType(DataType.dt_float32)
+                .ValidateAssociation(Association.assoc_none);
+
+            g3d.Attributes(AttributeType.attr_mapchannel_index).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_corner);
+
+            g3d.Attributes(AttributeType.attr_materialid).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_face);
+
+            g3d.Attributes(AttributeType.attr_pervertex).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_float32)
+                .ValidateAssociation(Association.assoc_vertex);
+
+            g3d.Attributes(AttributeType.attr_polygroup).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_face);
+
+            g3d.Attributes(AttributeType.attr_smoothing).ToList()
+                .ValidateArity(1)
+                .ValidateDataType(DataType.dt_int32)
+                .ValidateAssociation(Association.assoc_face);
+
+            g3d.Attributes(AttributeType.attr_transform).ToList()
+                .ValidateArity(16, 9)
+                .ValidateDataType(DataType.dt_float32, DataType.dt_float64)
+                .ValidateAssociation(Association.assoc_instance);
+
+            g3d.Attributes(AttributeType.attr_vertex).ToList()
+                .ValidateArity(3)
+                .ValidateDataType(DataType.dt_float32, DataType.dt_float64)
+                .ValidateAssociation(Association.assoc_vertex)
+                .ValidateExactlyOne();
         }
     }
 }

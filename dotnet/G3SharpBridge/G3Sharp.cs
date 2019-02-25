@@ -37,12 +37,13 @@ namespace Ara3D
             {
                 var tree = mesh.AABBTree();
                 r.SetProjectionTarget(new MeshProjectionTarget(tree.Mesh, tree));
-                
+
                 // http://www.gradientspace.com/tutorials/2017/8/30/mesh-simplification
                 // r.ProjectionMode = Reducer.TargetProjectionMode.Inline;
             }
+
             var target = mesh.VertexCount * percent / 100.0f;
-            r.ReduceToVertexCount((int)target);
+            r.ReduceToVertexCount((int) target);
             var newMesh = r.Mesh.Compact();
             var g = newMesh.ToIGeometry();
             Debug.Assert(g.AreAllIndicesValid());
@@ -74,24 +75,33 @@ namespace Ara3D
             var dist = MeshQueries.TriangleDistance(tree.Mesh, tid, point);
             return dist.TriangleClosest;
         }
+
         public static List<DMesh3> LoadGeometry(string path)
         {
             var builder = new DMesh3Builder();
-            var reader = new StandardMeshReader { MeshBuilder = builder };
+            var reader = new StandardMeshReader {MeshBuilder = builder};
             var result = reader.Read(path, ReadOptions.Defaults);
             if (result.code == IOCode.Ok)
                 return builder.Meshes;
             return null;
         }
 
-        public static bool WriteGeometry(string path, DMesh3 mesh)
+        public static void WriteFile(this DMesh3 mesh, string filePath)
+            => mesh.WriteFile(filePath, WriteOptions.Defaults);
+
+        public static void WriteFileBinary(this DMesh3 mesh, string filePath)
+            => mesh.WriteFile(filePath, new WriteOptions {bWriteBinary = true});
+
+        public static void WriteFileAscii(this DMesh3 mesh, string filePath)
+            => mesh.WriteFile(filePath, new WriteOptions { bWriteBinary = false });
+
+       public static void WriteFile(this DMesh3 mesh, string filePath, WriteOptions opts)
         {
             var writer = new StandardMeshWriter();
             var m = new WriteMesh(mesh);
-            var opts = new WriteOptions();
-            // NOTE: Some fun options to play with in opts
-            var result = writer.Write(path, new List<WriteMesh> { m }, opts);
-            return result.Equals(IOWriteResult.Ok);
+            var result = writer.Write(filePath, new List<WriteMesh> { m }, opts);
+            if (!result.Equals(IOWriteResult.Ok))
+                throw new Exception($"Failed to write file to {filePath} with result {result.ToString()}");
         }
         public static IArray<Vector3> ToVectors(this DVector<double> self)
         {

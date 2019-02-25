@@ -1,10 +1,6 @@
 ﻿using System;
-using Ara3D;
 using NUnit.Framework;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Ara3D.Tests
 {

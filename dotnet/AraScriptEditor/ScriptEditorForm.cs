@@ -5,7 +5,6 @@ using System.Windows.Forms;
 using System.IO;
 using ScintillaNET;
 using ScintillaNET.Demo.Utils;
-using System.Collections.Generic;
 using System.Linq;
 using Ara3D.ScriptEditor;
 

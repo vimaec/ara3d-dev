@@ -14,22 +14,40 @@ using System.Linq;
 namespace Ara3D
 { 
     /// <summary>
-    /// The interface of an IG3D structure which is just a collection of Attributes.  
+    /// The interface of an IG3D structure which is just a collection of Attributes.
+    /// Strictly speaking an IG3D could be just a collection of Attributes,
+    /// but there are a couple of basic attribute accessors that we require to be present
+    /// to simplify coding.
     /// </summary>
     public interface IG3D
     {
+        /// <summary>
+        /// All of the attributes present in the IG3D container. 
+        /// </summary>
         IEnumerable<IAttribute> Attributes { get; }
 
-        // All geometries must have a vertex buffer 
+        /// <summary>
+        ///  All geometries must have a vertex buffer. It may be single or double precision floats, arranged in triples.
+        /// </summary>
         IAttribute VertexAttribute { get; }
 
-        // The index attribute is optional: if missing then we assume that all indices are detached 
+        /// <summary>
+        /// The index attribute is optional: if missing then we assume that all vertices are detached. 
+        /// </summary>
         IAttribute IndexAttribute { get; }
 
-        // The face-size attribute is optional: if missing we assume a triangular mesh, if present it is either per-object or per-face. 
+        /// <summary>
+        /// The face-size attribute is optional: if missing we assume a triangular mesh, if present it is either per-object or per-face.
+        /// If per-object then it is a fixed size quad-mesh, tri-mesh, line-set, or a point cloud.
+        /// If per-face then we are dealing with a poly-mesh (different sized faces). In that case we
+        /// also expect a FaceIndexAttribute.
+        /// </summary>
         IAttribute FaceSizeAttribute { get; }
 
-        // The face-index attribute is optional: it should only be present when the face-size attribute is present and per-face. If missing in that case, it is computed from the FaceSizeAttribute.
+        /// <summary>
+        /// The face-index attribute is optional: it should only be present when dealing with a poly-mesh which
+        /// indicates that the face-size attribute is present and per-face. 
+        /// </summary>
         IAttribute FaceIndexAttribute { get; }
     }
 
@@ -62,44 +80,14 @@ namespace Ara3D
             Buffer = buffer;
             Header = header;
             Attributes = attributes.WhereNotNull();
-
-            VertexAttribute = this.FindAttribute(AttributeType.attr_vertex);
-            if (VertexAttribute.Descriptor.Association != Association.assoc_vertex)
-                throw new Exception("Vertex buffer is not associated with vertex: " + VertexAttribute.Descriptor);
-
-            if (VertexAttribute.Descriptor.DataArity != 3)
-                throw new Exception("Vertices should have an arity of 3");
-
-            IndexAttribute = this.FindAttribute(AttributeType.attr_index, false);
-            if (IndexAttribute != null)
-            {
-                if (IndexAttribute.Descriptor.Association != Association.assoc_corner)
-                    throw new Exception("Index buffer is not associated with index: " + IndexAttribute.Descriptor);
-                if (IndexAttribute.Descriptor.DataArity != 1)
-                    throw new Exception("Index buffer should have an arity of 1");
-            }
-
-            FaceSizeAttribute = this.FindAttribute(AttributeType.attr_facesize, false);
-            if (FaceSizeAttribute != null)
-            {
-                if (FaceSizeAttribute.Descriptor.DataArity != 1)
-                    throw new Exception("Expected an arity of 1");
-                if (FaceSizeAttribute.Descriptor.DataType != DataType.dt_int32)
-                    throw new Exception("Face size attribute is expected to be a 32 bit integer");
-            }
-
-            FaceIndexAttribute = this.FindAttribute(AttributeType.attr_faceindex, false);
-            if (FaceIndexAttribute != null)
-            {
-                if (FaceIndexAttribute.Descriptor.Association != Association.assoc_face)
-                    throw new Exception("Face index attribute is not associated with faces: " + FaceIndexAttribute.Descriptor);
-                if (FaceIndexAttribute.Descriptor.DataArity != 1)
-                    throw new Exception("Expected an arity of 1");
-                if (FaceIndexAttribute.Descriptor.DataType != DataType.dt_int32)
-                    throw new Exception("Face size attribute is expected to be a 32 bit integer");
-            }
             
-            // NOW: compute the number of faces, and make sure that all of the attributes make sense. This is going to be a lot of work!! 
+            VertexAttribute = this.FindAttribute(AttributeType.attr_vertex);
+            IndexAttribute = this.FindAttribute(AttributeType.attr_index, false);
+            FaceSizeAttribute = this.FindAttribute(AttributeType.attr_facesize, false);
+            FaceIndexAttribute = this.FindAttribute(AttributeType.attr_faceindex, false);
+
+            // Check that everything is kosher
+            this.ValidateIG3D();
         }
 
         public static G3D Create(BFast bfast)

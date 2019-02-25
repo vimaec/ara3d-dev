@@ -26,7 +26,7 @@ namespace Ara3D
         /// Generates a URN representation of the attribute descriptor
         /// </summary>
         public override string ToString()
-            => $"g3d:{AssociationToString(_association)}:{AttributeTypeToString(_attribute_type)}:{_attribute_type_index}:{DataTypeToString(_data_type)}:{_data_arity}";
+            => $"g3d:{AttributeTypeToString(_attribute_type)}:{AssociationToString(_association)}:{_attribute_type_index}:{DataTypeToString(_data_type)}:{_data_arity}";
         
         /// <summary>
         /// Parses a URN representation of the attribute descriptor to generate an actual attribute descriptor 
@@ -38,8 +38,8 @@ namespace Ara3D
             if (vals[0] != "g3d") throw new Exception("First part of URN must be g3d");
             return new AttributeDescriptor
             {
-                _association = ParseAssociation(vals[1]),
-                _attribute_type = ParseAttributeType(vals[2]),
+                _attribute_type = ParseAttributeType(vals[1]),
+                _association = ParseAssociation(vals[2]),
                 _attribute_type_index = int.Parse(vals[3]),
                 _data_type = ParseDataType(vals[4]),
                 _data_arity = int.Parse(vals[5]),
@@ -97,6 +97,6 @@ namespace Ara3D
             => Enum.GetName(typeof(DataType), n)?.Substring("dt_".Length);
 
         public static int ParseDataType(string s) 
-            => (int)Enum.Parse(typeof(Association), "dt_" + s);
+            => (int)Enum.Parse(typeof(DataType), "dt_" + s);
     }
 }

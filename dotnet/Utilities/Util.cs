@@ -362,14 +362,16 @@ namespace Ara3D
             TimeIt(action.ToFunction(), label);
         }
 
+        public static string PrettyPrintTimeElapsed(this Stopwatch sw)
+            => $"{sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}";
+
         public static T TimeIt<T>(this Func<T> function, string label = "")
         {
             var sw = new Stopwatch();
             sw.Start();
             var r = function();
             sw.Stop();
-            Console.WriteLine(
-                $"{label}: time elapsed {sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}");
+            Console.WriteLine($"{label}: time elapsed {sw.PrettyPrintTimeElapsed()}");
             return r;
         }
 

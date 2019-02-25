@@ -721,7 +721,7 @@ namespace Ara3D
         /// <summary>
         /// Returns true if the two lists are the same length, and the elements are the same. 
         /// </summary>
-        public static bool IsEqual<T>(this IArray<T> self, IArray<T> other) where T: IEquatable<T>
+        public static bool SequenceEquals<T>(this IArray<T> self, IArray<T> other) where T: IEquatable<T>
         {
             return self == other || (self.Count == other.Count && self.Zip(other, (x, y) => x.Equals(y)).All(x => x));
         }

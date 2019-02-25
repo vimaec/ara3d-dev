@@ -1,7 +1,5 @@
-﻿using Ara3D;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -28,13 +26,15 @@ namespace Ara3D
         }
 
         // Note: you would set generateMtl false, if generating files for subsets of the files 
-        public ObjEmitter(IEnumerable<ObjGeometry> geometries, string folder, string baseFileName, bool generateMtl = true)
+        public ObjEmitter(IEnumerable<ObjGeometry> geometries, string filePath, bool generateMtl = true)
         {
-            var objFile = Path.Combine(folder, baseFileName + ".obj");
-            var mtlFile = Path.Combine(folder, baseFileName + ".mtl");
+            if (filePath == null)
+                throw new ArgumentNullException(nameof(filePath));
 
-            var objectContents = EmitObjectStrings(geometries, baseFileName);
-            File.WriteAllLines(objFile, objectContents);
+            var mtlFile = Path.ChangeExtension(filePath, ".mtl");
+
+            var objectContents = EmitObjectStrings(geometries, generateMtl ? mtlFile : null);
+            File.WriteAllLines(filePath, objectContents);
 
             // Output the material file
             if (generateMtl)
@@ -43,16 +43,12 @@ namespace Ara3D
                 File.WriteAllLines(mtlFile, lines);
             }
         }
-
-        public static void Write(IEnumerable<ObjGeometry> geometries, string folder, string baseFileName, bool generateMtl = true)
-        {
-            new ObjEmitter(geometries, folder, baseFileName, generateMtl);
-        }
-
-        public IEnumerable<string> EmitObjectStrings(IEnumerable<ObjGeometry> geometries, string baseFileName, bool useMtlLib = true)
+        
+        public IEnumerable<string> EmitObjectStrings(IEnumerable<ObjGeometry> geometries, string mtlFilePath)
         {
             var currentMat = DefaultMaterial;
-
+            var useMtlLib = !string.IsNullOrEmpty(mtlFilePath);
+ 
             // Creates a lookup table of vertices            
             var vertices = geometries.SelectMany(g => g.Geometry.Vertices.ToEnumerable());
             var version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -65,10 +61,9 @@ namespace Ara3D
             yield return $"# Version = {version}";
             yield return $"# Created = {DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture)}";
             yield return $"# GUID = {Guid.NewGuid()}";
-            yield return $"# Filename = {baseFileName}.obj";
             
             if (useMtlLib)
-                yield return ($"mtllib {baseFileName}.mtl");
+                yield return ($"mtllib {mtlFilePath}");
 
             // Write the vertices 
             foreach (var v in vertices)
