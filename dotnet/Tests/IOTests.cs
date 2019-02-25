@@ -187,7 +187,7 @@ namespace Ara3D.Tests
         }
 
         // This requires input files in a special folder 
-        [Test, Explicit]
+        [Test]
         public static void TestObjReader()
         {
             // TODO: loop through other file types as well (STL/PLY/OFF/G3D, etc.)

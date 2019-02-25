@@ -4,7 +4,7 @@ using System;
 namespace Ara3D.Tests
 {
     [TestFixture]
-    public class UnitTest1
+    public class LinqArrayTests
     {
         public static int[] ArrayToTen = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         public static IArray<int> RangeToTen = 10.Range();

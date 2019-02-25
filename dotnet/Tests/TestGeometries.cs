@@ -19,10 +19,15 @@ namespace Ara3D
         public static IGeometry Tetrahedron =
             Geometry.TriMesh(TestTetrahedronVertices.ToIArray(), TestTetrahedronIndices.ToIArray());
 
-        public static IGeometry Torus = Geometry.QuadMesh(uv => TorusFunction(uv, 10, 0.2f), 10, 24);    
+        public static IGeometry Torus = Geometry.QuadMesh(uv => TorusFunction(uv, 10, 0.2f), 10, 24);
+
+        static IGeometry RevolvedVerticalCylinder(float height, float radius, int verticalSegments, int radialSegments)
+            => (Vector3.UnitZ * height).ToLine().Interpolate(verticalSegments).Add(-radius.AlongX()).RevolveAroundAxis(Vector3.UnitZ, radialSegments);
+
+        public static IGeometry Cylinder = RevolvedVerticalCylinder(5, 1, 4, 12);
 
         public static IGeometry[] AllGeometries = {
-            XYTriangle, XYQuad, XYQuadFromFunc, XYQuad2x2, Tetrahedron, Torus,
+            XYTriangle, XYQuad, XYQuadFromFunc, XYQuad2x2, Tetrahedron, Torus, Cylinder
         };
 
         public static double SmallTolerance = 0.000001;
@@ -60,7 +65,7 @@ namespace Ara3D
             {
                 var attr1 = attrs1[i];
                 var attr2 = attrs2[i];
-                Assert.AreEqual(attr1.ToString(), attr2.ToString());
+                Assert.AreEqual(attr1.Descriptor.ToString(), attr2.Descriptor.ToString());
                 Assert.AreEqual(attr1.Bytes.ByteCount, attr2.Bytes.ByteCount);
                 Assert.AreEqual(attr1.Count, attr2.Count);
 
