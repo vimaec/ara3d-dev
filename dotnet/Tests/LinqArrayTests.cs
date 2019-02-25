@@ -10,10 +10,15 @@ namespace Ara3D.Tests
         public static IArray<int> RangeToTen = 10.Range();
         public static IArray<int> BuildToTen = LinqArray.Build(0, x => x + 1, x => x < 10);
 
-        public static object[] TensData = { ArrayToTen, RangeToTen, BuildToTen };
+        [Test]
+        public static void CheckTens()
+        {
+            CheckTens(BuildToTen);
+            CheckTens(RangeToTen);
+            CheckTens(ArrayToTen.ToIArray());
+        }
 
-        [TestCaseSource(nameof(TensData))]
-        public void CheckTens(IArray<int> tens)
+        public static void CheckTens(IArray<int> tens)
         {
             Assert.IsTrue(tens.SequenceEquals(ArrayToTen.ToIArray()));
             Assert.AreEqual(0, tens.First());

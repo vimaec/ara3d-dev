@@ -27,10 +27,16 @@ namespace Ara3D
         public static IGeometry Cylinder = RevolvedVerticalCylinder(5, 1, 4, 12);
 
         public static IGeometry[] AllGeometries = {
-            XYTriangle, XYQuad, XYQuadFromFunc, XYQuad2x2, Tetrahedron, Torus, Cylinder
+            XYTriangle, // 0
+            XYQuad, // 1
+            XYQuadFromFunc, // 2
+            XYQuad2x2, // 3
+            Tetrahedron, // 4
+            Torus, // 5
+            Cylinder // 6
         };
 
-        public static double SmallTolerance = 0.000001;
+        public static double SmallTolerance = 0.0001;
 
         // https://github.com/mrdoob/three.js/blob/master/src/geometries/ParametricGeometry.js
         // https://github.com/mrdoob/three.js/blob/master/src/geometries/TorusGeometry.js
@@ -41,24 +47,31 @@ namespace Ara3D
                 (radius + tube * uv.Y.Cos()) * uv.X.Sin(),
                 tube * uv.X.Sin());
 
-        public static void CompareGeometries(IGeometry g1, IGeometry g2)
+
+        public static void BasicCompareGeometries(IGeometry g1, IGeometry g2)
         {
             Assert.AreEqual(g1.NumFaces, g2.NumFaces);
             Assert.AreEqual(g1.Vertices.Count, g2.Vertices.Count);
             Assert.AreEqual(g1.Indices.Count, g2.Indices.Count);
+
+            Assert.IsTrue(g1.Indices.SequenceEquals(g2.Indices));
+
+            for (int i = 0; i < g1.Vertices.Count; i++)
+            {
+                var v1 = g1.Vertices[i];
+                var v2 = g2.Vertices[i];
+                Assert.IsTrue(v1.AlmostEquals(v2, (float)SmallTolerance));
+            }
+        }
+
+        public static void CompareGeometries(IGeometry g1, IGeometry g2)
+        {
+            BasicCompareGeometries(g1, g2);
+
             Assert.AreEqual(g1.Attributes.Count(), g2.Attributes.Count());
             var attrs1 = g1.SortedAttributes().ToList();
             var attrs2 = g2.SortedAttributes().ToList();
             var n = attrs1.Count;
-
-            Assert.IsTrue(g1.Indices.SequenceEquals(g2.Indices));
-
-            for (int  i = 0;  i < g1.Vertices.Count;  i++)
-            {
-                var v1 = g1.Vertices[i];
-                var v2 = g2.Vertices[i];                
-                Assert.IsTrue(v1.AlmostEquals(v2, (float)SmallTolerance));
-            }
 
             Assert.AreEqual(n, attrs2.Count);
             for (var i = 0; i < n; ++i)
@@ -133,18 +146,28 @@ namespace Ara3D
             Assert.AreEqual(3, XYTriangle.Indices.Count);
             Assert.AreEqual(1, XYTriangle.Triangles().Count);
             Assert.AreEqual(0.5, XYTriangle.Area(), SmallTolerance);
+            Assert.IsTrue(XYTriangle.Coplanar());
 
             Assert.AreEqual(1, XYQuad.FaceCount());
             Assert.AreEqual(4, XYQuad.Vertices.Count);
             Assert.AreEqual(4, XYQuad.Indices.Count);
             Assert.AreEqual(2, XYQuad.Triangles().Count);
             Assert.AreEqual(1, XYQuad.Area(), SmallTolerance);
+            Assert.IsTrue(XYQuad.Coplanar());
+
+            Assert.AreEqual(1, XYQuadFromFunc.FaceCount());
+            Assert.AreEqual(4, XYQuadFromFunc.Vertices.Count);
+            Assert.AreEqual(4, XYQuadFromFunc.Indices.Count);
+            Assert.AreEqual(2, XYQuadFromFunc.Triangles().Count);
+            Assert.AreEqual(1, XYQuadFromFunc.Area(), SmallTolerance);
+            Assert.IsTrue(XYQuadFromFunc.Coplanar());
 
             Assert.AreEqual(4, XYQuad2x2.FaceCount());
             Assert.AreEqual(9, XYQuad2x2.Vertices.Count);
             Assert.AreEqual(16, XYQuad2x2.Indices.Count);
             Assert.AreEqual(8, XYQuad2x2.Triangles().Count);
             Assert.AreEqual(1, XYQuad2x2.Area(), SmallTolerance);
+            Assert.IsTrue(XYQuad2x2.Coplanar());
         }
 
         [Test]

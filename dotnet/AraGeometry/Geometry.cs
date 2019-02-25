@@ -387,8 +387,11 @@ namespace Ara3D
         public static IArray<IGeometry> CopyFaceGroups(this IGeometry g, int size)
             => g.GetFaces().Count.DivideRoundUp(size).Select(i => CopyFaces(g, i * size, size));
 
+        public static Face GetFace(this IGeometry g, int i)
+            => new Face(g, i);
+
         public static IArray<Face> GetFaces(this IGeometry g) 
-            => g.NumFaces.Select(i => new Face(g, i));
+            => g.NumFaces.Select(g.GetFace);
 
         public static IGeometry Merge(this IGeometry g, params IGeometry[] others)
         {
@@ -408,5 +411,12 @@ namespace Ara3D
 
         public static IG3D ToG3D(this IGeometry g)
             => g.Attributes.ToG3D();
+
+        public static bool Coplanar(this IGeometry g)
+        {
+            if (g.NumFaces <= 0) return true;
+            var normal = g.GetFace(0).Normal();
+            return g.GetFaces().All(f => f.Normal().AlmostEquals(normal));
+        }
     }
 }

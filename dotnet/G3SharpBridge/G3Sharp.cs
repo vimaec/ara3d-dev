@@ -76,7 +76,13 @@ namespace Ara3D
             return dist.TriangleClosest;
         }
 
-        public static List<DMesh3> LoadGeometry(string path)
+        public static IGeometry ToIGeometry(this List<DMesh3> meshes)
+            => meshes.Select(ToIGeometry).Merge();
+
+        public static IGeometry LoadGeometry(string path)
+            => LoadMeshes(path).ToIGeometry();
+
+        public static List<DMesh3> LoadMeshes(string path)
         {
             var builder = new DMesh3Builder();
             var reader = new StandardMeshReader {MeshBuilder = builder};

@@ -65,9 +65,15 @@ namespace Ara3D.Tests
         public static void TestWritingProceduralGeometries()
         {
             var i = 0;
+            var outputFolder = Path.Combine(TestOutputFolder, "procedural");
             foreach (var g in TestGeometries.AllGeometries)
             {
-                TestWritingGeometry(g, Path.Combine(TestOutputFolder, "procedural"), i.ToString());
+                TestWritingGeometry(g, outputFolder, i.ToString());
+
+                var g1 = Path.Combine(outputFolder, $"{i}.ara.obj");                
+                TestGeometries.BasicCompareGeometries(g, Geom);
+
+                var g2 = Path.Combine(outputFolder, $"{i}.ara.obj");
                 i++;
             }
         }
@@ -170,9 +176,9 @@ namespace Ara3D.Tests
             var outputFileName = Path.Combine(outputFolder, baseFileName);
 
             Console.WriteLine("Testing Ara 3D native writer");
-            TestWritingFile(outputFileName + ".ara3d.obj", f => g.WriteObj(f, true));
+            TestWritingFile(outputFileName + ".ara.obj", f => g.WriteObj(f, false));
 
-            var g3dFileName = outputFileName + ".ara3d.g3d";
+            var g3dFileName = outputFileName + ".ara.g3d";
             TestWritingFile(g3dFileName, g.WriteG3D);
 
             Console.WriteLine("Testing G3 Sharp writer");
@@ -181,7 +187,7 @@ namespace Ara3D.Tests
 
             // TODO: test writing using Helix
 
-            // Check that reading the G3D back-in yields the same IGeometry?
+            // Check that reading the G3D back-in yields the same IGeometry
             var g2 = G3DExtensions.ReadFromFile(g3dFileName).ToIGeometry();
             TestGeometries.CompareGeometries(g, g2);
         }
@@ -190,7 +196,6 @@ namespace Ara3D.Tests
         [Test]
         public static void TestObjReader()
         {
-            // TODO: loop through other file types as well (STL/PLY/OFF/G3D, etc.)
             foreach (var f in GetInputFiles("angel.obj"))
             {
                 WriteFileStats(f);
