@@ -9,14 +9,18 @@ namespace UnityBridge
     // TODO: add an IGeometry wrapper around "Unity"
     public static class UnitYConverters
     {
-        public static UnityEngine.Vector2 ToUnity(this Vector2 v)
-            => new UnityEngine.Vector2(v.X, v.Y);
+        //public static UnityEngine.Vector2 ToUnity(this Vector2 v)
+        //    => new UnityEngine.Vector2(v.X, v.Y);
 
-        public static UnityEngine.Vector3 ToUnity(this Vector3 v)
+        //public static UnityEngine.Vector3 ToUnity(this Vector3 v)
+        //    => new UnityEngine.Vector3(v.X, v.Y, v.Z);
+
+        //public static UnityEngine.Vector4 ToUnity(this Vector4 v)
+        //    => new UnityEngine.Vector4(v.X, v.Y, v.Z, v.W);
+
+        public static UnityEngine.Vector3 ToUnity(Vector3 v)
             => new UnityEngine.Vector3(v.X, v.Y, v.Z);
 
-        public static UnityEngine.Vector4 ToUnity(this Vector4 v)
-            => new UnityEngine.Vector4(v.X, v.Y, v.Z, v.W);
 
         public static UnityEngine.Mesh ToUnity(this IGeometry g)
         {
