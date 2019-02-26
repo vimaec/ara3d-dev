@@ -131,6 +131,9 @@ namespace Ara3D
             CompareGeometries(g, g.Translate(Vector3.One).Translate(-Vector3.One));
             CompareGeometries(g, g.Transform(Matrix4x4.Identity));
 
+            // Converting to G3Sharp is not going to give the same result if we convert.
+            BasicCompareGeometries(g.ToTriMesh(), g.ToG3Sharp().ToIGeometry());
+
             //CompareGeometries(g, g.WeldVertices());
             //CompareGeometries(g, g.RemoveUnusedVertices());
 
@@ -141,33 +144,60 @@ namespace Ara3D
         [Test]
         public static void BasicTests()
         {
+            foreach (var g in AllGeometries)
+                ValidateGeometry(g);
+
+            Assert.AreEqual(3, XYTriangle.PointsPerFace);
             Assert.AreEqual(1, XYTriangle.FaceCount());
             Assert.AreEqual(3, XYTriangle.Vertices.Count);
             Assert.AreEqual(3, XYTriangle.Indices.Count);
             Assert.AreEqual(1, XYTriangle.Triangles().Count);
             Assert.AreEqual(0.5, XYTriangle.Area(), SmallTolerance);
-            Assert.IsTrue(XYTriangle.Coplanar());
+            Assert.IsTrue(XYTriangle.Planar());
+            Assert.AreEqual(new[] { 3 }, XYTriangle.FaceSizes.ToArray());
+            Assert.AreEqual(new[] { 0 }, XYTriangle.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0, 1, 2 }, XYTriangle.Indices.ToArray());
 
+            Assert.AreEqual(4, XYQuad.PointsPerFace);
             Assert.AreEqual(1, XYQuad.FaceCount());
             Assert.AreEqual(4, XYQuad.Vertices.Count);
             Assert.AreEqual(4, XYQuad.Indices.Count);
             Assert.AreEqual(2, XYQuad.Triangles().Count);
             Assert.AreEqual(1, XYQuad.Area(), SmallTolerance);
-            Assert.IsTrue(XYQuad.Coplanar());
+            Assert.IsTrue(XYQuad.Planar());
+            Assert.AreEqual(new[] { 4 }, XYQuad.FaceSizes.ToArray());
+            Assert.AreEqual(new[] { 0 }, XYQuad.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0, 1, 2, 3 }, XYQuad.Indices.ToArray());
 
+            Assert.AreEqual(4, XYQuadFromFunc.PointsPerFace);
             Assert.AreEqual(1, XYQuadFromFunc.FaceCount());
             Assert.AreEqual(4, XYQuadFromFunc.Vertices.Count);
             Assert.AreEqual(4, XYQuadFromFunc.Indices.Count);
             Assert.AreEqual(2, XYQuadFromFunc.Triangles().Count);
             Assert.AreEqual(1, XYQuadFromFunc.Area(), SmallTolerance);
-            Assert.IsTrue(XYQuadFromFunc.Coplanar());
+            Assert.IsTrue(XYQuadFromFunc.Planar());
+            Assert.AreEqual(new[] { 4 }, XYQuadFromFunc.FaceSizes.ToArray());
+            Assert.AreEqual(new[] { 0 }, XYQuadFromFunc.FaceIndices.ToArray());
+            //Assert.AreEqual(new[] { 0, 1, 2, 3 }, XYQuadFromFunc.Indices.ToArray());
 
+            Assert.AreEqual(4, XYQuad2x2.PointsPerFace);
             Assert.AreEqual(4, XYQuad2x2.FaceCount());
             Assert.AreEqual(9, XYQuad2x2.Vertices.Count);
             Assert.AreEqual(16, XYQuad2x2.Indices.Count);
             Assert.AreEqual(8, XYQuad2x2.Triangles().Count);
             Assert.AreEqual(1, XYQuad2x2.Area(), SmallTolerance);
-            Assert.IsTrue(XYQuad2x2.Coplanar());
+            Assert.IsTrue(XYQuad2x2.Planar());
+            Assert.AreEqual(new[] { 4, 4, 4, 4 }, XYQuad2x2.FaceSizes.ToArray());
+            Assert.AreEqual(new[] { 0, 4, 8, 12 }, XYQuad2x2.FaceIndices.ToArray());
+            //Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, XYQuad2x2.Indices.ToArray());
+
+            Assert.AreEqual(3, Tetrahedron.PointsPerFace);
+            Assert.AreEqual(4, Tetrahedron.FaceCount());
+            Assert.AreEqual(4, Tetrahedron.Vertices.Count);
+            Assert.AreEqual(12, Tetrahedron.Indices.Count);
+            Assert.AreEqual(new[] { 3, 3, 3, 3 }, Tetrahedron.FaceSizes.ToArray());
+            Assert.AreEqual(new[] { 0, 3, 6, 9 }, Tetrahedron.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }, Tetrahedron.Indices.ToArray());
         }
 
         [Test]
@@ -177,11 +207,45 @@ namespace Ara3D
                 GeometryNullOps(g);
         }
 
-        [Test]
-        public static void OutputGeometryStats()
+        public static void ValidateGeometry(IGeometry g)
         {
+            g.Validate();
+            Assert.IsTrue(g.AreAllIndicesValid());
+            Assert.IsTrue(!g.AreTrianglesRepeated());
+            Assert.IsTrue(!g.HasDegenerateFaceIndices());
+        }
+
+        [Test]
+        public static void OutputGeometryData()
+        {
+            var n = 0;
             foreach (var g in AllGeometries)
-                OutputIGeometryStats(g);
+            {
+                Console.WriteLine($"Geometry {n++}");
+                for (var i = 0; i < g.Vertices.Count && i < 10; ++i)
+                {
+                    Console.WriteLine($"Vertex {i} {g.Vertices[i]}");
+                }
+
+                if (g.Vertices.Count > 10)
+                {
+                    var last = g.Vertices.Count - 1;
+                    Console.WriteLine("...");
+                    Console.WriteLine($"Vertex {last} {g.Vertices[last]}");
+                }
+
+                for (var i = 0; i < g.NumFaces && i < 10; ++i)
+                {
+                    Console.WriteLine($"Face {i} {g.GetFace(i)}");
+                }
+
+                if (g.Vertices.Count > 10)
+                {
+                    var last = g.NumFaces - 1;
+                    Console.WriteLine("...");
+                    Console.WriteLine($"Face {last} {g.GetFace(last)}");
+                }
+            }
         }
     }
 }

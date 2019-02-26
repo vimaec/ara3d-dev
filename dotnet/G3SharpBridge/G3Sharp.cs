@@ -76,6 +76,12 @@ namespace Ara3D
             return dist.TriangleClosest;
         }
 
+        public static IArray<Vector3d> NearestPoints(this IGeometry g, IArray<Vector3d> points)
+        {
+            var tree = g.ToG3Sharp().AABBTree();
+            return points.Select(tree.NearestPoint);
+        }
+
         public static IGeometry ToIGeometry(this List<DMesh3> meshes)
             => meshes.Select(ToIGeometry).Merge();
 
@@ -144,7 +150,17 @@ namespace Ara3D
                 r.AppendVertex(v.ToVector3D());
             var indices = self.ToTriMesh().Indices;
             for (var i = 0; i < indices.Count; i += 3)
-                r.AppendTriangle(i, i + 1, i + 2);
+            {
+                var result = r.AppendTriangle(indices[i], indices[i + 1], indices[i + 2]);
+                if (result < 0)
+                {
+                    if (result == DMesh3.NonManifoldID)
+                        throw new Exception("Can't create non-manifold mesh");
+                    if (result == DMesh3.InvalidID)
+                        throw new Exception("Invalid vertex ID");
+                    throw new Exception("Unknown error creating mesh");
+                }
+            }
             return r;
         }
 

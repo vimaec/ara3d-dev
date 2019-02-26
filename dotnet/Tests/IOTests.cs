@@ -18,7 +18,7 @@ namespace Ara3D.Tests
     {
         // TODO: make this an environment variable
         public static string TestInputFolder = @"C:\dev\repos\_test_input";
-        public static string TestOutputFolder = @"C:\dev\repos\_test_output";
+        public static string TestOutputFolder = Path.Combine(Path.GetTempPath(), "ar3d", "_test_output");
 
         public static IEnumerable<string> GetInputFiles(string ext)
         {
@@ -70,10 +70,15 @@ namespace Ara3D.Tests
             {
                 TestWritingGeometry(g, outputFolder, i.ToString());
 
-                var g1 = Path.Combine(outputFolder, $"{i}.ara.obj");                
-                TestGeometries.BasicCompareGeometries(g, Geom);
+                var g1 = G3Sharp.LoadGeometry(Path.Combine(outputFolder, $"{i}.ara.obj"));                
+                TestGeometries.BasicCompareGeometries(g, g1);
 
-                var g2 = Path.Combine(outputFolder, $"{i}.ara.obj");
+                var g2 = G3Sharp.LoadGeometry(Path.Combine(outputFolder, $"{i}.g3.obj"));
+                TestGeometries.BasicCompareGeometries(g, g2);
+
+                var g3 = G3Sharp.LoadGeometry(Path.Combine(outputFolder, $"{i}.g3.stl"));
+                TestGeometries.BasicCompareGeometries(g, g3);
+
                 i++;
             }
         }
@@ -211,7 +216,7 @@ namespace Ara3D.Tests
                 Console.WriteLine("geometry3Sharp OBJ Reader");
                 Console.WriteLine("=========================");
                 var g3SharpObjList = Util.TimeIt(
-                    () => G3Sharp.LoadGeometry(f), $"Loading OBJ with geometry3Sharp");
+                    () => G3Sharp.LoadMeshes(f), $"Loading OBJ with geometry3Sharp");
 
                 for (var i=0; i < g3SharpObjList.Count; ++i)
                 {
@@ -219,7 +224,7 @@ namespace Ara3D.Tests
                     CompareDMesh(dmesh, dmesh.ToIGeometry(), TestGeometries.SmallTolerance);
                 }
 
-                var gFromG3SharpObjList = g3SharpObjList.Select(G3Sharp.ToIGeometry).Merge();
+                var gFromG3SharpObjList = g3SharpObjList.ToIGeometry();
                 TestWritingGeometry(gFromG3SharpObjList, Path.Combine(TestOutputFolder, "g3sharp"), f);
             }
         }

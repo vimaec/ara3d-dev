@@ -837,5 +837,21 @@ namespace Ara3D
         {
             return (xs.Count / 4).Select(i => f(xs[i * 4], xs[i * 4 + 1], xs[i * 4 + 2], xs[i * 4 + 3]));
         }
+
+        /// <summary>
+        /// Returns the number of unique instances of elements in the array.
+        /// </summary>
+        public static int CountUnique<T>(this IArray<T> xs)
+        {
+            return xs.ToEnumerable().Distinct().Count();
+        }
+
+        /// <summary>
+        /// Returns elements in order.
+        /// </summary>
+        public static IArray<T> Sort<T>(this IArray<T> xs) where T : IComparable<T>
+        {
+            return xs.ToEnumerable().OrderBy(x => x).ToIArray();
+        }
     }
 }

@@ -292,6 +292,12 @@ namespace Ara3D
                 ? g3d.CornerVertexIndices().Count / g3d.FirstFaceSize()
                 : g3d.FaceSizeAttribute.ToInts().Count;
 
+        public static IArray<int> FaceIndices(this IG3D g3d)
+            => g3d.FaceIndexAttribute?.ToInts()
+               ?? (g3d.HasFixedFaceSize()
+                   ? g3d.CornerVertexIndices().Stride(g3d.FirstFaceSize())
+                   : g3d.FaceSizes().Accumulate((x, y) => x + y));
+
         public static int VertexCount(this IG3D g3d)
             => g3d.VertexAttribute.Count;
 
@@ -336,7 +342,7 @@ namespace Ara3D
         public static IList<IAttribute> ValidateExactlyOne(this IList<IAttribute> attrs)
             => attrs.Count != 1 ? throw new Exception("Expected exactly one attribute") : attrs;
 
-        public static void ValidateIG3D(this IG3D g3d)
+        public static void Validate(this IG3D g3d)
         {
             // Check that no attributes are null
             var n = g3d.Attributes.Count(attr => attr == null);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -14,6 +15,23 @@ namespace Ara3D
         IArray<int> Indices { get; }  
         IArray<int> FaceSizes { get; }
         IArray<int> FaceIndices { get; } 
+    }
+
+
+    public class GeometryDebugView
+    {
+        public IGeometry Interface { get; }
+        public int PointsPerFace => Interface.PointsPerFace;
+        public int NumFaces => Interface.NumFaces;
+        public Vector3[] Vertices => Interface.Vertices.ToArray();
+        public int[] Indices => Interface.Indices.ToArray();
+        public int[] FaceSizes => Interface.FaceSizes.ToArray();
+        public int[] FaceIndices => Interface.FaceIndices.ToArray();
+
+        public GeometryDebugView(IGeometry g)
+        {
+            Interface = g;
+        }
     }
 
     /*
@@ -57,18 +75,39 @@ namespace Ara3D
     }
     */
 
-    public struct Face : IArray<int>
+    public struct Face : IArray<int>, IEquatable<Face>
     {
         public IGeometry Geometry { get; }
         public int Index { get; }
         public int Count => Geometry.FaceSizes[Index];
-        public int this[int n] => Geometry.Indices[Geometry.FaceIndices[Index] + n];
+        public int this[int n] => Geometry.FaceIndices[Index] + n;
+
+        public bool HasDegenerateIndices()
+        {
+            for (var i=0; i < Count - 1; ++i)
+                for (var j=i+1; j < Count; ++j)
+                    if (this[i] == this[j])
+                        return true;
+            return false;
+        }
 
         public Face(IGeometry g, int index)
         {
             Geometry = g;
             Index = index;
         }
+
+        public override string ToString()
+            => string.Join(" ", this.ToEnumerable());
+
+        public bool Equals(Face other)
+            => this.Sort().SequenceEquals(other.Sort());
+
+        public override bool Equals(object obj)
+            => obj is Face f && Equals(f);
+
+        public override int GetHashCode()
+            => Hash.Combine(this.Sort().ToArray());
     }
 
     public static class Geometry
@@ -181,23 +220,25 @@ namespace Ara3D
         {
             var verts = new List<Vector3>();
             var indices = new List<int>();
-            for (var i = 0; i <= usegs; ++i)
+            for (var i = 0; i <= vsegs; ++i)
             {
-                var u = (float)i / usegs;
-                for (var j = 0; j <= vsegs; ++j)
+                var v = (float) i / vsegs;
+                for (var j = 0; j <= usegs; ++j)
                 {
-                    var v = (float)j / vsegs;
+                    var u = (float) j / usegs;
                     verts.Add(f(new Vector2(u, v)));
-
-                    if (i < usegs && j < vsegs)
-                    {
-                        indices.Add(i * (vsegs + 1) + j);
-                        indices.Add(i * (vsegs + 1) + j + 1);
-                        indices.Add((i + 1) * (vsegs + 1) + j + 1);
-                        indices.Add((i + 1) * (vsegs + 1) + j);
-                    }
                 }
             }
+
+            for (var i=0; i < vsegs; ++i) {
+                for (var j=0; j < usegs; ++j) { 
+                    indices.Add(i * (usegs + 1) + j);
+                    indices.Add(i * (usegs + 1) + j + 1);
+                    indices.Add((i + 1) * (usegs + 1) + j + 1);
+                    indices.Add((i + 1) * (usegs + 1) + j);
+                }
+            }
+
             return QuadMesh(verts.ToIArray(), indices.ToIArray());
         }
 
@@ -304,9 +345,9 @@ namespace Ara3D
             if (self.PointsPerFace == 3)
                 return self;
             var indices = new List<int>();
-            for (var i = 0; i < self.GetFaces().Count; ++i)
+            for (var i = 0; i < self.NumFaces; ++i)
             {
-                var e = self.GetFaces()[i];
+                var e = self.GetFace(i);
                 for (var j = 1; j < e.Count - 1; ++j)
                 {
                     indices.Add(e[0]);
@@ -412,11 +453,40 @@ namespace Ara3D
         public static IG3D ToG3D(this IGeometry g)
             => g.Attributes.ToG3D();
 
-        public static bool Coplanar(this IGeometry g)
+        public static bool Planar(this IGeometry g)
         {
-            if (g.NumFaces <= 0) return true;
+            if (g.NumFaces <= 1) return true;
             var normal = g.GetFace(0).Normal();
             return g.GetFaces().All(f => f.Normal().AlmostEquals(normal));
+        }
+
+        public static bool AreTrianglesRepeated(this IGeometry g)
+            => g.GetFaces().CountUnique() != g.NumFaces;
+
+        public static bool HasDegenerateFaceIndices(this IGeometry g)
+            => g.GetFaces().Any(f => f.HasDegenerateIndices());
+
+        public static void Validate(this IGeometry g3d)
+        {
+            (g3d as IG3D).Validate();
+
+            if (g3d.FaceIndices.Count != g3d.NumFaces)
+                throw new Exception("Expected the face indices to be equal to the number of faces");
+            if (g3d.FaceSizes.Count != g3d.NumFaces)
+                throw new Exception("Expected the face sizes array to be equal to the number of faces");
+            if (!g3d.AreAllIndicesValid())
+                throw new Exception("Not all indices are valid");
+            for (var i = 0; i < g3d.NumFaces; ++i)
+            {
+                var faceSize = g3d.FaceSizes[i];
+                var faceIndex = g3d.FaceIndices[i];
+                for (var j = 0; j < faceSize; ++j)
+                {
+                    var index = g3d.Indices[faceIndex + j];
+                    if (index < 0 || index >= g3d.Vertices.Count)
+                        throw new Exception("Vertex index out of range");
+                }
+            }
         }
     }
 }

@@ -1,14 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace Ara3D
 {
+    [DebuggerTypeProxy(typeof(GeometryDebugView))]
     public class G3DAdapter : IGeometry
     {
         public IG3D G3D;
 
         public G3DAdapter(IG3D g3D)
         {
+            g3D.Validate();
+            
             G3D = g3D;
 
             FaceSizes = g3D.FaceSizes();
@@ -16,12 +21,7 @@ namespace Ara3D
             Vertices = g3D.VertexAttribute.ToVector3s();
             Indices = g3D.CornerVertexIndices();
             NumFaces = g3D.FaceCount();
-            
-            // FaceIndices might have to be computed.
-            FaceIndices = FaceIndexAttribute?.ToInts() 
-                ?? (PointsPerFace > 0
-                    ? Indices.Stride(PointsPerFace)
-                    : FaceSizes.PartialSums());
+            FaceIndices = g3D.FaceIndices();
         }
 
         public int NumFaces { get; }
