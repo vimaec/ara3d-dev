@@ -38,31 +38,5 @@ namespace Ara3D
         {
             return self.Select(x => x.Transform(matrix));
         }
-
-        public static IGeometry RevolveAroundAxis(this IArray<Vector3> points, Vector3 axis, int segments = 4)
-        {
-            var verts = new List<Vector3>();
-            var indices = new List<int>();
-            var usegs = segments;
-            var vsegs = points.Count;
-            for (var i = 0; i < segments; ++i)
-            {
-                var angle = Constants.TwoPi / segments;
-                points.Rotate(axis, angle).AddTo(verts);
-
-                for (var j = 0; j < points.Count - 1; ++j)
-                {
-                    var a = i * vsegs + j;
-                    var b = a + 1;
-                    var c = ((i + 1) % usegs) * vsegs + 1;
-                    var d = c - 1;
-                    indices.Add(a);
-                    indices.Add(b);
-                    indices.Add(c);
-                    indices.Add(d);
-                }
-            }
-            return Geometry.QuadMesh(verts.ToIArray(), indices.ToIArray());
-        }
     }
 }

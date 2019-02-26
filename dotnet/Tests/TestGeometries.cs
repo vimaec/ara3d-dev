@@ -145,7 +145,10 @@ namespace Ara3D
         public static void BasicTests()
         {
             foreach (var g in AllGeometries)
+            {
                 ValidateGeometry(g);
+                ValidateGeometry(g.ToTriMesh());
+            }
 
             Assert.AreEqual(3, XYTriangle.PointsPerFace);
             Assert.AreEqual(1, XYTriangle.FaceCount());
@@ -197,7 +200,7 @@ namespace Ara3D
             Assert.AreEqual(12, Tetrahedron.Indices.Count);
             Assert.AreEqual(new[] { 3, 3, 3, 3 }, Tetrahedron.FaceSizes.ToArray());
             Assert.AreEqual(new[] { 0, 3, 6, 9 }, Tetrahedron.FaceIndices.ToArray());
-            Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }, Tetrahedron.Indices.ToArray());
+            Assert.AreEqual(TestTetrahedronIndices, Tetrahedron.Indices.ToArray());
         }
 
         [Test]

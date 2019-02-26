@@ -295,7 +295,7 @@ namespace Ara3D
         public static IArray<int> FaceIndices(this IG3D g3d)
             => g3d.FaceIndexAttribute?.ToInts()
                ?? (g3d.HasFixedFaceSize()
-                   ? g3d.CornerVertexIndices().Stride(g3d.FirstFaceSize())
+                   ? g3d.CornerVertexIndices().Indices().Stride(g3d.FirstFaceSize())
                    : g3d.FaceSizes().Accumulate((x, y) => x + y));
 
         public static int VertexCount(this IG3D g3d)
@@ -425,8 +425,7 @@ namespace Ara3D
             g3d.Attributes(AttributeType.attr_normal).ToList()
                 .ValidateDataType(DataType.dt_float32)
                 .ValidateArity(3)
-                .ValidateAssociation(Association.assoc_face, Association.assoc_corner, Association.assoc_vertex,
-                    Association.assoc_object);
+                .ValidateAssociation(Association.assoc_face, Association.assoc_corner, Association.assoc_vertex);
 
             g3d.Attributes(AttributeType.attr_color).ToList()
                 .ValidateArity(1, 3, 4)
@@ -440,7 +439,7 @@ namespace Ara3D
             g3d.Attributes(AttributeType.attr_faceindex).ToList()
                 .ValidateArity(1)
                 .ValidateDataType(DataType.dt_int32)
-                .ValidateAssociation(Association.assoc_face, Association.assoc_corner)
+                .ValidateAssociation(Association.assoc_face)
                 .ValidateMaxOne();
 
             g3d.Attributes(AttributeType.attr_facesize).ToList()

@@ -17,10 +17,18 @@ namespace Ara3D
         IArray<int> FaceIndices { get; } 
     }
 
-
     public class GeometryDebugView
     {
-        public IGeometry Interface { get; }
+        IGeometry Interface { get; }
+
+        /*
+        public IEnumerable<IAttribute> Attributes => Interface.Attributes;
+        public IAttribute VertexAttribute => Interface.VertexAttribute;
+        public IAttribute IndexAttribute => Interface.IndexAttribute;
+        public IAttribute FaceSizeAttribute => Interface.FaceSizeAttribute;
+        public IAttribute FaceIndexAttribute => Interface.FaceIndexAttribute;
+        */
+
         public int PointsPerFace => Interface.PointsPerFace;
         public int NumFaces => Interface.NumFaces;
         public Vector3[] Vertices => Interface.Vertices.ToArray();
@@ -75,12 +83,17 @@ namespace Ara3D
     }
     */
 
+    /// <summary>
+    /// A face is an array of indices into the vertex buffer of an IGeometry representing a particular
+    /// element of a geometry (could be a PolyMesh face, a TriMesh faces, a QuadMesh face, or even a line segment,
+    /// or point if the IGeometry represetns a point cloud. 
+    /// </summary>
     public struct Face : IArray<int>, IEquatable<Face>
     {
         public IGeometry Geometry { get; }
         public int Index { get; }
         public int Count => Geometry.FaceSizes[Index];
-        public int this[int n] => Geometry.FaceIndices[Index] + n;
+        public int this[int n] => Geometry.Indices[Geometry.FaceIndices[Index] + n];
 
         public bool HasDegenerateIndices()
         {
@@ -216,10 +229,30 @@ namespace Ara3D
             var indexBuffer = faces.
         }*/
 
+        /// <summary>
+        /// Computes the indices of a quad mesh strip.
+        /// TODO: support wrapping around the u or the v, so thatvertex indices are re-used if need be. Otherwise cylinders have coincident vertices 
+        /// </summary>
+        public static IArray<int> ComputeQuadMeshStripIndices(int usegs, int vsegs)
+        {
+            var indices = new List<int>();
+            for (var i = 0; i < vsegs; ++i)
+            {
+                for (var j = 0; j < usegs; ++j)
+                {
+                    indices.Add(i * (usegs + 1) + j);
+                    indices.Add(i * (usegs + 1) + j + 1);
+                    indices.Add((i + 1) * (usegs + 1) + j + 1);
+                    indices.Add((i + 1) * (usegs + 1) + j);
+                }
+            }
+
+            return indices.ToIArray();
+        }
+
         public static IGeometry QuadMesh(this Func<Vector2, Vector3> f, int usegs, int vsegs)
         {
             var verts = new List<Vector3>();
-            var indices = new List<int>();
             for (var i = 0; i <= vsegs; ++i)
             {
                 var v = (float) i / vsegs;
@@ -230,16 +263,7 @@ namespace Ara3D
                 }
             }
 
-            for (var i=0; i < vsegs; ++i) {
-                for (var j=0; j < usegs; ++j) { 
-                    indices.Add(i * (usegs + 1) + j);
-                    indices.Add(i * (usegs + 1) + j + 1);
-                    indices.Add((i + 1) * (usegs + 1) + j + 1);
-                    indices.Add((i + 1) * (usegs + 1) + j);
-                }
-            }
-
-            return QuadMesh(verts.ToIArray(), indices.ToIArray());
+            return QuadMesh(verts.ToIArray(), ComputeQuadMeshStripIndices(usegs, vsegs));
         }
 
         public static bool CanMergeTris(this IGeometry self, int a, int b)
@@ -480,13 +504,36 @@ namespace Ara3D
             {
                 var faceSize = g3d.FaceSizes[i];
                 var faceIndex = g3d.FaceIndices[i];
+
+                var face = g3d.GetFace(i);
+                if (face.Count != faceSize)
+                    throw new Exception("Face does not have correct size");
+
                 for (var j = 0; j < faceSize; ++j)
                 {
                     var index = g3d.Indices[faceIndex + j];
                     if (index < 0 || index >= g3d.Vertices.Count)
                         throw new Exception("Vertex index out of range");
+
+                    if (index != face[j])
+                        throw new Exception("Face does not have valid index");
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a revolved face ... note that the last points are on top of the original 
+        /// </summary>
+        public static IGeometry RevolveAroundAxis(this IArray<Vector3> points, Vector3 axis, int segments = 4)
+        {
+            var verts = new List<Vector3>();
+            for (var i = 0; i < segments; ++i)
+            {
+                var angle = Constants.TwoPi / segments;
+                points.Rotate(axis, angle).AddTo(verts);
+            }
+
+            return QuadMesh(verts.ToIArray(), ComputeQuadMeshStripIndices(segments-1, points.Count-1));
         }
     }
 }
