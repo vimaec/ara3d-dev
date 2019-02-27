@@ -1043,6 +1043,7 @@ namespace Ara3D
 
         public static void ToJsonFile(this object o, string filePath)
         {
+            File.Delete(filePath);
             using (var tw = File.CreateText(filePath))
                 new JsonSerializer { Formatting = Formatting.Indented }.Serialize(tw, o);
         }

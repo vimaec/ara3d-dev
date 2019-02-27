@@ -12,6 +12,7 @@ namespace Ara3D
         public static IGeometry XYQuad = Geometry.QuadMesh(new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 1f, 0f), new Vector3(1f, 0f, 0f) }.ToIArray(), 4.Range());
         public static IGeometry XYQuadFromFunc = Geometry.QuadMesh(uv => uv.To3D(), 1, 1);
         public static IGeometry XYQuad2x2 = Geometry.QuadMesh(uv => uv.To3D(), 2, 2);
+        public static IGeometry XYTriangleTwice = XYTriangle.Merge(XYTriangle.Translate(new Vector3(1, 0, 0)));
 
         public static readonly Vector3[] TestTetrahedronVertices = { Vector3.Zero, Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ };
         public static readonly int[] TestTetrahedronIndices = { 0, 1, 2, 0, 3, 1, 1, 3, 2, 2, 3, 0 };
@@ -33,7 +34,8 @@ namespace Ara3D
             XYQuad2x2, // 3
             Tetrahedron, // 4
             Torus, // 5
-            Cylinder // 6
+            Cylinder, // 6
+            XYTriangleTwice, // 7
         };
 
         public static double SmallTolerance = 0.0001;
@@ -42,11 +44,13 @@ namespace Ara3D
         // https://github.com/mrdoob/three.js/blob/master/src/geometries/TorusGeometry.js
 
         public static Vector3 TorusFunction(Vector2 uv, float radius, float tube)
-            => new Vector3(
+        {
+            uv = uv * Constants.TwoPi;
+            return new Vector3(
                 (radius + tube * uv.Y.Cos()) * uv.X.Cos(),
                 (radius + tube * uv.Y.Cos()) * uv.X.Sin(),
                 tube * uv.X.Sin());
-
+        }
 
         public static void BasicCompareGeometries(IGeometry g1, IGeometry g2)
         {
@@ -201,6 +205,17 @@ namespace Ara3D
             Assert.AreEqual(new[] { 3, 3, 3, 3 }, Tetrahedron.FaceSizes.ToArray());
             Assert.AreEqual(new[] { 0, 3, 6, 9 }, Tetrahedron.FaceIndices.ToArray());
             Assert.AreEqual(TestTetrahedronIndices, Tetrahedron.Indices.ToArray());
+
+            Assert.AreEqual(3, XYTriangleTwice.PointsPerFace);
+            Assert.AreEqual(2, XYTriangleTwice.FaceCount());
+            Assert.AreEqual(6, XYTriangleTwice.Vertices.Count);
+            Assert.AreEqual(6, XYTriangleTwice.Indices.Count);
+            Assert.AreEqual(2, XYTriangleTwice.Triangles().Count);
+            Assert.AreEqual(1.0, XYTriangleTwice.Area(), SmallTolerance);
+            Assert.IsTrue(XYTriangleTwice.Planar());
+            Assert.AreEqual(new[] { 3, 3 }, XYTriangleTwice.FaceSizes.ToArray());
+            Assert.AreEqual(new[] { 0, 3, }, XYTriangleTwice.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5 }, XYTriangleTwice.Indices.ToArray());
         }
 
         [Test]
@@ -239,14 +254,14 @@ namespace Ara3D
 
                 for (var i = 0; i < g.NumFaces && i < 10; ++i)
                 {
-                    Console.WriteLine($"Face {i} {g.GetFace(i)}");
+                    Console.WriteLine($"Face {i}: {g.GetFace(i)}");
                 }
 
                 if (g.Vertices.Count > 10)
                 {
                     var last = g.NumFaces - 1;
                     Console.WriteLine("...");
-                    Console.WriteLine($"Face {last} {g.GetFace(last)}");
+                    Console.WriteLine($"Face {last}: {g.GetFace(last)}");
                 }
             }
         }
