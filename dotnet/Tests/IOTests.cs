@@ -18,7 +18,7 @@ namespace Ara3D.Tests
     {
         // TODO: make this an environment variable
         public static string TestInputFolder = @"C:\dev\repos\_test_input";
-        public static string TestOutputFolder = Path.Combine(Path.GetTempPath(), "ar3d", "_test_output");
+        public static string TestOutputFolder = Path.Combine(Path.GetTempPath(), "ara3d", "_test_output");
 
         public static IEnumerable<string> GetInputFiles(string ext)
         {
@@ -39,9 +39,9 @@ namespace Ara3D.Tests
         public static void CheckAttribute(IAttribute attr, Association assoc, AttributeType at, DataType dt, int arity)
         {
             Assert.AreEqual(arity, attr.Descriptor._data_arity);
-            Assert.AreEqual((int)assoc, attr.Descriptor._association);
-            Assert.AreEqual((int)at, attr.Descriptor._attribute_type);
-            Assert.AreEqual((int)dt, attr.Descriptor._data_type);
+            Assert.AreEqual((int) assoc, attr.Descriptor._association);
+            Assert.AreEqual((int) at, attr.Descriptor._attribute_type);
+            Assert.AreEqual((int) dt, attr.Descriptor._data_type);
         }
 
         public static void CheckStandardGeometryAttributes(IG3D g3d)
@@ -70,7 +70,7 @@ namespace Ara3D.Tests
             {
                 TestWritingGeometry(g, outputFolder, i.ToString());
 
-                var g1 = G3Sharp.LoadGeometry(Path.Combine(outputFolder, $"{i}.ara.obj"));                
+                var g1 = G3Sharp.LoadGeometry(Path.Combine(outputFolder, $"{i}.ara.obj"));
                 TestGeometries.BasicCompareGeometries(g.ToTriMesh(), g1);
 
                 var g2 = G3Sharp.LoadGeometry(Path.Combine(outputFolder, $"{i}.g3.obj"));
@@ -87,7 +87,7 @@ namespace Ara3D.Tests
         /// <summary>
         /// This test checks the basic construction of a G3D from attributes. 
         /// </summary>
-        [Test]    
+        [Test]
         public static void SimpleCreateG3DTest()
         {
             // Should be a tetrahedron
@@ -194,7 +194,7 @@ namespace Ara3D.Tests
             // TODO: test writing using Helix
 
             // Check that reading the G3D back-in yields the same IGeometry
-            var g2 = G3DExtensions.ReadFromFile(g3dFileName).ToIGeometry();
+            var g2 = Util.TimeIt(() => G3DExtensions.ReadFromFile(g3dFileName).ToIGeometry(), "Reading time for G3D");
             TestGeometries.CompareGeometries(g, g2);
         }
 
@@ -219,7 +219,7 @@ namespace Ara3D.Tests
                 var g3SharpObjList = Util.TimeIt(
                     () => G3Sharp.LoadMeshes(f), $"Loading OBJ with geometry3Sharp");
 
-                for (var i=0; i < g3SharpObjList.Count; ++i)
+                for (var i = 0; i < g3SharpObjList.Count; ++i)
                 {
                     var dmesh = g3SharpObjList[i];
                     CompareDMesh(dmesh, dmesh.ToIGeometry(), TestGeometries.SmallTolerance);
@@ -236,5 +236,21 @@ namespace Ara3D.Tests
         // Compare to DMesh3 (which is a jerk) 
         // Get a torus created. 
         // Generate the tetrahedron. 
+
+
+        [Test]
+        public static void TestG3DReader()
+        {
+            foreach (var fileName in GetInputFiles("*.g3d"))
+            {
+                var g = Util.TimeIt(() => G3D.ReadFile(fileName), $"Reading G3D {fileName}");
+
+                var baseFileName = Path.GetFileName(fileName);
+                var outputFileName = Path.Combine(TestOutputFolder, baseFileName);
+
+                Console.WriteLine("Testing Ara 3D native writer");
+                TestWritingFile(outputFileName + ".ara.obj", f => g.ToIGeometry().WriteObj(f, false));
+            }
+        }
     }
 }
