@@ -365,13 +365,16 @@ namespace Ara3D
         public static string PrettyPrintTimeElapsed(this Stopwatch sw)
             => $"{sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}";
 
+        public static void OutputTimeElapsed(this Stopwatch sw, string label)
+            => Console.WriteLine($"{label}: time elapsed {sw.PrettyPrintTimeElapsed()}");
+
         public static T TimeIt<T>(this Func<T> function, string label = "")
         {
             var sw = new Stopwatch();
             sw.Start();
             var r = function();
             sw.Stop();
-            Console.WriteLine($"{label}: time elapsed {sw.PrettyPrintTimeElapsed()}");
+            sw.OutputTimeElapsed(label);
             return r;
         }
 
@@ -1038,6 +1041,9 @@ namespace Ara3D
 
         public static JObject ToJObject(this object o)
             => JObject.FromObject(o);
+
+        public static JArray ToJArray<T>(this IList<T> xs)
+            => JArray.FromObject(xs);
 
         public static string ToJson(this object o)
             => o?.ToJObject()?.ToString() ?? "null";
