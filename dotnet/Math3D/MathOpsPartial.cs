@@ -322,5 +322,18 @@ namespace Ara3D
         {
             return n % 2 == 1;
         }
+
+        public static float[] ToFloats(this Matrix4x4 m)
+            => new[]
+            {
+                m.M11, m.M12, m.M13, m.M14,
+                m.M21, m.M22, m.M23, m.M24,
+                m.M31, m.M32, m.M33, m.M34,
+                m.M41, m.M42, m.M43, m.M44
+            };
+
+        public static Matrix4x4 ToMatrix(this float[] m)
+            => new Matrix4x4(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13],
+                m[14], m[15]);
     }
 }

@@ -33,7 +33,8 @@
         assoc_corner, 
         assoc_edge,
         assoc_object,
-        assoc_instance, 
+        assoc_instance,
+        assoc_group,
         assoc_none,
         assoc_invalid,
     };
@@ -61,7 +62,27 @@
         attr_pervertex,
         attr_mapchannel_data,
         attr_mapchannel_index,
-        attr_transform,
+
+        /// <summary>
+        /// The instance transform, is a transform associated with each instance 
+        /// </summary>
+        attr_instance_transform,
+
+        /// <summary>
+        /// The instance group, is the index of the group associated with each instance
+        /// </summary>
+        attr_instance_group,
+
+        /// <summary>
+        /// This is the face index where each group starts. Groups can be nested.
+        /// </summary>
+        attr_group_index,
+
+        /// <summary>
+        /// This is the size of each group (number of faces)
+        /// </summary>
+        attr_group_size,
+
         attr_custom,
         attr_invalid,
     };

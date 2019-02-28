@@ -87,7 +87,7 @@ namespace Ara3D
             FaceIndexAttribute = this.FindAttribute(AttributeType.attr_faceindex, false);
 
             // Check that everything is kosher
-            this.Validate();
+            //this.Validate();
         }
 
         public static G3D Create(BFast bfast)

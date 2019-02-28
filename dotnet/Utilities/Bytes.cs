@@ -67,19 +67,22 @@ namespace Ara3D
 
         public static byte[] CopyTo(this IBytes bytes, byte[] array)
         {
-            Marshal.Copy(bytes.Ptr, array, 0, Math.Min(bytes.ByteCount, array.Length));
+            if (bytes.ByteCount > 0)
+                Marshal.Copy(bytes.Ptr, array, 0, Math.Min(bytes.ByteCount, array.Length));
             return array;
         }
 
         public static byte[] CopyTo(this IBytes bytes, byte[] array, int offset, int size)
         {
-            Marshal.Copy(bytes.Ptr, array, offset, Math.Min(bytes.ByteCount, size));
+            if (bytes.ByteCount > 0)
+                Marshal.Copy(bytes.Ptr, array, offset, Math.Min(bytes.ByteCount, size));
             return array;
         }
 
         public static IBytes CopyTo(this byte[] array, IBytes bytes)
         {
-            Marshal.Copy(array, 0, bytes.Ptr, Math.Min(bytes.ByteCount, array.Length));
+            if (bytes.ByteCount > 0)
+                Marshal.Copy(array, 0, bytes.Ptr, Math.Min(bytes.ByteCount, array.Length));
             return bytes;
         }
 
