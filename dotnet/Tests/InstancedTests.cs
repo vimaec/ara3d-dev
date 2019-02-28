@@ -29,6 +29,23 @@ namespace Ara3D.Tests
         }
 
         [Test]
+        public static void CreateBFast()
+        {
+            var folder = @"c:\dev\tmp\vim-export-demo-copy2";
+
+            // I would like to make this parallel, but Sizeof is a problem 
+            var files = Directory.GetFiles(folder, @"*.g3d");
+            var geometries = files.AsParallel().ToDictionary(
+                f => int.Parse(Path.GetFileNameWithoutExtension(f)),
+                f => File.ReadAllBytes(f));
+            var manifest = Util.LoadJsonArray(Path.Combine(folder, "manifest.json"));
+            var nodes = manifest.ToObject<IList<SimpleSceneNode>>();
+
+            var bfast = geometries.Values.ToBFast();
+            bfast.WriteToFile(@"C:\dev\tmp\instanced.bfast");
+        }
+
+        [Test]
         public static void FirstInstanceTest()
         {
             foreach (var fileName in IOTests.GetInputFiles("model.g3d"))
