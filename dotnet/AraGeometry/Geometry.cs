@@ -283,7 +283,7 @@ namespace Ara3D
         public static IArray<Vector3> FaceMidPoints(this IGeometry self) 
             => self.GetFaces().Select(e => e.MidPoint());
 
-        /*
+        // TODO: keep all the other data. 
         public static IGeometry WeldVertices(this IGeometry self)
         {
             var verts = new Dictionary<Vector3, int>();
@@ -302,9 +302,8 @@ namespace Ara3D
                     verts.Add(v, n);
                 }
             }
-            return new Geometry(self.PointsPerFace, verts.Keys.ToIArray(), indices.ToIArray(), self.Elements);
+            return Mesh(self.PointsPerFace, verts.Keys.ToIArray(), indices.ToIArray());
         }
-        */
 
         public static IGeometry Deform(this IGeometry self, Func<Vector3, Vector3> f)
             => self.ReplaceAttribute(self.Vertices.Select(f).ToVertexAttribute()).ToIGeometry();
@@ -534,6 +533,48 @@ namespace Ara3D
             }
 
             return QuadMesh(verts.ToIArray(), ComputeQuadMeshStripIndices(segments-1, points.Count-1));
+        }
+
+        public static IGeometry RemoveUnusedVertices(this IGeometry g)
+        {
+            var tmp = false.Repeat(g.Vertices.Count).ToArray();
+            for (var i=0; i < g.Indices.Count; ++i)
+                tmp[g.Indices[i]] = true;
+
+            var n = 0;
+            var remap = new int[g.Vertices.Count];
+            var newVertices = new List<Vector3>();
+            for (var i = 0; i < remap.Length; ++i)
+            {
+                if (tmp[i])
+                {
+                    remap[i] = n++;                    
+                    newVertices.Add(g.Vertices[i]);
+                }
+                else
+                    remap[i] = -1;
+            }
+
+            // Just make sure that everything makes sense
+            for (var i = 0; i < g.Indices.Count; ++i)
+            {
+                var index = g.Indices[i];
+                Debug.Assert(tmp[index] = true);
+                var newIndex = remap[index];
+                Debug.Assert(newIndex >= 0);
+                var vtx = g.Vertices[index];
+                var vtx2 = newVertices[newIndex];
+                Debug.Assert(vtx == vtx2);
+            }
+
+            // Set up the new indices
+            var newIndices = new List<int>();
+            for (var i = 0; i < g.Indices.Count; ++i)
+            {
+                newIndices.Add(remap[g.Indices[i]]);
+            }
+
+            return Mesh(g.PointsPerFace, newVertices.ToIArray(), newIndices.ToIArray());
         }
     }
 }

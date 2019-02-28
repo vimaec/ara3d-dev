@@ -28,4 +28,10 @@ namespace Ara3D
         public static IGeometry ToIGeometry(this IScene scene)
             => scene.TransformedGeometries().Merge();
     }
+
+    public class SimpleSceneNode
+    {
+        public float[] Transform { get; set; }
+        public int Geometry { get; set; }
+    }
 }

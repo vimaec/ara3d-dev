@@ -520,7 +520,8 @@ namespace Ara3D
         /// </summary>
         public static int SizeOf(this Type t)
         {
-            return TypeSizes.GetOrCompute(t, ComputeSizeOf);
+            return Marshal.SizeOf(t);
+            //return TypeSizes.GetOrCompute(t, ComputeSizeOf);
         }
 
         /// <summary>
@@ -1062,6 +1063,16 @@ namespace Ara3D
             var fileName = Path.Combine(di.FullName, "_deleteme_.tmp");
             File.WriteAllText(fileName, "test");
             File.Delete(fileName);
+        }
+
+        public static JObject LoadJson(string filePath)
+        {
+            return JObject.Parse(File.ReadAllText(filePath));
+        }
+
+        public static JArray LoadJsonArray(string filePath)
+        {
+            return JArray.Parse(File.ReadAllText(filePath));
         }
     }
 }

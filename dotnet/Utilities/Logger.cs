@@ -81,18 +81,33 @@ namespace Ara3D
         {
             File.WriteAllLines(path, Events.Select(e => e.ToString()));
         }
-    }    
+    }
 
-   
+    public class NullLogger : ILogger
+    {
+        public ILogger Log(string message = "", object state = null, LogLevel level = LogLevel.None, int eventId = 0)
+        {
+            return this;
+        }
+
+        public void ExportLog(string path)
+        {
+        }
+    }
+
+
     public static class Logger
     {
         // Normally you would put a logger in your application main class 
         public static readonly ILogger DefaultLogger = new StdLogger();
+        public static readonly ILogger NullLogger = new NullLogger();
 
+        /*
         public static ILogger Log(string message = "", object state = null, LogLevel level = LogLevel.None, int eventId = 0)
         {
             return DefaultLogger.Log(message, state, level, eventId);
         }        
+        */
 
         public static ILogger LogFrame(this ILogger logger, int frameDepth = 1)
         {

@@ -12,7 +12,7 @@ namespace Ara3D
 
         public G3DAdapter(IG3D g3D)
         {
-            g3D.Validate();
+            //g3D.Validate();
             
             G3D = g3D;
 
