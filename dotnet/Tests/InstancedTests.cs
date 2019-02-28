@@ -24,6 +24,7 @@ namespace Ara3D.Tests
                 throw new Exception($"Could not find environment variable {InputFolderEnvVariable}.");
             if (!Directory.Exists(InputFolder))
                 throw new Exception($"No input folder could be found: {InputFolder}");
+            Directory.CreateDirectory(OutputFolder);
         }
 
         [Test, Explicit("Hard coded paths")]
@@ -85,7 +86,7 @@ namespace Ara3D.Tests
 
             sw.OutputTimeElapsed("Creating a new manifest");
             var newManifest = nodes.ToJArray().ToString();
-            buffers.Insert(0, File.ReadAllBytes(manifestFile));
+            buffers.Insert(0, newManifest.ToBytesUtf8());
 
             sw.OutputTimeElapsed("Generating BFAST buffer");
             var bfast = buffers.ToBFast();
