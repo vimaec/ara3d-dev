@@ -41,6 +41,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -51,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
@@ -61,10 +65,10 @@
       <DependentUpon>ArrayOps.tt</DependentUpon>
     </Compile>
     <Compile Include="Geometry.cs" />
+    <Compile Include="GeometryReader.cs" />
     <Compile Include="PointsExtensions.cs" />
     <Compile Include="Primitives.cs" />
     <Compile Include="Scene.cs" />
-    <Compile Include="SceneBuilder.cs" />
     <Compile Include="G3DBridge.cs" />
     <Compile Include="GeometryWriter.cs" />
     <Compile Include="ObjData.cs" />

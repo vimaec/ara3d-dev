@@ -138,6 +138,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UtilityHelloWorld.cs" />
+    <Compile Include="UtilityLoadInstances.cs" />
     <Compile Include="UtilityMergeAllGeometry.cs" />
     <Compile Include="UtilitySplitGeometry.cs" />
     <Compile Include="UtilitySurfaceArea.cs" />
