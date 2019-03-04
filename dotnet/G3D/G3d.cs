@@ -104,6 +104,10 @@ namespace Ara3D
             return new G3D(buffers.Zip(descriptors, G3DExtensions.ToAttribute), bfast, header);
         }
 
+        // TODO: all of these copies make me die a little bit inside
+        public static G3D Create(IBytes bytes)
+            => Create(bytes.ToBytes());    
+
         public static G3D Create(byte[] bytes)
             => Create(new Memory<byte>(bytes));
 

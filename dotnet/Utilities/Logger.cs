@@ -95,7 +95,6 @@ namespace Ara3D
         }
     }
 
-
     public static class Logger
     {
         // Normally you would put a logger in your application main class 
