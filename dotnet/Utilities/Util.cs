@@ -277,9 +277,7 @@ namespace Ara3D
         /// Returns the current date-time in a format appropriate for appending to files.
         /// </summary>
         public static string GetTimeStamp()
-        {
-            return DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        }
+            => DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");       
 
         /// <summary>
         /// Appends a timestamp to a file name (just before extension). 
@@ -745,14 +743,6 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Returns the file size in bytes, or 0 if there is no file.
-        /// </summary>
-        public static long FileSize(string fileName)
-        {
-            return File.Exists(fileName) ? new FileInfo(fileName).Length : 0;
-        }
-
-        /// <summary>
         /// Returns true if the value is in between two values.
         /// </summary>
         public static bool Between(this long value, long min, long max)
@@ -1063,10 +1053,15 @@ namespace Ara3D
         /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
         /// </summary>
-        /// <param name="di"></param>
         public static void TestWrite(this DirectoryInfo di)
+            => TestWrite(di.FullName);
+
+        /// <summary>
+        /// Useful quick test to assure that we can create a file in the folder and write to it.
+        /// </summary>
+        public static void TestWrite(string folder)
         {
-            var fileName = Path.Combine(di.FullName, "_deleteme_.tmp");
+            var fileName = Path.Combine(folder, "_deleteme_.tmp");
             File.WriteAllText(fileName, "test");
             File.Delete(fileName);
         }
@@ -1080,6 +1075,45 @@ namespace Ara3D
         {
             return JArray.Parse(File.ReadAllText(filePath));
         }
+
+        // File size reporting
+
+        static readonly string[] ByteSuffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+
+        /// Improved version of https://stackoverflow.com/questions/281640/how-do-i-get-a-human-readable-file-size-in-bytes-abbreviation-using-net
+        public static string BytesToString(long byteCount, int numPlacesToRound = 1)
+        {
+            if (byteCount == 0) return "0B";
+            var bytes = Math.Abs(byteCount);
+            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            var num = Math.Round(bytes / Math.Pow(1024, place), numPlacesToRound);
+            return $"{Math.Sign(byteCount) * num}{ByteSuffixes[place]}";
+        }
+
+        /// <summary>
+        /// Returns the file size in bytes, or 0 if there is no file.
+        /// </summary>
+        public static long FileSize(string fileName)
+            => File.Exists(fileName) ? new FileInfo(fileName).Length : 0;
+
+        /// <summary>
+        /// Returns the file size in bytes, or 0 if there is no file.
+        /// </summary>
+        public static string FileSizeAsString(string fileName, int numPlacesToShow = 1)
+            => BytesToString(FileSize(fileName), numPlacesToShow);
+
+
+        /// <summary>
+        /// Returns the total file size of all files given
+        /// </summary>
+        public static long TotalFileSize(IEnumerable<string> files)
+            => files.Sum(FileSize);
+
+        /// <summary>
+        /// Returns the total file size of all files given as a human readable string
+        /// </summary>
+        public static string TotalFileSizeAsString(IEnumerable<string> files, int numPlacesToShow = 1)
+            => BytesToString(TotalFileSize(files), numPlacesToShow);
     }
 }
 
