@@ -33,7 +33,7 @@ namespace UnityBridge
 
             var indices = g.IndexAttribute.ToInts();
             var vertexFloats = g.VertexAttribute.ToFloats();
-            var unityVertices = vertexFloats.SelectTriplets((x, y, z) => new UnityEngine.Vector3(-x, y, z));
+            var unityVertices = vertexFloats.SelectTriplets((x, y, z) => new UnityEngine.Vector3(-x, z, -y));
             r.vertices = unityVertices.ToArray();
             r.indexFormat = unityVertices.Count > ushort.MaxValue ? IndexFormat.UInt32 : IndexFormat.UInt16;
 
@@ -90,6 +90,14 @@ namespace UnityBridge
             transform.position = new UnityEngine.Vector3(-mtx[12], mtx[13], mtx[14]);
 
             // TODO: Mat to quat
+        }
+
+        // TODO: support matrices once we have our own math classes
+        public static void SetFromNode(this Transform transform, ISceneNode node)
+        {
+            var mtx = node.Transform;
+            var position = mtx.Translation;
+            transform.position = new UnityEngine.Vector3(-position.X, position.Z, -position.Y);
         }
     }
 }
