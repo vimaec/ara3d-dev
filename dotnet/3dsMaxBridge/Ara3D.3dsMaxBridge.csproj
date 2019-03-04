@@ -121,6 +121,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Ara3D_Startup.ms" />
     <None Include="packages.config" />
     <None Include="readme.md" />
   </ItemGroup>

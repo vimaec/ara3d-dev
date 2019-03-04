@@ -497,6 +497,12 @@ namespace Ara3D
         }
 
         /// <summary>
+        /// Returns a value if found in the dictionary, or default if not present.
+        /// </summary>
+        public static V GetOrDefault<K, V>(this IDictionary<K, V> self, K key)
+            => self.ContainsKey(key) ? self[key] : default;
+
+        /// <summary>
         /// Computes the size of the given managed type. Slow, but reliable. Does not give the same result as Marshal.SizeOf
         /// https://stackoverflow.com/questions/8173239/c-getting-size-of-a-value-type-variable-at-runtime
         /// https://stackoverflow.com/questions/3804638/whats-the-size-of-this-c-sharp-struct?noredirect=1&lq=1

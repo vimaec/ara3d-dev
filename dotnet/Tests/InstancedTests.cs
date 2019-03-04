@@ -27,29 +27,13 @@ namespace Ara3D.Tests
             Directory.CreateDirectory(OutputFolder);
         }
 
-        [Test, Explicit("Hard coded paths")]
-        public static void SecondInstanceTest()
-        {
-            var folder = @"c:\dev\tmp\vim-export-demo-copy2";
-
-            // I would like to make this parallel, but Sizeof is a problem 
-            var files = Directory.GetFiles(folder, @"*.g3d");
-            var geometries = files.AsParallel().ToDictionary(
-                f => int.Parse(Path.GetFileNameWithoutExtension(f)),
-                f => G3D.ReadFile(f).ToIGeometry());                 
-            var manifest = Util.LoadJsonArray(Path.Combine(folder, "manifest.json"));
-            var nodes = manifest.ToObject<IList<SimpleSceneNode>>();
-            var g = nodes.Select(n => geometries[n.Geometry].Transform(n.Transform.ToMatrix())).Merge();
-            g.WriteG3D(@"C:\dev\tmp\instanced.g3d");
-            g.WriteObj(@"C:\dev\tmp\instanced.obj");
-        }
-
         /// <summary>
         /// Generates a BFAST from a directory containing G3D files and a manifest.json
         /// </summary>
         [Test]
         public static void CreateBFast()
         {
+            /*
             var sw = new Stopwatch();
             sw.Start();
 
@@ -60,7 +44,7 @@ namespace Ara3D.Tests
             var manifest = Util.LoadJsonArray(manifestFile);
 
             sw.OutputTimeElapsed("Converting JSON array to nodes");
-            var nodes = manifest.ToObject<IList<SimpleSceneNode>>();
+            var nodes = manifest.ToObject<IList<ManifestSceneNode>>();
 
             var files = Directory.GetFiles(folder, @"*.g3d");
 
@@ -82,7 +66,7 @@ namespace Ara3D.Tests
 
             // Remap the indices 
             foreach (var node in nodes)
-                node.Geometry = geometryIndexLookup[node.Geometry];
+                node. = geometryIndexLookup[node.Geometry];
 
             sw.OutputTimeElapsed("Creating a new manifest");
             var newManifest = nodes.ToJArray().ToString();
@@ -98,8 +82,10 @@ namespace Ara3D.Tests
 
             sw.OutputTimeElapsed("Reading BFast and generating OBJ");
             ReadBFastAndGenerateObj(outputFile);
+            */
         }
 
+        /*
         public static void ReadBFastAndGenerateObj(string filePath)
         {
             // TODO: I don't like ReadBFast on BFastExtensions it is not discoverable
@@ -113,7 +99,7 @@ namespace Ara3D.Tests
             var geometries = bFast.Buffers.Skip(1).AsParallel().Select(b => G3D.Create(b).ToIGeometry()).ToList();
 
             // Get the scene nodes from the manifest 
-            var manifest = JArray.Parse(manifestText).ToObject<IList<SimpleSceneNode>>();
+            var manifest = JArray.Parse(manifestText).ToObject<IList<ManifestSceneNode>>();
 
             // Transform all of the geometries and merge them together
             var g = manifest.Select(node => geometries[node.Geometry].Transform(node.Transform.ToMatrix())).Merge();
@@ -121,15 +107,16 @@ namespace Ara3D.Tests
             // Output the merged OBJ
             var outputFile = filePath + ".obj";
             g.WriteObj(outputFile);
-
         }
+        */
 
         /// <summary>
         /// This tests the current system in place for supporting face groups and instances
         /// based on face groups embedded in a G3D. To be determined whether I continue supporting
-        /// that. My impression is that it leaves a lot of complexity.
+        /// that. My impression is that it adds a lot of complexity.
+        /// You have to split the thing up. 
         /// </summary>
-        [Test]
+        [Test, Explicit]
         public static void ReadInstancesFromG3DTest()
         {
             foreach (var fileName in IOTests.GetInputFiles("model.g3d"))
