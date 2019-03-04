@@ -41,17 +41,11 @@
     <Reference Include="Autodesk.Max">
       <HintPath>$(ADSK_3DSMAX_x64_2019)\Autodesk.Max.dll</HintPath>
     </Reference>
-    <Reference Include="geometry3Sharp, Version=1.0.289.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\geometry3Sharp.1.0.289\lib\net45\geometry3Sharp.dll</HintPath>
-    </Reference>
     <Reference Include="MaxCustomControls">
       <HintPath>$(ADSK_3DSMAX_x64_2019)\MaxCustomControls.dll</HintPath>
     </Reference>
     <Reference Include="MaxPlusDotNet">
       <HintPath>$(ADSK_3DSMAX_x64_2019)\MaxPlusDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="RevitAPI">
       <HintPath>$(ADSK_3DSMAX_x64_2019)\RevitAPI.dll</HintPath>
@@ -121,7 +115,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="readme.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
