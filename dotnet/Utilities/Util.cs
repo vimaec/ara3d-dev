@@ -1123,6 +1123,13 @@ namespace Ara3D
         /// </summary>
         public static string TotalFileSizeAsString(IEnumerable<string> files, int numPlacesToShow = 1)
             => BytesToString(TotalFileSize(files), numPlacesToShow);
+
+        /// <summary>
+        /// Returns the most recently written to sub-folder
+        /// </summary>
+        public static string GetMostRecentSubFolder(string folderPath)
+            => Directory.GetDirectories(folderPath).OrderByDescending(f => new DirectoryInfo(f).LastWriteTime)
+                .FirstOrDefault();
     }
 }
 

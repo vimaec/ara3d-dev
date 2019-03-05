@@ -80,7 +80,7 @@ namespace Ara3D.Tests
         public static void TestBFastToObj()
         {
             var inputFile =
-                @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-05_00-02-49-rac_basic_sample_project\output.vim";
+                @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-05_00-47-15-rac_basic_sample_project\output.vim";
             var scene = GeometryReader.ReadSceneFromBFast(inputFile);
             scene.ToIGeometry().WriteObj(@"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\test.obj");
         }

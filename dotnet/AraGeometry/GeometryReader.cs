@@ -66,7 +66,7 @@ namespace Ara3D
             var manifestText = manifestBuffer.ToBytes().ToUtf8();
 
             // TODO: the G3D create here is doing a copy under the hood, which sucks
-            var geometries = bFast.Buffers.Skip(1).AsParallel().Select(b => G3D.Create(b).ToIGeometry()).ToList();
+            var geometries = bFast.Buffers.Skip(1).AsParallel().AsOrdered().Select(b => G3D.Create(b).ToIGeometry()).ToList();
 
             // Get the scene nodes from the manifest 
             var manifest = JArray.Parse(manifestText).ToObject<IList<ManifestSceneNode>>();
