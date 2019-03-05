@@ -1038,6 +1038,9 @@ namespace Ara3D
         public static JObject ToJObject(this object o)
             => JObject.FromObject(o);
 
+        public static JArray ToJArray<T>(this IEnumerable<T> xs)
+            => xs.ToList().ToJArray();
+
         public static JArray ToJArray<T>(this IList<T> xs)
             => JArray.FromObject(xs);
 

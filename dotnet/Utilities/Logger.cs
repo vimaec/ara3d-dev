@@ -40,7 +40,7 @@ namespace Ara3D
 
     public interface ILogger
     {
-        ILogger Log(string message = "", object state = null, LogLevel level = LogLevel.None, int eventId = 0);
+        ILogger Log(string message = "", LogLevel level = LogLevel.None, int eventId = 0);
         void ExportLog(string path);
     }
 
@@ -48,7 +48,6 @@ namespace Ara3D
     {
         public ILogger Logger;
         public string Message;
-        public object State;
         public LogLevel Level;
         public int Index;
         public DateTime When;
@@ -56,7 +55,7 @@ namespace Ara3D
 
         public override string ToString()
         {
-            return $"{Level.EnumName()} {Index} {When} {Message} {State.ToJson()}";
+            return $"{Level.EnumName()} {Index} {When} {Message}";
         }
     }
 
@@ -64,14 +63,13 @@ namespace Ara3D
     {
         public List<LogEvent> Events = new List<LogEvent>();
 
-        public ILogger Log(string message = "", object state = null, LogLevel level = LogLevel.None, int eventId = 0)
+        public ILogger Log(string message = "",  LogLevel level = LogLevel.None, int eventId = 0)
         {
             Events.Add(new LogEvent
             {
                 EventId = eventId,
                 Index = Events.Count,
                 Message = message,
-                State = state,
                 When = DateTime.Now
             });
             return this;
@@ -85,7 +83,7 @@ namespace Ara3D
 
     public class NullLogger : ILogger
     {
-        public ILogger Log(string message = "", object state = null, LogLevel level = LogLevel.None, int eventId = 0)
+        public ILogger Log(string message = "", LogLevel level = LogLevel.None, int eventId = 0)
         {
             return this;
         }
@@ -110,39 +108,38 @@ namespace Ara3D
 
         public static ILogger LogFrame(this ILogger logger, int frameDepth = 1)
         {
-            return logger.Log("Current frame", new {frame = Frame.GetFrame(frameDepth)});
+            return logger.Log($"Current frame {Frame.GetFrame(frameDepth)}");
         }
 
-        public static void Log(this ILogger logger, string message, Action action, object state = null,
-            LogLevel level = LogLevel.Debug, LogLevel exceptionLevel = LogLevel.Critical)
+        public static void Log(this ILogger logger, string message, Action action, LogLevel level = LogLevel.Debug, LogLevel exceptionLevel = LogLevel.Critical)
         {
             logger.Log(message, () =>
             {
                 action();
                 return true;
-            }, state, level, exceptionLevel);
+            }, level, exceptionLevel);
         }
 
-        public static T Log<T>(this ILogger logger, string message, Func<T> func, object state=null, LogLevel level = LogLevel.Debug, LogLevel exceptionLevel = LogLevel.Critical, bool rethrow = false)
+        public static T Log<T>(this ILogger logger, string message, Func<T> func,  LogLevel level = LogLevel.Debug, LogLevel exceptionLevel = LogLevel.Critical, bool rethrow = false)
         {
             try
             {
-                logger.Log("begin: " + message, state, level);
+                logger.Log("begin: " + message, level);
                 return func();
             }
             catch (Exception e)
             {
-                logger.Log(e.Message, new {error = e}, exceptionLevel);
+                logger.Log($"Exception: {e.Message} at {e.StackTrace}", exceptionLevel);
                 logger.LogFrame(2); // Want to log the frame of the calling function.
                 if (rethrow)
                     throw;
             }
             finally
             {
-                logger.Log("end: " + message, state, level);
+                logger.Log("end: " + message, level);
             }
 
-            return default(T);
+            return default;
         }
     }
 }

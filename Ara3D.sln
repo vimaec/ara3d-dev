@@ -45,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.HelixBridge", "dotnet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.Revit.Prototype.ObjExport", "..\ara-revit-tools\prototype-revit-export\Ara3D.Revit.Prototype.ObjExport.csproj", "{B4135005-F068-42A9-A9DB-67314B22EB4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTests", "..\ara-revit-tools\RevitTests\RevitTests.csproj", "{77AB220B-6BE8-4099-82A0-6553BA0497E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.RevitTests", "..\ara-revit-tools\RevitTests\Ara3D.RevitTests.csproj", "{77AB220B-6BE8-4099-82A0-6553BA0497E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

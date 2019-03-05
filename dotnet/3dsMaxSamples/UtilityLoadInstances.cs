@@ -1,10 +1,10 @@
-﻿namespace Ara3D
+namespace Ara3D
 {
     public class UtilityLoadInstances : IUtilityPlugin
     {
         public void Evaluate()
         {
-            API.LoadG3DFiles(@"C:\dev\tmp\vim-export-demo-copy");
+            API.LoadBFastScene(@"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_23-12-13-main\output.vim");
         }
     }
 }

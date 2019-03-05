@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Autodesk.Max;
 using Autodesk.Max.MaxPlus;
 using Object = Autodesk.Max.MaxPlus.Object;
 
@@ -208,18 +209,31 @@ namespace Ara3D
         public static INode CreateNodeWithEmptyGeometry() 
             => CreateTriObject().CreateNode();
 
-        public static void LoadG3DFiles(string folder)
+        public static Layer CreateLayer(string name)
+            => LayerManager.CreateLayer(new WStr(name));
+
+        public static void LoadScene(IScene scene)
         {
-            var scene = GeometryReader.ReadScene(folder);
             var nodeTable = new Dictionary<int, INode>();
+            var layers = new Dictionary<int, Layer>();
             foreach (var obj in scene.Objects.ToEnumerable())
             {
-                if (nodeTable.ContainsKey(obj.Node.GeometryId))
-                    nodeTable[obj.Node.GeometryId].InstanceNode(obj.Node.Transform);
+                INode node;
+                if (nodeTable.ContainsKey(obj.Node.GeometryId)) 
+                    node = nodeTable[obj.Node.GeometryId].InstanceNode(obj.Node.Transform);
                 else
-                    nodeTable.Add(obj.Node.GeometryId, obj.ToNode());
+                    nodeTable.Add(obj.Node.GeometryId, node = obj.ToNode());
+
+                var layer = layers.GetOrCompute(obj.Node.CategoryId, id => CreateLayer($"Category {id}"));
+                layer.AddToLayer(node);
             }
         }
+
+        public static void LoadG3DFiles(string folder)
+            => LoadScene(GeometryReader.ReadScene(folder));
+
+        public static void LoadBFastScene(string filePath)
+            => LoadScene(GeometryReader.ReadSceneFromBFast(filePath));
 
         public static INode ToNode(this IGeometry g)
         {
