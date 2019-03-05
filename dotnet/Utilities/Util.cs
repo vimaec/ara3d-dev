@@ -1085,6 +1085,12 @@ namespace Ara3D
             return JArray.Parse(File.ReadAllText(filePath));
         }
 
+        public static T LoadJsonFromFile<T>(string filePath)
+        {
+            using (var file = File.OpenText(filePath))
+                return (T)(new JsonSerializer()).Deserialize(file, typeof(T));
+        }
+
         // File size reporting
 
         static readonly string[] ByteSuffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB

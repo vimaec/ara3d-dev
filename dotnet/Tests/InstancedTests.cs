@@ -24,32 +24,7 @@ namespace Ara3D.Tests
             Directory.CreateDirectory(OutputFolder);
         }
         
-        [Test,Explicit("Temporary test")]
-        public static void MergedByCategoryAndMaterial()
-        {
-            var scene = GeometryReader.ReadScene(
-                //@"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_17-28-46");
-                @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_17-31-34");
-
-            // scene.ToIGeometry().Merge().WriteObj(@"c:\dev\tmp\test.obj");
-
-            var d = new DictionaryOfLists<int, ISceneObject>();
-            foreach (var obj in scene.Objects.ToEnumerable())
-                d.Add(obj.Node.GeometryId, obj);
-
-            var uninstancedObjects = d.Where(kv => kv.Value.Count == 1).Select(kv => kv.Value[0]).ToList();
-            Console.WriteLine($"Total object count = {scene.Objects.Count}, uninstanced object count = {uninstancedObjects.Count}");
-
-            /*
-            var categoryGroups = scene.Objects.ToEnumerable().GroupBy(obj => obj.Node.CategoryId);
-            foreach (var cat in categoryGroups)
-            {
-                var matGroups = cat.GroupBy(obj => obj.Node.MaterialId);
-                var element = matGroups.Select(grp => grp.Select(obj => obj.GeometryId));
-            }*/
-        }
-
-        [Test]
+        [Test, Explicit("Hard coded paths")]
         public static void TestBFastLoading()
         {
             var sw = new Stopwatch();
@@ -167,6 +142,5 @@ namespace Ara3D.Tests
             g.WriteObj(outputFile);
         }
         */
-
     }
 }

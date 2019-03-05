@@ -17,7 +17,7 @@ namespace Ara3D
         public static IArray<ISceneNode> ManifestNodesToSceneNodes(this IList<ManifestSceneNode> manifest)
             => manifest.Select(
                 node => new SceneNode(node.ElementId.ToString(), node.GeometryId, node.Transform.ToMatrix(),
-                    node.MaterialId, node.CategoryId) as ISceneNode).ToIArray();
+                    node.ElementId, node.MaterialId, node.CategoryId) as ISceneNode).ToIArray();
 
         /// <summary>
         /// Loads a scene from a folder containing G3D files and a manifest. 

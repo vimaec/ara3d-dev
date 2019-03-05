@@ -7,6 +7,7 @@ namespace Ara3D
     {
         Matrix4x4 Transform { get; }
         int GeometryId { get; }
+        int ElementId { get; }
         int MaterialId { get; }
         int CategoryId { get; }
     }
@@ -25,11 +26,12 @@ namespace Ara3D
 
     public class SceneNode : ISceneNode
     {
-        public SceneNode(string name, int geometryId, Matrix4x4 transform, int materialId, int categoryId)
+        public SceneNode(string name, int geometryId, Matrix4x4 transform, int elementId, int materialId, int categoryId)
         {
             Name = name;
             GeometryId = geometryId;
             Transform = transform;
+            ElementId = elementId;
             MaterialId = materialId;
             CategoryId = categoryId;
         }
@@ -39,6 +41,7 @@ namespace Ara3D
         public Matrix4x4 Transform { get; }
         public int MaterialId { get; set; }
         public int CategoryId { get; set; }
+        public int ElementId { get; set; }
     }
 
     public class Scene : IScene
