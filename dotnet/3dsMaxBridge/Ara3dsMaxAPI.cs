@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Autodesk.Max;
 using Autodesk.Max.MaxPlus;
 using Object = Autodesk.Max.MaxPlus.Object;
 
@@ -28,10 +29,16 @@ namespace Ara3D
             return new Matrix4x4(
                 row0.X, row0.Y, row0.Z, 0,
                 row1.X, row1.Y, row1.Z, 0,
-                row2.X, row2.Y, row2.Z, 1,
-                tr.X, tr.Y, tr.Z, 1
-                );
+                row2.X, row2.Y, row2.Z, 0,
+                tr.X, tr.Y, tr.Z, 1);
         }
+
+        public static Matrix3 ToMatrix3(this Matrix4x4 m)
+            => new Matrix3(
+                new Point3(m.M11, m.M12, m.M13),
+                new Point3(m.M21, m.M22, m.M23),
+                new Point3(m.M31, m.M32, m.M33),
+                new Point3(m.M41, m.M42, m.M43));        
 
         public static IGeometry ToTransformedIGeometry(this INode node)
             => node.ToIGeometry()?.Transform(node.GetWorldTM().ToMatrix());
@@ -150,6 +157,15 @@ namespace Ara3D
             CopyToMesh(g, mesh);
         }
 
+        public static INode TransformNode(this INode node, Matrix3 m)
+        {
+            node.Transform = m;
+            return node;
+        }
+
+        public static INode InstanceNode(this INode node, Matrix4x4 m)
+            => node.CreateInstance().TransformNode(m.ToMatrix3());
+
         public static void CopyToMesh(this IGeometry g, Mesh mesh)
         {
             var triMesh = g.ToTriMesh();
@@ -181,25 +197,43 @@ namespace Ara3D
             mesh.InvalidateTopologyCache();
         }
 
-        public static GeometryPluginHost CreatePluginInstance()
-        {
-            return new GeometryPluginHost();
-        }
+        public static GeometryPluginHost CreatePluginInstance() 
+            => new GeometryPluginHost();
 
         public static INode CreateNode(this Object obj) 
+            => Factory.CreateNode(obj).Validate();
+
+        public static TriObject CreateTriObject() 
+            => TriObject._CastFrom(Factory.CreateGeomObject(ClassIds.TriMeshGeometry)).Validate();
+
+        public static INode CreateNodeWithEmptyGeometry() 
+            => CreateTriObject().CreateNode();
+
+        public static Layer CreateLayer(string name)
+            => LayerManager.CreateLayer(new WStr(name));
+
+        public static void LoadScene(IScene scene)
         {
-            return Factory.CreateNode(obj).Validate();
+            var nodeTable = new Dictionary<int, INode>();
+            var layers = new Dictionary<int, Layer>();
+            foreach (var obj in scene.Objects.ToEnumerable())
+            {
+                INode node;
+                if (nodeTable.ContainsKey(obj.Node.GeometryId)) 
+                    node = nodeTable[obj.Node.GeometryId].InstanceNode(obj.Node.Transform);
+                else
+                    nodeTable.Add(obj.Node.GeometryId, node = obj.ToNode());
+
+                var layer = layers.GetOrCompute(obj.Node.CategoryId, id => CreateLayer($"Category {id}"));
+                layer.AddToLayer(node);
+            }
         }
 
-        public static TriObject CreateTriObject()
-        {
-            return TriObject._CastFrom(Factory.CreateGeomObject(ClassIds.TriMeshGeometry)).Validate();
-        }
+        public static void LoadG3DFiles(string folder)
+            => LoadScene(GeometryReader.ReadScene(folder));
 
-        public static INode CreateNodeWithEmptyGeometry()
-        {
-            return CreateTriObject().CreateNode();
-        }
+        public static void LoadBFastScene(string filePath)
+            => LoadScene(GeometryReader.ReadSceneFromBFast(filePath));
 
         public static INode ToNode(this IGeometry g)
         {
@@ -207,6 +241,12 @@ namespace Ara3D
             g.CopyToMesh(tri.GetMesh());
             return CreateNode(tri);
         }
+
+        public static INode ToNode(this IGeometry g, Matrix4x4 m)
+            => ToNode(g).TransformNode(m.ToMatrix3());
+
+        public static INode ToNode(this ISceneObject obj)
+            => ToNode(obj.Geometry(), obj.Node.Transform);
 
         public static string NewScript()
         {
@@ -242,32 +282,23 @@ namespace Ara3D
 
         public class MAXScriptConsoleWriter : TextWriter
         {
-            public override Encoding Encoding => Encoding.Default;
+            public override Encoding Encoding 
+                => Encoding.Default;
 
-            public override void Write(char value)
-            {
-                Core.Write(value.ToString())
-;            }
+            public override void Write(char value) 
+                => Core.Write(value.ToString());
 
-            public override void Write(string s)
-            {
-                Core.Write(s);
-            }
+            public override void Write(string s) 
+                => Core.Write(s);
 
-            public override void WriteLine()
-            {
-                Core.WriteLine("");
-            }
+            public override void WriteLine() 
+                => Core.WriteLine("");
 
-            public override void WriteLine(string s)
-            {
-                base.WriteLine(s);
-            }
+            public override void WriteLine(string s) 
+                => base.WriteLine(s);
         }
 
         public static void ConsoleToMAXScriptListener()
-        {
-            Console.SetOut(new MAXScriptConsoleWriter());
-        }
+            => Console.SetOut(new MAXScriptConsoleWriter());        
     }
 }

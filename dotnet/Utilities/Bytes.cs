@@ -95,7 +95,7 @@ namespace Ara3D
         {
             return new Span<T>((void*)span.Ptr, span.ByteCount/ typeof(T).SizeOf());
         }
-
+         
         public static T[] ToStructs<T>(this IBytes bytes) where T : struct
         {
             return bytes.ToSpan<T>().ToArray();

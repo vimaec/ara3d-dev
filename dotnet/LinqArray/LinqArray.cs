@@ -415,7 +415,7 @@ namespace Ara3D
         /// </summary>
         public static U Aggregate<T, U>(this IArray<T> self, Func<U, T, int, U> func)
         {
-            return Aggregate(self, default(U), func);
+            return Aggregate(self, default, func);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Ara3D
 {
@@ -70,19 +71,23 @@ namespace Ara3D
             Count = Bytes.ByteCount / Descriptor.ItemSize;
         }
 
-        public IArray<int> ToInts() => Count.Select(i => ((int*)Bytes.Ptr)[i]);
-        public IArray<byte> ToBytes() => Count.Select(i => ((byte*)Bytes.Ptr)[i]);
-        public IArray<short> ToShorts() => Count.Select(i => ((short*)Bytes.Ptr)[i]);
-        public IArray<long> ToLongs() => Count.Select(i => ((long*)Bytes.Ptr)[i]);
-        public IArray<float> ToFloats() => Count.Select(i => ((float*)Bytes.Ptr)[i]);
-        public IArray<double> ToDoubles() => Count.Select(i => ((double*)Bytes.Ptr)[i]);
-        public IArray<Vector2> ToVector2s() => Count.Select(i => ((Vector2*)Bytes.Ptr)[i]);
-        public IArray<Vector3> ToVector3s() => Count.Select(i => ((Vector3*)Bytes.Ptr)[i]);
-        public IArray<Vector4> ToVector4s() => Count.Select(i => ((Vector4*)Bytes.Ptr)[i]);
-        public IArray<Matrix4x4> ToMatrices() => Count.Select(i => ((Matrix4x4*)Bytes.Ptr)[i]);
-        public IArray<DVector2> ToDVector2s() => Count.Select(i => ((DVector2*)Bytes.Ptr)[i]);
-        public IArray<DVector3> ToDVector3s() => Count.Select(i => ((DVector3*)Bytes.Ptr)[i]);
-        public IArray<DVector4> ToDVector4s() => Count.Select(i => ((DVector4*)Bytes.Ptr)[i]);
+
+        private int ResizeCount<T>()
+            => (Count * Descriptor.ItemSize) / Marshal.SizeOf(typeof(T));
+
+        public IArray<int> ToInts() => ResizeCount<int>().Select(i => ((int*)Bytes.Ptr)[i]);
+        public IArray<byte> ToBytes() => ResizeCount<byte>().Select(i => ((byte*)Bytes.Ptr)[i]);
+        public IArray<short> ToShorts() => ResizeCount<short>().Select(i => ((short*)Bytes.Ptr)[i]);
+        public IArray<long> ToLongs() => ResizeCount<long>().Select(i => ((long*)Bytes.Ptr)[i]);
+        public IArray<float> ToFloats() => ResizeCount<float>().Select(i => ((float*)Bytes.Ptr)[i]);
+        public IArray<double> ToDoubles() => ResizeCount<double>().Select(i => ((double*)Bytes.Ptr)[i]);
+        public IArray<Vector2> ToVector2s() => ResizeCount<Vector2>().Select(i => ((Vector2*)Bytes.Ptr)[i]);
+        public IArray<Vector3> ToVector3s() => ResizeCount<Vector3>().Select(i => ((Vector3*)Bytes.Ptr)[i]);
+        public IArray<Vector4> ToVector4s() => ResizeCount<Vector4>().Select(i => ((Vector4*)Bytes.Ptr)[i]);
+        public IArray<Matrix4x4> ToMatrices() => ResizeCount<Matrix4x4>().Select(i => ((Matrix4x4*)Bytes.Ptr)[i]);
+        public IArray<DVector2> ToDVector2s() => ResizeCount<DVector2>().Select(i => ((DVector2*)Bytes.Ptr)[i]);
+        public IArray<DVector3> ToDVector3s() => ResizeCount<DVector3>().Select(i => ((DVector3*)Bytes.Ptr)[i]);
+        public IArray<DVector4> ToDVector4s() => ResizeCount<DVector4>().Select(i => ((DVector4*)Bytes.Ptr)[i]);
     }
 
 }

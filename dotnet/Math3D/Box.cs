@@ -223,15 +223,15 @@ namespace Ara3D
             if (corners.Length < 8)
                 throw new ArgumentOutOfRangeException(nameof(corners));
             // Front
-            corners[0].X = Min.X; corners[0].Y = Max.Y; corners[0].Z = Max.Z;
-            corners[1].X = Max.X; corners[1].Y = Max.Y; corners[1].Z = Max.Z;
-            corners[2].X = Max.X; corners[2].Y = Max.Y; corners[2].Z = Min.Z;
-            corners[3].X = Min.X; corners[3].Y = Max.Y; corners[3].Z = Max.Z;
+            corners[0] = new Vector3(Min.X, Max.Y, Max.Z);
+            corners[1] = new Vector3(Max.X, Max.Y, Max.Z);
+            corners[2] = new Vector3(Max.X, Max.Y, Min.Z);
+            corners[3] = new Vector3(Min.X, Max.Y, Min.Z);
             // Back
-            corners[4].X = Min.X; corners[0].Y = Min.Y; corners[0].Z = Max.Z;
-            corners[5].X = Max.X; corners[1].Y = Min.Y; corners[1].Z = Max.Z;
-            corners[6].X = Max.X; corners[2].Y = Min.Y; corners[2].Z = Min.Z;
-            corners[7].X = Min.X; corners[3].Y = Min.Y; corners[3].Z = Max.Z;
+            corners[4] = new Vector3(Min.X, Min.Y, Max.Z);
+            corners[5] = new Vector3(Max.X, Min.Y, Max.Z);
+            corners[6] = new Vector3(Max.X, Min.Y, Min.Z);
+            corners[7] = new Vector3(Min.X, Min.Y, Min.Z);
             return corners;
         }
 

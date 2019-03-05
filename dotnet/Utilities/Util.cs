@@ -277,9 +277,7 @@ namespace Ara3D
         /// Returns the current date-time in a format appropriate for appending to files.
         /// </summary>
         public static string GetTimeStamp()
-        {
-            return DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        }
+            => DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");       
 
         /// <summary>
         /// Appends a timestamp to a file name (just before extension). 
@@ -365,13 +363,16 @@ namespace Ara3D
         public static string PrettyPrintTimeElapsed(this Stopwatch sw)
             => $"{sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}";
 
+        public static void OutputTimeElapsed(this Stopwatch sw, string label)
+            => Console.WriteLine($"{label}: time elapsed {sw.PrettyPrintTimeElapsed()}");
+
         public static T TimeIt<T>(this Func<T> function, string label = "")
         {
             var sw = new Stopwatch();
             sw.Start();
             var r = function();
             sw.Stop();
-            Console.WriteLine($"{label}: time elapsed {sw.PrettyPrintTimeElapsed()}");
+            sw.OutputTimeElapsed(label);
             return r;
         }
 
@@ -494,6 +495,12 @@ namespace Ara3D
             self.Add(key, value);
             return value;
         }
+
+        /// <summary>
+        /// Returns a value if found in the dictionary, or default if not present.
+        /// </summary>
+        public static V GetOrDefault<K, V>(this IDictionary<K, V> self, K key)
+            => self.ContainsKey(key) ? self[key] : default;
 
         /// <summary>
         /// Computes the size of the given managed type. Slow, but reliable. Does not give the same result as Marshal.SizeOf
@@ -739,14 +746,6 @@ namespace Ara3D
         public static bool ImplementsIList(this Type t)
         {
             return t.InstanceOfGenericInterface(typeof(IList<>));
-        }
-
-        /// <summary>
-        /// Returns the file size in bytes, or 0 if there is no file.
-        /// </summary>
-        public static long FileSize(string fileName)
-        {
-            return File.Exists(fileName) ? new FileInfo(fileName).Length : 0;
         }
 
         /// <summary>
@@ -1039,6 +1038,12 @@ namespace Ara3D
         public static JObject ToJObject(this object o)
             => JObject.FromObject(o);
 
+        public static JArray ToJArray<T>(this IEnumerable<T> xs)
+            => xs.ToList().ToJArray();
+
+        public static JArray ToJArray<T>(this IList<T> xs)
+            => JArray.FromObject(xs);
+
         public static string ToJson(this object o)
             => o?.ToJObject()?.ToString() ?? "null";
 
@@ -1057,10 +1062,15 @@ namespace Ara3D
         /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
         /// </summary>
-        /// <param name="di"></param>
         public static void TestWrite(this DirectoryInfo di)
+            => TestWrite(di.FullName);
+
+        /// <summary>
+        /// Useful quick test to assure that we can create a file in the folder and write to it.
+        /// </summary>
+        public static void TestWrite(string folder)
         {
-            var fileName = Path.Combine(di.FullName, "_deleteme_.tmp");
+            var fileName = Path.Combine(folder, "_deleteme_.tmp");
             File.WriteAllText(fileName, "test");
             File.Delete(fileName);
         }
@@ -1074,6 +1084,58 @@ namespace Ara3D
         {
             return JArray.Parse(File.ReadAllText(filePath));
         }
+
+        public static T LoadJsonFromFile<T>(string filePath)
+        {
+            using (var file = File.OpenText(filePath))
+                return (T)(new JsonSerializer()).Deserialize(file, typeof(T));
+        }
+
+        // File size reporting
+
+        static readonly string[] ByteSuffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+
+        /// Improved version of https://stackoverflow.com/questions/281640/how-do-i-get-a-human-readable-file-size-in-bytes-abbreviation-using-net
+        public static string BytesToString(long byteCount, int numPlacesToRound = 1)
+        {
+            if (byteCount == 0) return "0B";
+            var bytes = Math.Abs(byteCount);
+            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            var num = Math.Round(bytes / Math.Pow(1024, place), numPlacesToRound);
+            return $"{Math.Sign(byteCount) * num}{ByteSuffixes[place]}";
+        }
+
+        /// <summary>
+        /// Returns the file size in bytes, or 0 if there is no file.
+        /// </summary>
+        public static long FileSize(string fileName)
+            => File.Exists(fileName) ? new FileInfo(fileName).Length : 0;
+
+        /// <summary>
+        /// Returns the file size in bytes, or 0 if there is no file.
+        /// </summary>
+        public static string FileSizeAsString(string fileName, int numPlacesToShow = 1)
+            => BytesToString(FileSize(fileName), numPlacesToShow);
+
+
+        /// <summary>
+        /// Returns the total file size of all files given
+        /// </summary>
+        public static long TotalFileSize(IEnumerable<string> files)
+            => files.Sum(FileSize);
+
+        /// <summary>
+        /// Returns the total file size of all files given as a human readable string
+        /// </summary>
+        public static string TotalFileSizeAsString(IEnumerable<string> files, int numPlacesToShow = 1)
+            => BytesToString(TotalFileSize(files), numPlacesToShow);
+
+        /// <summary>
+        /// Returns the most recently written to sub-folder
+        /// </summary>
+        public static string GetMostRecentSubFolder(string folderPath)
+            => Directory.GetDirectories(folderPath).OrderByDescending(f => new DirectoryInfo(f).LastWriteTime)
+                .FirstOrDefault();
     }
 }
 
