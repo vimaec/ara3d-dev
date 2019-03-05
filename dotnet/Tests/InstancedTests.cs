@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Ara3D.Tests
@@ -25,6 +22,42 @@ namespace Ara3D.Tests
             if (!Directory.Exists(InputFolder))
                 throw new Exception($"No input folder could be found: {InputFolder}");
             Directory.CreateDirectory(OutputFolder);
+        }
+        
+        [Test, Explicit("Hard coded paths")]
+        public static void TestBFastLoading()
+        {
+            var sw = new Stopwatch();
+            
+            //var inputFile = @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_19-47-52\output.vim";
+            var inputFile =
+                @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_23-12-13-main\output.vim";
+
+            var scene = GeometryReader.ReadSceneFromBFast(inputFile);
+            sw.OutputTimeElapsed($"Loaded file {inputFile}");
+
+            var d = new DictionaryOfLists<int, ISceneObject>();
+            foreach (var obj in scene.Objects.ToEnumerable())
+                d.Add(obj.Node.GeometryId, obj);
+
+            var uninstancedObjects = d.Where(kv => kv.Value.Count == 1).Select(kv => kv.Value[0]).ToList();
+            Console.WriteLine($"Total object count = {scene.Objects.Count}");
+            Console.WriteLine($"Uninstanced object count = {uninstancedObjects.Count}");
+
+            var unreferencedObjectsCount = scene.Geometries.Indices().CountWhere(i => !d.ContainsKey(i));
+            Console.WriteLine($"Unreferenced object count = {unreferencedObjectsCount}");
+
+            var emptyGeos = scene.Geometries.CountWhere(g => g.NumFaces == 0);
+            Console.WriteLine($"Empty geometry count = {emptyGeos}");
+        }
+
+        [Test]
+        public static void TestBFastToObj()
+        {
+            var inputFile =
+                @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-05_00-47-15-rac_basic_sample_project\output.vim";
+            var scene = GeometryReader.ReadSceneFromBFast(inputFile);
+            scene.ToIGeometry().WriteObj(@"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\test.obj");
         }
 
         /// <summary>
@@ -92,7 +125,7 @@ namespace Ara3D.Tests
             var bFast = BFastExtensions.ReadBFast(filePath);
             var manifestBuffer = bFast.Buffers[0];
 
-            // TODO: converting to a string from a span would be more effiient
+            // TODO: converting to a string from a span would be more efficient
             var manifestText = manifestBuffer.ToBytes().ToUtf8();
 
             // TODO: the G3D create here is doing a copy under the hood, which sucks
@@ -109,64 +142,5 @@ namespace Ara3D.Tests
             g.WriteObj(outputFile);
         }
         */
-
-        /// <summary>
-        /// This tests the current system in place for supporting face groups and instances
-        /// based on face groups embedded in a G3D. To be determined whether I continue supporting
-        /// that. My impression is that it adds a lot of complexity.
-        /// You have to split the thing up. 
-        /// </summary>
-        [Test, Explicit]
-        public static void ReadInstancesFromG3DTest()
-        {
-            foreach (var fileName in IOTests.GetInputFiles("model.g3d"))
-            {
-                var g = Util.TimeIt(() => G3D.ReadFile(fileName).ToIGeometry(), $"Reading G3D {fileName}");
-
-                g.Validate();
-                TestGeometries.OutputIGeometryStats(g);
-
-                var instanceTransforms = g.Attributes(AttributeType.attr_instance_transform).First().ToMatrices();
-                var instanceGroups = g.Attributes(AttributeType.attr_instance_group).First().ToInts();
-                var groupIndexes = g.Attributes(AttributeType.attr_group_index).First().ToInts();
-                var groupSizes = g.Attributes(AttributeType.attr_group_size).First().ToInts();
-
-                Assert.AreEqual(instanceTransforms.Count, instanceGroups.Count);
-                Assert.AreEqual(groupIndexes.Count, groupSizes.Count);
-                Assert.IsTrue(groupIndexes.All(x => x >= 0 && x < g.NumFaces));
-                Assert.IsTrue(instanceGroups.All(x => x >= 0 && x < instanceTransforms.Count));
-
-                var nFaces = 0;
-                for (var i = 0; i < instanceGroups.Count; ++i)
-                {
-                    var size = groupSizes[i];
-                    var index = groupIndexes[i];
-                    Assert.IsTrue(index + size <= g.NumFaces);
-                    nFaces += groupSizes[i];
-                }
-                Console.WriteLine($"Total faces = {nFaces}");
-                
-                Directory.CreateDirectory(IOTests.TestOutputFolder);
-                var outputFileName = Path.Combine(IOTests.TestOutputFolder, "unmerged.obj");
-                g.WriteObj(outputFileName);
-                Console.WriteLine($"Wrote unmerged data to {outputFileName}");
-
-                /*
-                var groupGeometries = groupIndexes.Zip(groupSizes,
-                    (i, n) => Geometry.TriMesh(g.Vertices, g.Indices.SubArray(i * 3, n * 3)).RemoveUnusedVertices()).ToArray();
-
-                var instanceGeometries = instanceGroups.Zip(instanceTransforms,
-                    (grp, t) => groupGeometries[grp].Transform(t));
-
-                var mergedGeometry = instanceGeometries.Merge();
-
-                Directory.CreateDirectory(IOTests.TestOutputFolder);
-                outputFileName = Path.Combine(IOTests.TestOutputFolder, "merged.obj");
-
-                mergedGeometry.WriteObj(outputFileName);
-                Console.WriteLine($"Wrote merged data to {outputFileName}");
-                */
-            }
-        }
     }
 }

@@ -228,10 +228,7 @@ namespace Ara3D
 
     public static class BFastExtensions
     {
-        public static int NumBuffers(this IBFast bf)
-        {
-            return (int)bf.Header.NumArrays;
-        }
+        public static int NumBuffers(this IBFast bf) => (int)bf.Header.NumArrays;
 
         public static IEnumerable<IBytes> GetBuffers(this IBFast bf)
         {
@@ -249,28 +246,45 @@ namespace Ara3D
                 bw.Write((byte) 0);
         }
 
+        public static Stream Write(this IBFast bf, Stream stream)
+        {
+            using (var bw = new BinaryWriter(stream))
+                bf.Write(bw);
+            return stream;
+        }
+
+        public static BinaryWriter Write(this IBFast bf, BinaryWriter bw)
+        {
+            bw.Write(bf.Header);
+            WritePadding(bw);
+            bw.Write(bf.Ranges);
+            WritePadding(bw);
+            foreach (var b in bf.GetBuffers())
+            {
+                bw.Write(b);
+                WritePadding(bw);
+            }
+
+            return bw;
+        }
+
         public static void WriteToFile(this IBFast bf, string path)
         {
             using (var f = File.OpenWrite(path))
-            using (var bw = new BinaryWriter(f))
-            {
-                bw.Write(bf.Header);
-                WritePadding(bw);
-                bw.Write(bf.Ranges);
-                WritePadding(bw);
-                foreach (var b in bf.GetBuffers())
-                {
-                    bw.Write(b);
-                    WritePadding(bw);
-                }
+                bf.Write(f);
+        }
+
+        public static byte[] ToBytes(this IBFast bf)
+        {
+            using (var mem = new MemoryStream()) {
+                bf.Write(mem);
+                return mem.ToArray();
             }
         }
 
         public static BFast ReadBFast(string file)
-        {
-            // TODO: this will need to be optimized to read one block at a time. 
-            return new BFast(File.ReadAllBytes(file));
-        }
+            => new BFast(File.ReadAllBytes(file));
+        
     }
     /*
 

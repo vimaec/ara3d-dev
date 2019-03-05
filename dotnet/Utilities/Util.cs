@@ -1038,6 +1038,9 @@ namespace Ara3D
         public static JObject ToJObject(this object o)
             => JObject.FromObject(o);
 
+        public static JArray ToJArray<T>(this IEnumerable<T> xs)
+            => xs.ToList().ToJArray();
+
         public static JArray ToJArray<T>(this IList<T> xs)
             => JArray.FromObject(xs);
 
@@ -1082,6 +1085,12 @@ namespace Ara3D
             return JArray.Parse(File.ReadAllText(filePath));
         }
 
+        public static T LoadJsonFromFile<T>(string filePath)
+        {
+            using (var file = File.OpenText(filePath))
+                return (T)(new JsonSerializer()).Deserialize(file, typeof(T));
+        }
+
         // File size reporting
 
         static readonly string[] ByteSuffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
@@ -1120,6 +1129,13 @@ namespace Ara3D
         /// </summary>
         public static string TotalFileSizeAsString(IEnumerable<string> files, int numPlacesToShow = 1)
             => BytesToString(TotalFileSize(files), numPlacesToShow);
+
+        /// <summary>
+        /// Returns the most recently written to sub-folder
+        /// </summary>
+        public static string GetMostRecentSubFolder(string folderPath)
+            => Directory.GetDirectories(folderPath).OrderByDescending(f => new DirectoryInfo(f).LastWriteTime)
+                .FirstOrDefault();
     }
 }
 
