@@ -65,6 +65,10 @@
       <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
       <Name>Ara3D.Math</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
+      <Project>{25330241-4C82-4C17-8027-FF882B91640E}</Project>
+      <Name>Ara3D.DotNetUtilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

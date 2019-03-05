@@ -1,5 +1,8 @@
-﻿using Ara3D;
+﻿using System;
+using System.Collections.Generic;
+using Ara3D;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
@@ -9,36 +12,64 @@ namespace UnityBridge
     // TODO: add an IGeometry wrapper around "Unity"
     public static class UnitYConverters
     {
-        public static UnityEngine.Vector2 ToUnity(this Vector2 v)
-            => new UnityEngine.Vector2(v.X, v.Y);
-
-        public static UnityEngine.Vector3 ToUnity(this Vector3 v)
-            => new UnityEngine.Vector3(v.X, v.Y, v.Z);
-
-        public static UnityEngine.Vector4 ToUnity(this Vector4 v)
-            => new UnityEngine.Vector4(v.X, v.Y, v.Z, v.W);
-
-        public static UnityEngine.Mesh ToUnity(this IGeometry g)
+        // When translating G3D faces to unity we need
+        // to reverse the triangle winding.
+        public static int PolyFaceToUnity(int index, int faceSize)
         {
-            var r = new UnityEngine.Mesh();
-            
-            // TODO: I think we should be able to cast the arrays from one type to another
-            r.vertices = g.Vertices.Select(ToUnity).ToArray();
+            var faceIdx = index / faceSize;
+            var vertIdx = index % faceSize;
+            return (vertIdx == 0) ? index : (faceIdx * faceSize) + (faceSize - vertIdx);
+        }
+        // Remaps 1, 2, 3 to 1, 3, 2
+        public static int TriFaceToUnity(int index)
+            => PolyFaceToUnity(index, 3);
 
-            if (g.PointsPerFace == 3)
-                r.SetIndices(g.Indices.ToArray(), MeshTopology.Triangles, 0);
-            else if (g.PointsPerFace == 4)
-                r.SetIndices(g.Indices.ToArray(), MeshTopology.Quads, 0);
-            else if (g.PointsPerFace == 2)
-                // TODO: what exactly is a MeshTopology.Lines or MeshTopology.Points for Unity
-                r.SetIndices(g.Indices.ToArray(), MeshTopology.Lines, 0);
-            else if (g.PointsPerFace == 1)
-                r.SetIndices(g.Indices.ToArray(), MeshTopology.Points, 0);
-            else
+        public static int QuadFaceToUnity(int index)
+            => PolyFaceToUnity(index, 4);
+
+        public static Mesh ToUnity(this IGeometry g)
+        {
+            var r = new Mesh();
+
+            var indices = g.IndexAttribute.ToInts();
+            var vertexFloats = g.VertexAttribute.ToFloats();
+            var unityVertices = vertexFloats.SelectTriplets((x, y, z) => new UnityEngine.Vector3(-x, z, -y));
+            r.vertices = unityVertices.ToArray();
+            r.indexFormat = unityVertices.Count > ushort.MaxValue ? IndexFormat.UInt32 : IndexFormat.UInt16;
+
+
+            switch (g.PointsPerFace)
             {
-                var triMesh = g.ToTriMesh();
-                r.SetIndices(triMesh.Indices.ToArray(), MeshTopology.Triangles, 0);
+                case 3:
+                    {
+                        var unityIndices = indices.MapIndices(TriFaceToUnity);
+                        r.SetIndices(unityIndices.ToArray(), MeshTopology.Triangles, 0);
+                        break;
+                    }
+                case 4:
+                    {
+                        var unityIndices = indices.MapIndices(QuadFaceToUnity);
+                        r.SetIndices(unityIndices.ToArray(), MeshTopology.Quads, 0);
+                        break;
+                    }
+                case 2:
+                    r.SetIndices(g.Indices.ToArray(), MeshTopology.Lines, 0);
+                    break;
+                case 1:
+                    r.SetIndices(g.Indices.ToArray(), MeshTopology.Points, 0);
+                    break;
+                default:
+                    {
+                        var triMesh = g.ToTriMesh();
+                        var unityIndices = triMesh.Indices.MapIndices(TriFaceToUnity);
+                        r.SetIndices(unityIndices.ToArray(), MeshTopology.Triangles, 0);
+                        break;
+                    }
             }
+
+
+            r.RecalculateNormals();
+            return r;
 
             // TODO: copy colors, normals, uvs1 through 8, tangents, and boneWeights
             //r.colors = g.VertexColors.Select();
@@ -47,7 +78,26 @@ namespace UnityBridge
             //r.tangents;
             //https://docs.unity3d.com/ScriptReference/BoneWeight.html
             // r.boneWeights
-            return r;
+            //return r;
+        }
+
+        // TODO: support matrices once we have our own math classes
+        //public static void SetAra3DMatrix(this Transform transform, System.Numerics.Matrix4x4 mat)
+        //    => transform.SetAra3DMatrix(mat.ToFloats());
+
+        public static void SetAra3DMatrix(this Transform transform, float[] mtx)
+        {
+            transform.position = new UnityEngine.Vector3(-mtx[12], mtx[13], mtx[14]);
+
+            // TODO: Mat to quat
+        }
+
+        // TODO: support matrices once we have our own math classes
+        public static void SetFromNode(this Transform transform, ISceneNode node)
+        {
+            var mtx = node.Transform;
+            var position = mtx.Translation;
+            transform.position = new UnityEngine.Vector3(-position.X, position.Z, -position.Y);
         }
     }
 }

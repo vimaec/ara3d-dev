@@ -37,9 +37,6 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="geometry3Sharp, Version=1.0.289.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\vimaec\vib\vib4\packages\geometry3Sharp.1.0.289\lib\net45\geometry3Sharp.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -77,7 +74,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="geometry3Sharp">
+      <Version>1.0.289</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

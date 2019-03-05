@@ -67,9 +67,6 @@
     <Reference Include="Geometry3D">
       <HintPath>$(ADSK_3DSMAX_x64_2019)\Geometry3D.dll</HintPath>
     </Reference>
-    <Reference Include="geometry3Sharp, Version=1.0.289.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\geometry3Sharp.1.0.289\lib\net45\geometry3Sharp.dll</HintPath>
-    </Reference>
     <Reference Include="ImmutableArray">
       <HintPath>$(ADSK_3DSMAX_x64_2019)\ImmutableArray.dll</HintPath>
     </Reference>
@@ -147,17 +144,13 @@
     <Compile Include="UtilitySurfaceArea.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
-      <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
-      <Name>Ara3D.Geometry</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AraScriptEditor\Ara3D.ScriptEditor.csproj">
-      <Project>{e52b90c6-9f2f-4c5f-baff-bf4f46e9c6a0}</Project>
-      <Name>Ara3D.ScriptEditor</Name>
-    </ProjectReference>
     <ProjectReference Include="..\3dsMaxBridge\Ara3D.3dsMaxBridge.csproj">
       <Project>{64860ec8-b0eb-44bb-b5bb-039200ada53e}</Project>
       <Name>Ara3D.3dsMaxBridge</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
+      <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
+      <Name>Ara3D.Geometry</Name>
     </ProjectReference>
     <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
       <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
@@ -183,9 +176,6 @@
       <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
       <Name>Ara3D.DotNetUtilities</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
