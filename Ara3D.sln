@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.G3D", "dotnet\G3D\Ara3D.G3D.csproj", "{4007804A-598F-495F-84F3-F2CF3136797D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.RevitTools", "..\ara-revit-tools\RevitTools\Ara3D.RevitTools.csproj", "{22804EBA-1BB7-4A28-87DC-3DD419DE8920}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.Revit.Tools", "..\ara-revit-tools\RevitTools\Ara3D.Revit.Tools.csproj", "{22804EBA-1BB7-4A28-87DC-3DD419DE8920}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.Revit.DevPlugin", "..\ara-revit-tools\DevPlugin\Ara3D.Revit.DevPlugin.csproj", "{591DC6EA-C665-4553-8049-541E94168D40}"
 EndProject
@@ -43,9 +43,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.WPFBridge", "dotnet\W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.HelixBridge", "dotnet\HelixBridge\Ara3D.HelixBridge.csproj", "{91BAFDF7-5A40-4FE2-BEF3-4397EC6022B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.Revit.Prototype.ObjExport", "..\ara-revit-tools\prototype-revit-export\Ara3D.Revit.Prototype.ObjExport.csproj", "{B4135005-F068-42A9-A9DB-67314B22EB4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.Revit.Tests", "..\ara-revit-tools\RevitTests\Ara3D.Revit.Tests.csproj", "{77AB220B-6BE8-4099-82A0-6553BA0497E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.RevitTests", "..\ara-revit-tools\RevitTests\Ara3D.RevitTests.csproj", "{77AB220B-6BE8-4099-82A0-6553BA0497E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.Revit.DataModel", "..\ara-revit-tools\RevitDataModel\Ara3D.Revit.DataModel.csproj", "{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -471,30 +471,6 @@ Global
 		{91BAFDF7-5A40-4FE2-BEF3-4397EC6022B0}.Release|x64.Build.0 = Release|Any CPU
 		{91BAFDF7-5A40-4FE2-BEF3-4397EC6022B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{91BAFDF7-5A40-4FE2-BEF3-4397EC6022B0}.Release|x86.Build.0 = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug (DLL)|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug (DLL)|Any CPU.Build.0 = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug (DLL)|x64.ActiveCfg = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug (DLL)|x64.Build.0 = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug (DLL)|x86.ActiveCfg = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug (DLL)|x86.Build.0 = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug|x64.Build.0 = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Debug|x86.Build.0 = Debug|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release (DLL)|Any CPU.ActiveCfg = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release (DLL)|Any CPU.Build.0 = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release (DLL)|x64.ActiveCfg = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release (DLL)|x64.Build.0 = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release (DLL)|x86.ActiveCfg = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release (DLL)|x86.Build.0 = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release|x64.ActiveCfg = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release|x64.Build.0 = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release|x86.ActiveCfg = Release|Any CPU
-		{B4135005-F068-42A9-A9DB-67314B22EB4D}.Release|x86.Build.0 = Release|Any CPU
 		{77AB220B-6BE8-4099-82A0-6553BA0497E4}.Debug (DLL)|Any CPU.ActiveCfg = Debug|Any CPU
 		{77AB220B-6BE8-4099-82A0-6553BA0497E4}.Debug (DLL)|Any CPU.Build.0 = Debug|Any CPU
 		{77AB220B-6BE8-4099-82A0-6553BA0497E4}.Debug (DLL)|x64.ActiveCfg = Debug|Any CPU
@@ -519,6 +495,30 @@ Global
 		{77AB220B-6BE8-4099-82A0-6553BA0497E4}.Release|x64.Build.0 = Release|Any CPU
 		{77AB220B-6BE8-4099-82A0-6553BA0497E4}.Release|x86.ActiveCfg = Release|Any CPU
 		{77AB220B-6BE8-4099-82A0-6553BA0497E4}.Release|x86.Build.0 = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug (DLL)|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug (DLL)|Any CPU.Build.0 = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug (DLL)|x64.ActiveCfg = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug (DLL)|x64.Build.0 = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug (DLL)|x86.ActiveCfg = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug (DLL)|x86.Build.0 = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Debug|x86.Build.0 = Debug|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release (DLL)|Any CPU.ActiveCfg = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release (DLL)|Any CPU.Build.0 = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release (DLL)|x64.ActiveCfg = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release (DLL)|x64.Build.0 = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release (DLL)|x86.ActiveCfg = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release (DLL)|x86.Build.0 = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release|x64.Build.0 = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release|x86.ActiveCfg = Release|Any CPU
+		{C1D61CF7-BCB8-4DB6-A6D8-7A3DE02275C9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
