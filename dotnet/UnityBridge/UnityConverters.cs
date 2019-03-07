@@ -95,12 +95,14 @@ namespace UnityBridge
         // TODO: support matrices once we have our own math classes
         public static void SetFromNode(this Transform transform, ISceneNode node)
         {
-            if (!System.Numerics.Matrix4x4.Decompose(node.Transform, 
-                out var scale, 
+            if (!System.Numerics.Matrix4x4.Decompose(node.Transform,
+                out var scale,
                 out var rotation,
                 out var position)
             )
+            {
                 return;
+            }
 
             // Transform space is mirrored on X, and then rotated 90 degrees around X
             transform.position = new UnityEngine.Vector3(-position.X, position.Z, -position.Y);
