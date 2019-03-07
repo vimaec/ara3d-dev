@@ -95,9 +95,19 @@ namespace UnityBridge
         // TODO: support matrices once we have our own math classes
         public static void SetFromNode(this Transform transform, ISceneNode node)
         {
-            var mtx = node.Transform;
-            var position = mtx.Translation;
+            if (!System.Numerics.Matrix4x4.Decompose(node.Transform, 
+                out var scale, 
+                out var rotation,
+                out var position)
+            )
+                return;
+
+            // Transform space is mirrored on X, and then rotated 90 degrees around X
             transform.position = new UnityEngine.Vector3(-position.X, position.Z, -position.Y);
+            // Quat is mirrored the same way, but then negated via W = -W because that's just easier to read
+            transform.rotation = new UnityEngine.Quaternion(rotation.X, -rotation.Z, rotation.Y, rotation.W);
+            // Note, scale is completely untested
+            transform.localScale = new UnityEngine.Vector3(scale.X, scale.Z, scale.Y);
         }
     }
 }
