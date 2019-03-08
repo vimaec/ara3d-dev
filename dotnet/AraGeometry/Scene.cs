@@ -26,14 +26,13 @@ namespace Ara3D
 
     public class SceneNode : ISceneNode
     {
-        public SceneNode(string name, int geometryId, Matrix4x4 transform, int elementId, int materialId, int categoryId)
+        public SceneNode(string name, int geometryId, Matrix4x4 transform, int elementId, int materialId)
         {
             Name = name;
             GeometryId = geometryId;
             Transform = transform;
             ElementId = elementId;
             MaterialId = materialId;
-            CategoryId = categoryId;
         }
 
         public int GeometryId { get; }
@@ -72,8 +71,7 @@ namespace Ara3D
         public float[] Transform { get; set; }
         public int ElementId { get; set; }
         public int GeometryId { get; set; }
-        public int MaterialId { get; set; }
-        public int CategoryId { get; set; }
+        public int MaterialId { get; set; }        
     }
 
     public static class SceneExtensions
