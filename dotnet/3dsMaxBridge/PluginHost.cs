@@ -34,6 +34,9 @@ namespace Ara3D
                 "VimTools.exe",
                 "geometry3Sharp.dll",
                 "Newtonsoft.Json.dll",
+
+                // TEMP:
+                "Ara3D.Revit.DataModel.dll",
             };
 
             // TODO: maybe iterate over all assemblies in the output folder? 

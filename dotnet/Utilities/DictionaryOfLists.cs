@@ -13,14 +13,9 @@ namespace Ara3D
         }
 
         public IEnumerable<V> AllValues
-        {
-            get
-            {
-                return Values.SelectMany(xs => xs);
-            }
-        }
+            => Values.SelectMany(xs => xs);
 
-        public List<V> GetValueOrDefault(K k) {
+        public List<V> GetOrDefault(K k) {
             if (!ContainsKey(k))
                 return new List<V>();
             return this[k];

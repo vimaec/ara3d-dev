@@ -1049,9 +1049,12 @@ namespace Ara3D
 
         public static void ToJsonFile(this object o, string filePath)
         {
-            File.Delete(filePath);
             using (var tw = File.CreateText(filePath))
-                new JsonSerializer { Formatting = Formatting.Indented }.Serialize(tw, o);
+                new JsonSerializer
+                {
+                    Formatting = Formatting.Indented,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                }.Serialize(tw, o);
         }
 
         public static string PrettifyJson(this string s)
@@ -1136,6 +1139,12 @@ namespace Ara3D
         public static string GetMostRecentSubFolder(string folderPath)
             => Directory.GetDirectories(folderPath).OrderByDescending(f => new DirectoryInfo(f).LastWriteTime)
                 .FirstOrDefault();
+
+        /// <summary>
+        /// Adds an item to the referenced list, creating it if needed
+        /// </summary>
+        public static void AddToList<T>(ref IList<T> xs, T x)
+            => (xs ?? (xs = new List<T>())).Add(x);
     }
 }
 

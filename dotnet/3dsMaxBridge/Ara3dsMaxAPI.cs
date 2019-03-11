@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Ara3D.Revit.DataModel;
 using Autodesk.Max;
 using Autodesk.Max.MaxPlus;
 using Object = Autodesk.Max.MaxPlus.Object;
@@ -224,8 +225,12 @@ namespace Ara3D
                 else
                     nodeTable.Add(obj.Node.GeometryId, node = obj.ToNode());
 
+                node.Name = obj.Node.Name;
+
+                /* TODO: figure out the category
                 var layer = layers.GetOrCompute(obj.Node.CategoryId, id => CreateLayer($"Category {id}"));
                 layer.AddToLayer(node);
+                */
             }
         }
 
@@ -299,6 +304,9 @@ namespace Ara3D
         }
 
         public static void ConsoleToMAXScriptListener()
-            => Console.SetOut(new MAXScriptConsoleWriter());        
+            => Console.SetOut(new MAXScriptConsoleWriter());
+
+        public static Document LoadDocument(string folder, ILogger logger = null)
+            => RevitDataModelExtensions.LoadDocument(folder, logger ?? new StdLogger());
     }
 }

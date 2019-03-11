@@ -147,6 +147,10 @@
     <Compile Include="UtilitySurfaceArea.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\revit-dev\RevitDataModel\Ara3D.Revit.DataModel.csproj">
+      <Project>{c1d61cf7-bcb8-4db6-a6d8-7a3de02275c9}</Project>
+      <Name>Ara3D.Revit.DataModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\3dsMaxBridge\Ara3D.3dsMaxBridge.csproj">
       <Project>{64860ec8-b0eb-44bb-b5bb-039200ada53e}</Project>
       <Name>Ara3D.3dsMaxBridge</Name>

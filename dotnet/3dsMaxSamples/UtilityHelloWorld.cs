@@ -7,10 +7,7 @@ namespace Ara3D
     {
         public void Evaluate()
         {
-            var obj = Factory.CreateDummyObject();
-            var node = Factory.CreateNode(obj, "My node");
-            var layer = LayerManager.CreateLayer();
-            layer.AddToLayer(node);
+            Core.WriteLine("Hello world");
         }
     }
 }

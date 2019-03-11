@@ -11,6 +11,7 @@ namespace Ara3D
         public static IGeometry ReadG3D(string filePath)
             => G3DExtensions.ReadFromFile(filePath).ToIGeometry();
 
+        /*
         public static IList<ManifestSceneNode> ReadManifest(string filePath) 
            => Util.LoadJsonArray(filePath).ToObject<IList<ManifestSceneNode>>();
 
@@ -74,5 +75,12 @@ namespace Ara3D
             // Creates a scene API
             return new Scene(geometries.ToIArray(), manifest.ManifestNodesToSceneNodes());
         }
+        */
+
+        public static IScene ReadScene(string folder)
+            => throw new NotImplementedException("See commented out code");
+
+        public static IScene ReadSceneFromBFast(string filePath)
+            => throw new NotImplementedException("See commented out code");
     }
 }

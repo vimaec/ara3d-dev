@@ -62,16 +62,29 @@ namespace Ara3D
     public class StdLogger : ILogger
     {
         public List<LogEvent> Events = new List<LogEvent>();
+        public readonly bool EchoToConsole;
+
+        public StdLogger(bool echoToConsole = false)
+        {
+            EchoToConsole = echoToConsole;
+        }
 
         public ILogger Log(string message = "",  LogLevel level = LogLevel.None, int eventId = 0)
         {
-            Events.Add(new LogEvent
+
+            var e = new LogEvent
             {
                 EventId = eventId,
                 Index = Events.Count,
                 Message = message,
                 When = DateTime.Now
-            });
+            };
+            Events.Add(e);
+            if (EchoToConsole)
+                Console.WriteLine(e);
+            #if DEBUG
+            Debug.WriteLine(e);
+            #endif
             return this;
         }
 
