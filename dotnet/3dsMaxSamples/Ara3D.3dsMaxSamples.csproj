@@ -143,6 +143,7 @@
     <Compile Include="UtilityHelloWorld.cs" />
     <Compile Include="UtilityLoadInstances.cs" />
     <Compile Include="UtilityMergeAllGeometry.cs" />
+    <Compile Include="UtilityRenameAndSetLayer.cs" />
     <Compile Include="UtilitySplitGeometry.cs" />
     <Compile Include="UtilitySurfaceArea.cs" />
   </ItemGroup>
