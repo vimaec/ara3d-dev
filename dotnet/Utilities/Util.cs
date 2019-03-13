@@ -48,57 +48,57 @@ namespace Ara3D
 
         #region Writing CSV Data C# 
 
-        public static string EscapeQuotes(this string self)
-        {
-            return self?.Replace("\"", "\"\"") ?? "";
-        }
+        //public static string EscapeQuotes(this string self)
+        //{
+        //    return self?.Replace("\"", "\"\"") ?? "";
+        //}
 
-        public static string Surround(this string self, string before, string after)
-        {
-            return $"{before}{self}{after}";
-        }
+        //public static string Surround(this string self, string before, string after)
+        //{
+        //    return $"{before}{self}{after}";
+        //}
 
-        public static string Quoted(this string self, string quotes = "\"")
-        {
-            return self.Surround(quotes, quotes);
-        }
+        //public static string Quoted(this string self, string quotes = "\"")
+        //{
+        //    return self.Surround(quotes, quotes);
+        //}
 
-        public static string QuotedCSVFieldIfNecessary(this string self)
-        {
-            return (self == null) ? "" : self.Contains('"') || self.Contains(',') ? self.Quoted() : self;
-        }
+        //public static string QuotedCSVFieldIfNecessary(this string self)
+        //{
+        //    return (self == null) ? "" : self.Contains('"') || self.Contains(',') ? self.Quoted() : self;
+        //}
 
-        public static string ToCsvField(this string self)
-        {
-            return self.EscapeQuotes().QuotedCSVFieldIfNecessary();
-        }
+        //public static string ToCsvField(this string self)
+        //{
+        //    return self.EscapeQuotes().QuotedCSVFieldIfNecessary();
+        //}
 
-        public static string ToCsvRow(this IEnumerable<string> self)
-        {
-            return String.Join(",", self.Select(ToCsvField));
-        }
+        //public static string ToCsvRow(this IEnumerable<string> self)
+        //{
+        //    return String.Join(",", self.Select(ToCsvField));
+        //}
 
-        public static IEnumerable<string> ToCsvRows(this DataTable self)
-        {
-            yield return self.Columns.OfType<object>().Select(c => c.ToString()).ToCsvRow();
-            foreach (var dr in self.Rows.OfType<DataRow>())
-                yield return dr.ItemArray.Select(i => ToCsvField(i.ToString())).ToCsvRow();
-        }
+        //public static IEnumerable<string> ToCsvRows(this DataTable self)
+        //{
+        //    yield return self.Columns.OfType<object>().Select(c => c.ToString()).ToCsvRow();
+        //    foreach (var dr in self.Rows.OfType<DataRow>())
+        //        yield return dr.ItemArray.Select(i => ToCsvField(i.ToString())).ToCsvRow();
+        //}
 
-        public static void ToCsvFile(this DataTable self, string path)
-        {
-            File.WriteAllLines(path, self.ToCsvRows());
-        }
+        //public static void ToCsvFile(this DataTable self, string path)
+        //{
+        //    File.WriteAllLines(path, self.ToCsvRows());
+        //}
 
-        public static void ToCsvFile<T>(this IEnumerable<T> self, string path)
-        {
-            self.PropertiesToDataTable().ToCsvFile(path);
-        }
+        //public static void ToCsvFile<T>(this IEnumerable<T> self, string path)
+        //{
+        //    self.PropertiesToDataTable().ToCsvFile(path);
+        //}
 
-        public static void ToCsvFile<K, V>(this IDictionary<K, V> self, string path)
-        {
-            self.PropertiesToDataTable().ToCsvFile(path);
-        }
+        //public static void ToCsvFile<K, V>(this IDictionary<K, V> self, string path)
+        //{
+        //    self.PropertiesToDataTable().ToCsvFile(path);
+        //}
 
         #endregion
 
@@ -135,87 +135,87 @@ namespace Ara3D
         /// Creates a data table from an array of classes, using the properties of the clases as column values
         /// https://stackoverflow.com/questions/18746064/using-reflection-to-create-a-datatable-from-a-class
         /// </summary>
-        public static DataTable PropertiesToDataTable<T>(this IEnumerable<T> self)
-        {
-            var properties = typeof(T).GetProperties();
+        //public static DataTable PropertiesToDataTable<T>(this IEnumerable<T> self)
+        //{
+        //    var properties = typeof(T).GetProperties();
 
-            // create a new data table if needed. Otherwise we are adding to the passed dataTable
-            var dataTable = new DataTable();
+        //    // create a new data table if needed. Otherwise we are adding to the passed dataTable
+        //    var dataTable = new DataTable();
 
-            foreach (var info in properties)
-                dataTable.Columns.Add(info.Name, Nullable.GetUnderlyingType(info.PropertyType) ?? info.PropertyType);
+        //    foreach (var info in properties)
+        //        dataTable.Columns.Add(info.Name, Nullable.GetUnderlyingType(info.PropertyType) ?? info.PropertyType);
 
-            foreach (var entity in self)
-                dataTable.Rows.Add(properties.Select(p => p.GetValue(entity)).ToArray());
+        //    foreach (var entity in self)
+        //        dataTable.Rows.Add(properties.Select(p => p.GetValue(entity)).ToArray());
 
-            return dataTable;
-        }
+        //    return dataTable;
+        //}
 
         /// <summary>
         /// Adds a new column to the datatable with the specific name, position, and values.
         /// </summary>
-        public static DataTable AddColumn<T>(this DataTable self, string name, IEnumerable<T> values, int position = -1)
-        {
-            var dc = self.Columns.Add(name, typeof(T));
-            if (position >= 0)
-                dc.SetOrdinal(position);
-            var i = 0;
-            foreach (var v in values)
-                self.Rows[i++].SetField(dc, v);
-            return self;
-        }
+        //public static DataTable AddColumn<T>(this DataTable self, string name, IEnumerable<T> values, int position = -1)
+        //{
+        //    var dc = self.Columns.Add(name, typeof(T));
+        //    if (position >= 0)
+        //        dc.SetOrdinal(position);
+        //    var i = 0;
+        //    foreach (var v in values)
+        //        self.Rows[i++].SetField(dc, v);
+        //    return self;
+        //}
 
         /// <summary>
         /// Given a dictionary creates a datatable from the values of the properties or fields 
         /// of the classes in the values, and a first column made from the keys of the dictionary
         /// </summary>
-        public static DataTable PropertiesOrFieldsToDataTable<K, V>(this IDictionary<K, V> self,
-            string keyColumnName = "keys", bool propertiesOrFields = true)
-        {
-            var dt = propertiesOrFields
-                ? self.Values.PropertiesToDataTable()
-                : self.Values.FieldsToDataTable();
-            return dt.AddColumn(keyColumnName, self.Keys, 0);
-        }
+        //public static DataTable PropertiesOrFieldsToDataTable<K, V>(this IDictionary<K, V> self,
+        //    string keyColumnName = "keys", bool propertiesOrFields = true)
+        //{
+        //    var dt = propertiesOrFields
+        //        ? self.Values.PropertiesToDataTable()
+        //        : self.Values.FieldsToDataTable();
+        //    return dt.AddColumn(keyColumnName, self.Keys, 0);
+        //}
 
         /// <summary>
         /// Creates a data table from an array of classes, using the fields of the clases as column values
         /// https://stackoverflow.com/questions/18746064/using-reflection-to-create-a-datatable-from-a-class
         /// </summary>
-        public static DataTable FieldsToDataTable<T>(this IEnumerable<T> self)
-        {
-            var fields = typeof(T).GetAllFields();
+        //public static DataTable FieldsToDataTable<T>(this IEnumerable<T> self)
+        //{
+        //    var fields = typeof(T).GetAllFields();
 
-            // create a new data table if needed. Otherwise we are adding to the passed dataTable
-            var dataTable = new DataTable();
+        //    // create a new data table if needed. Otherwise we are adding to the passed dataTable
+        //    var dataTable = new DataTable();
 
-            foreach (var info in fields)
-                dataTable.Columns.Add(info.Name, Nullable.GetUnderlyingType(info.FieldType) ?? info.FieldType);
+        //    foreach (var info in fields)
+        //        dataTable.Columns.Add(info.Name, Nullable.GetUnderlyingType(info.FieldType) ?? info.FieldType);
 
-            foreach (var entity in self)
-                dataTable.Rows.Add(fields.Select(p => p.GetValue(entity)).ToArray());
+        //    foreach (var entity in self)
+        //        dataTable.Rows.Add(fields.Select(p => p.GetValue(entity)).ToArray());
 
-            return dataTable;
-        }
+        //    return dataTable;
+        //}
 
         /// <summary>
         /// Given a data table, computes stats for every column in the data table that can be converted into numbers.
         /// </summary>
-        public static Dictionary<string, Statistics> ColumnStatistics(this DataTable self)
-        {
-            return self.Columns.OfType<DataColumn>().Where(IsNumericColumn).ToDictionary(
-                dc => dc.ColumnName,
-                dc => dc.ColumnValues<double>().Statistics());
-        }
+        //public static Dictionary<string, Statistics> ColumnStatistics(this DataTable self)
+        //{
+        //    return self.Columns.OfType<DataColumn>().Where(IsNumericColumn).ToDictionary(
+        //        dc => dc.ColumnName,
+        //        dc => dc.ColumnValues<double>().Statistics());
+        //}
 
         /// <summary>
         /// Given a data table, computes stats for every column in the data table that can be converted into numbers.
         /// The result is returned as a datatable
         /// </summary>
-        public static DataTable ColumnStatisticsAsTable(this DataTable self)
-        {
-            return ColumnStatistics(self).PropertiesOrFieldsToDataTable("statistic", false);
-        }
+        //public static DataTable ColumnStatisticsAsTable(this DataTable self)
+        //{
+        //    return ColumnStatistics(self).PropertiesOrFieldsToDataTable("statistic", false);
+        //}
 
         /// <summary>
         /// Returns true if a data column can be cast to doubles.

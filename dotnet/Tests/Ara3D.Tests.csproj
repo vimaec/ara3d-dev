@@ -60,11 +60,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -97,10 +93,6 @@
       <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
       <Name>Ara3D.Geometry</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AraScriptEditor\Ara3D.ScriptEditor.csproj">
-      <Project>{e52b90c6-9f2f-4c5f-baff-bf4f46e9c6a0}</Project>
-      <Name>Ara3D.ScriptEditor</Name>
-    </ProjectReference>
     <ProjectReference Include="..\BFast\Ara3D.BFast.csproj">
       <Project>{4ce35b4d-4fa8-491e-b195-77520c1e8683}</Project>
       <Name>Ara3D.BFast</Name>
@@ -125,10 +117,6 @@
       <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
       <Name>Ara3D.Math</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Parakeet\Ara3D.Parakeet.csproj">
-      <Project>{deb3f735-979f-4c1c-819d-85e48e23bf52}</Project>
-      <Name>Ara3D.Parakeet</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
       <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
       <Name>Ara3D.DotNetUtilities</Name>
@@ -139,15 +127,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="geometry3Sharp">
-      <Version>1.0.289</Version>
-    </PackageReference>
-    <PackageReference Include="HelixToolkit">
-      <Version>2.6.1</Version>
-    </PackageReference>
-    <PackageReference Include="HelixToolkit.Wpf">
-      <Version>2.6.1</Version>
-    </PackageReference>
     <PackageReference Include="NUnit">
       <Version>3.11.0</Version>
     </PackageReference>
