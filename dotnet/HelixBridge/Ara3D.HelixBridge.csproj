@@ -37,10 +37,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
@@ -66,10 +63,6 @@
     <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
       <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
       <Name>Ara3D.G3D</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
-      <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
-      <Name>Ara3D.DotNetUtilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\WPFBridge\Ara3D.WPFBridge.csproj">
       <Project>{1A3688A4-45C6-46FB-8DAE-510FA25D80C3}</Project>

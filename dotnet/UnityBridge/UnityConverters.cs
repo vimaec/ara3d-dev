@@ -67,7 +67,6 @@ namespace UnityBridge
                     }
             }
 
-
             r.RecalculateNormals();
             return r;
 

@@ -35,11 +35,8 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
@@ -60,14 +57,6 @@
     <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
       <Name>Ara3D.LinqArray</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Math3D\Ara3D.Math.csproj">
-      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
-      <Name>Ara3D.Math</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
-      <Project>{25330241-4C82-4C17-8027-FF882B91640E}</Project>
-      <Name>Ara3D.DotNetUtilities</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
