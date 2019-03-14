@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading.Tasks;
+using Ara3D.DotNetUtilities;
 
 namespace Ara3D
 {
@@ -20,8 +22,11 @@ namespace Ara3D
 
     public interface IScene
     {
-        IArray<IGeometry> Geometries { get; }
+        //IArray<IGeometry> Geometries { get; }
+        IResourceLoader Loader { get; }
         IArray<ISceneObject> Objects { get; }
+
+        Task<IGeometry> LoadGeometry(int id);
     }
 
     public class SceneNode : ISceneNode
@@ -46,13 +51,24 @@ namespace Ara3D
 
     public class Scene : IScene
     {
-        public Scene(IArray<IGeometry> geometries, IArray<ISceneNode> nodes)
+        public Scene(IArray<ISceneNode> nodes, IResourceLoader resourceLoader)
         {
-            Geometries = geometries;
             Objects = nodes.Select(n => new SceneObject(this, n) as ISceneObject);
+            Loader = resourceLoader;
         }
-        public IArray<IGeometry> Geometries { get; }
+        public IResourceLoader Loader { get; }
         public IArray<ISceneObject> Objects { get; }
+
+        async Task<IGeometry> IScene.LoadGeometry(int id)
+        {
+            var geoUri = new Uri(id.ToString());
+            if (await Loader.ResourceBytes(geoUri, out var bytes))
+            {
+                return G3D.Create(bytes).ToIGeometry();
+            }
+            return null;
+        }
+        // TODO - perhaps push material loading back into this class?
     }
 
     public class SceneObject : ISceneObject
@@ -78,16 +94,17 @@ namespace Ara3D
 
     public static class SceneExtensions
     {
-        public static IGeometry Geometry(this ISceneObject obj)
-            => obj.Scene.Geometries[obj.Node.GeometryId];
+        public static Task<IGeometry> Geometry(this ISceneObject obj)
+            => obj.Scene.LoadGeometry(obj.Node.GeometryId);
 
-        public static IGeometry TransformedGeometry(this ISceneObject obj)
-            => obj.Geometry().Transform(obj.Node.Transform);
+        public static async Task<IGeometry> TransformedGeometry(this ISceneObject obj)
+            => (await obj.Geometry()).Transform(obj.Node.Transform);
 
-        public static IArray<IGeometry> TransformedGeometries(this IScene scene)
-            => scene.Objects.Select(TransformedGeometry);
+        // TODO: Perhaps add a function to trigger loading all geometries?
+        //public static async IArray<IGeometry> TransformedGeometries(this IScene scene)
+        //    => scene.Objects.Select(TransformedGeometry);
 
-        public static IGeometry ToIGeometry(this IScene scene)
-            => scene.TransformedGeometries().Merge();
+        //public static IGeometry ToIGeometry(this IScene scene)
+        //    => scene.TransformedGeometries().Merge();
     }
 }
