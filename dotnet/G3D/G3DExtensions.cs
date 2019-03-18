@@ -63,10 +63,10 @@ namespace Ara3D
             => data.ToAttribute(Association.assoc_corner, AttributeType.attr_index);
 
         public static IAttribute ToUvAttribute(this Vector2[] data, int index = 0)
-            => data.ToAttribute(Association.assoc_corner, AttributeType.attr_uv, index);
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_uv, index);
 
         public static IAttribute ToUvAttribute(this IArray<Vector2> data, int index = 0)
-            => data.ToAttribute(Association.assoc_corner, AttributeType.attr_uv, index);
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_uv, index);
 
         public static IAttribute ToUvwAttribute(this Vector3[] data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_uv, index);
@@ -212,11 +212,11 @@ namespace Ara3D
         public static IG3D ToG3D(params IAttribute[] attributes)
             => attributes.ToG3D();
 
-        public static IG3D ToG3D(int sidesPerFaces, IArray<Vector3> vertices, IArray<int> indices = null)
-            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute());
+        public static IG3D ToG3D(int sidesPerFaces, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null)
+            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute());
 
-        public static IG3D ToG3D(int sidesPerFaces, Vector3[] vertices, int[] indices = null)
-            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute());
+        public static IG3D ToG3D(int sidesPerFaces, Vector3[] vertices, int[] indices = null, IArray<Vector2> uvs = null)
+            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute());
 
         public static BFast ToBFast(this IEnumerable<IAttribute> attributes)
             => attributes.ToG3D().ToBFast();
