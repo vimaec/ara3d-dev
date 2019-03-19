@@ -77,6 +77,9 @@ namespace Ara3D
         public static IAttribute ToVertexNormalAttribute(this Vector3[] data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
 
+        public static IAttribute ToMaterialIdsAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_face, AttributeType.attr_materialid, index);
+
         public static IAttribute ToVertexNormalAttribute(this IArray<Vector3> data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
 
@@ -212,8 +215,8 @@ namespace Ara3D
         public static IG3D ToG3D(params IAttribute[] attributes)
             => attributes.ToG3D();
 
-        public static IG3D ToG3D(int sidesPerFaces, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null)
-            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute());
+        public static IG3D ToG3D(int sidesPerFaces, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
+            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute(), materialIds?.ToMaterialIdsAttribute());
 
         public static IG3D ToG3D(int sidesPerFaces, Vector3[] vertices, int[] indices = null, IArray<Vector2> uvs = null)
             => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute());
@@ -482,7 +485,7 @@ namespace Ara3D
             g3d.Attributes(AttributeType.attr_facesize).ToList()
                 .ValidateArity(1)
                 .ValidateDataType(DataType.dt_int32)
-                .ValidateAssociation(Association.assoc_face, Association.assoc_corner, Association.assoc_object)
+                .ValidateAssociation(Association.assoc_face, Association.assoc_object)
                 .ValidateMaxOne();
 
             g3d.Attributes(AttributeType.attr_index).ToList()

@@ -213,14 +213,14 @@ namespace Ara3D
         public static Vector3 Normal(this Face self)
             => Vector3.Normalize(Vector3.Cross(self.Binormal(), self.Tangent()));
         
-        public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null)
-            => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs).ToIGeometry();
+        public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
+            => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs, materialIds).ToIGeometry();
 
-        public static IGeometry QuadMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null)
-            => Mesh(4, vertices, indices, uvs);
+        public static IGeometry QuadMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
+            => Mesh(4, vertices, indices, uvs, materialIds);
 
-        public static IGeometry TriMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null)
-            => Mesh(3, vertices, indices, uvs);
+        public static IGeometry TriMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
+            => Mesh(3, vertices, indices, uvs, materialIds);
 
         /* TODO: finish
         public static IGeometry PolyMesh(this IArray<Vector3> vertices, IArray<Face> faces)
