@@ -282,9 +282,14 @@ namespace Ara3D
             }
         }
 
+        public static BFast ToBFast(this byte[] bytes)
+            => new BFast(bytes);
+
         public static BFast ReadBFast(string file)
-            => new BFast(File.ReadAllBytes(file));
-        
+            => File.ReadAllBytes(file).ToBFast();
+
+        public static void ReadBFast(Stream stream)
+            => stream.ReadAllBytes().ToBFast();
     }
     /*
 
