@@ -11,6 +11,15 @@ namespace Ara3D
         public static IGeometry ReadG3D(string filePath)
             => G3DExtensions.ReadFromFile(filePath).ToIGeometry();
 
+        public static List<IGeometry> LoadGeometriesFromBFast(string filePath)
+            => BFastExtensions.ReadBFast(filePath).LoadGeometries();
+
+        public static List<IGeometry> LoadGeometries(this BFast bfast)
+            => bfast.Buffers
+                .AsParallel().AsOrdered()
+                .Select(b => G3D.Create(b).ToIGeometry())
+                .ToList();
+
         /*
         public static IList<ManifestSceneNode> ReadManifest(string filePath) 
            => Util.LoadJsonArray(filePath).ToObject<IList<ManifestSceneNode>>();
