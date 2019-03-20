@@ -26,17 +26,14 @@ namespace Ara3D
         /// Loads a scene from a folder containing G3D files and a manifest.
         /// Enumerator returns an IScene on load completion
         /// </summary>
-        public static async Task<IScene> ReadScene(IResourceLoader loader)
+        public static async Task<IScene> ReadScene(IFormatLoader loader)
         {
             // We wait while the loader gets us our resources
-            if (!await loader.ResourceManifest(out var data))
-                return null;
-
+            var data = await loader.ResourceManifestAsync();
             // Our load is lazy, which means we only load the bare
             // minimum by default.  Further loads (eg geometry, BIM data)
             // will trigger the fetching of the data required
-            var nodes = ReadManifest(data);
-            return new Scene(nodes.ManifestNodesToSceneNodes(), loader);
+            return data != null ? new Scene(ReadManifest(data).ManifestNodesToSceneNodes(), loader) : null;
         }
 
         // A BFast is just a special type of resource loader

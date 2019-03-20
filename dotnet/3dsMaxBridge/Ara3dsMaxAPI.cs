@@ -229,11 +229,11 @@ namespace Ara3D
             }
         }
 
-        public static void LoadG3DFiles(string folder)
-            => LoadScene(GeometryReader.ReadScene(folder));
+        //public static void LoadG3DFiles(string folder)
+        //    => LoadScene(GeometryReader.ReadScene(folder));
 
-        public static void LoadBFastScene(string filePath)
-            => LoadScene(GeometryReader.ReadSceneFromBFast(filePath));
+        //public static void LoadBFastScene(string filePath)
+        //    => LoadScene(GeometryReader.ReadSceneFromBFast(filePath));
 
         public static INode ToNode(this IGeometry g)
         {
@@ -245,8 +245,9 @@ namespace Ara3D
         public static INode ToNode(this IGeometry g, Matrix4x4 m)
             => ToNode(g).TransformNode(m.ToMatrix3());
 
+        // TODO: Note usage of .Result to create blocking fn from async Geometry call
         public static INode ToNode(this ISceneObject obj)
-            => ToNode(obj.Geometry(), obj.Node.Transform);
+            => ToNode(obj.Geometry().Result, obj.Node.Transform);
 
         public static string NewScript()
         {

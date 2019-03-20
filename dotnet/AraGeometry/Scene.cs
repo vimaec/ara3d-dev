@@ -22,8 +22,7 @@ namespace Ara3D
 
     public interface IScene
     {
-        //IArray<IGeometry> Geometries { get; }
-        IResourceLoader Loader { get; }
+        IFormatLoader Loader { get; }
         IArray<ISceneObject> Objects { get; }
 
         Task<IGeometry> LoadGeometry(int id);
@@ -51,22 +50,19 @@ namespace Ara3D
 
     public class Scene : IScene
     {
-        public Scene(IArray<ISceneNode> nodes, IResourceLoader resourceLoader)
+        public Scene(IArray<ISceneNode> nodes, IFormatLoader resourceLoader)
         {
             Objects = nodes.Select(n => new SceneObject(this, n) as ISceneObject);
             Loader = resourceLoader;
         }
-        public IResourceLoader Loader { get; }
+        public IFormatLoader Loader { get; }
         public IArray<ISceneObject> Objects { get; }
 
         async Task<IGeometry> IScene.LoadGeometry(int id)
         {
-            var geoUri = new Uri(id.ToString());
-            if (await Loader.ResourceBytes(geoUri, out var bytes))
-            {
-                return G3D.Create(bytes).ToIGeometry();
-            }
-            return null;
+            var bytes = await Loader.ResourceGeometryAsync(id);
+            var geo = (bytes != null) ? G3D.Create(bytes).ToIGeometry() : null;
+            return geo;
         }
         // TODO - perhaps push material loading back into this class?
     }

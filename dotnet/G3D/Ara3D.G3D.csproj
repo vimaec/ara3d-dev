@@ -51,9 +51,15 @@
     <Compile Include="ArrayCast.cs" />
     <Compile Include="AttributeDescriptor.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="FormatG3D.cs" />
+    <Compile Include="FormatBFast.cs" />
+    <Compile Include="IFormatLoader.cs" />
+    <Compile Include="DataSourceFileSystem.cs" />
     <Compile Include="G3D.cs" />
     <Compile Include="G3DExtensions.cs" />
     <Compile Include="IAttribute.cs" />
+    <Compile Include="IDataSource.cs" />
+    <Compile Include="DataSourceBFast.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

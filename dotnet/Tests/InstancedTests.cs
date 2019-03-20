@@ -27,37 +27,37 @@ namespace Ara3D.Tests
         [Test, Explicit("Hard coded paths")]
         public static void TestBFastLoading()
         {
-            var sw = new Stopwatch();
+            //var sw = new Stopwatch();
             
-            //var inputFile = @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_19-47-52\output.vim";
-            var inputFile =
-                @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_23-12-13-main\output.vim";
+            ////var inputFile = @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_19-47-52\output.vim";
+            //var inputFile =
+            //    @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-04_23-12-13-main\output.vim";
 
-            var scene = GeometryReader.ReadSceneFromBFast(inputFile);
-            sw.OutputTimeElapsed($"Loaded file {inputFile}");
+            //var scene = GeometryReader.ReadSceneFromBFast(inputFile);
+            //sw.OutputTimeElapsed($"Loaded file {inputFile}");
 
-            var d = new DictionaryOfLists<int, ISceneObject>();
-            foreach (var obj in scene.Objects.ToEnumerable())
-                d.Add(obj.Node.GeometryId, obj);
+            //var d = new DictionaryOfLists<int, ISceneObject>();
+            //foreach (var obj in scene.Objects.ToEnumerable())
+            //    d.Add(obj.Node.GeometryId, obj);
 
-            var uninstancedObjects = d.Where(kv => kv.Value.Count == 1).Select(kv => kv.Value[0]).ToList();
-            Console.WriteLine($"Total object count = {scene.Objects.Count}");
-            Console.WriteLine($"Uninstanced object count = {uninstancedObjects.Count}");
+            //var uninstancedObjects = d.Where(kv => kv.Value.Count == 1).Select(kv => kv.Value[0]).ToList();
+            //Console.WriteLine($"Total object count = {scene.Objects.Count}");
+            //Console.WriteLine($"Uninstanced object count = {uninstancedObjects.Count}");
 
-            var unreferencedObjectsCount = scene.Geometries.Indices().CountWhere(i => !d.ContainsKey(i));
-            Console.WriteLine($"Unreferenced object count = {unreferencedObjectsCount}");
+            //var unreferencedObjectsCount = scene.Geometries.Indices().CountWhere(i => !d.ContainsKey(i));
+            //Console.WriteLine($"Unreferenced object count = {unreferencedObjectsCount}");
 
-            var emptyGeos = scene.Geometries.CountWhere(g => g.NumFaces == 0);
-            Console.WriteLine($"Empty geometry count = {emptyGeos}");
+            //var emptyGeos = scene.Geometries.CountWhere(g => g.NumFaces == 0);
+            //Console.WriteLine($"Empty geometry count = {emptyGeos}");
         }
 
         [Test]
         public static void TestBFastToObj()
         {
-            var inputFile =
-                @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-05_00-47-15-rac_basic_sample_project\output.vim";
-            var scene = GeometryReader.ReadSceneFromBFast(inputFile);
-            scene.ToIGeometry().WriteObj(@"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\test.obj");
+            //var inputFile =
+            //    @"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\2019-03-05_00-47-15-rac_basic_sample_project\output.vim";
+            //var scene = GeometryReader.ReadSceneFromBFast(inputFile);
+            //scene.ToIGeometry().WriteObj(@"C:\Users\ara3d\AppData\Local\Ara3D\RevitDevPlugin\test.obj");
         }
 
         /// <summary>

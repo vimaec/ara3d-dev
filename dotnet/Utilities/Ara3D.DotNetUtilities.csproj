@@ -51,7 +51,6 @@
     <Compile Include="Compiler.cs" />
     <Compile Include="DictionaryOfLists.cs" />
     <Compile Include="IndexedSet.cs" />
-    <Compile Include="IResourceLoader.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Memoization.cs" />
     <Compile Include="PinnedArray.cs" />
