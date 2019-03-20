@@ -236,7 +236,7 @@ namespace Ara3D
                 yield return bf.GetBuffer(i);
         }
 
-        public static BFast ToBFast(this IEnumerable<byte[]> buffers)
+        public static BFast AsBFast(this IEnumerable<byte[]> buffers)
             => new BFast(buffers.Select(b => b.Pin() as IBytes).ToList());
 
         public static void WritePadding(BinaryWriter bw)
@@ -282,14 +282,14 @@ namespace Ara3D
             }
         }
 
-        public static BFast ToBFast(this byte[] bytes)
+        public static BFast AsBFast(this byte[] bytes)
             => new BFast(bytes);
 
         public static BFast ReadBFast(string file)
-            => File.ReadAllBytes(file).ToBFast();
+            => File.ReadAllBytes(file).AsBFast();
 
         public static void ReadBFast(Stream stream)
-            => stream.ReadAllBytes().ToBFast();
+            => stream.ReadAllBytes().AsBFast();
     }
     /*
 

@@ -320,6 +320,10 @@ namespace Ara3D
                 ? g3d.CornerVertexIndices().Count / g3d.FirstFaceSize()
                 : g3d.FaceSizeAttribute.ToInts().Count;
 
+        public static IArray<int> MaterialIds(this IG3D g3d)
+            => g3d.MaterialIdAttribute?.ToInts()
+               ?? (-1).Repeat(g3d.FaceCount());
+
         public static IArray<int> FaceIndices(this IG3D g3d)
             => g3d.FaceIndexAttribute?.ToInts()
                ?? (g3d.HasFixedFaceSize()

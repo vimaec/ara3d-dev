@@ -49,6 +49,11 @@ namespace Ara3D
         /// indicates that the face-size attribute is present and per-face. 
         /// </summary>
         IAttribute FaceIndexAttribute { get; }
+
+        /// <summary>
+        /// The material id attribute is optional: it returns a material id for each face.
+        /// </summary>
+        IAttribute MaterialIdAttribute { get; }
     }
 
     /// <summary>
@@ -67,6 +72,7 @@ namespace Ara3D
         public IAttribute IndexAttribute { get; }
         public IAttribute FaceSizeAttribute { get; }
         public IAttribute FaceIndexAttribute { get; }
+        public IAttribute MaterialIdAttribute { get; }
 
         public string Header { get; }
 
@@ -85,8 +91,10 @@ namespace Ara3D
             IndexAttribute = this.FindAttribute(AttributeType.attr_index, false);
             FaceSizeAttribute = this.FindAttribute(AttributeType.attr_facesize, false);
             FaceIndexAttribute = this.FindAttribute(AttributeType.attr_faceindex, false);
+            MaterialIdAttribute = this.FindAttribute(AttributeType.attr_materialid, false);
 
             // Check that everything is kosher
+            // TODO: this is a long process, only do it in specific circumstances.
             //this.Validate();
         }
 
