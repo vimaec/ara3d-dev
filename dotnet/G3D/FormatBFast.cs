@@ -13,13 +13,16 @@ namespace Ara3D
         }
 
         public Task<string> ResourceManifestAsync()
-            => _loader.ResourceStringAsync(new Uri("0"));
+        {
+            var uri = new Uri("0", UriKind.Relative);
+            return _loader.ResourceStringAsync(uri);
+        }
 
         // TODO! Load materials resources from appropriate buffer
         public Task<string> ResourceMaterialsAsync()
             => Task.FromResult("{}");
 
         public Task<byte[]> ResourceGeometryAsync(int index)
-            => _loader.ResourceBytesAsync(new Uri((index + 1).ToString()));
+            => _loader.ResourceBytesAsync(new Uri((index + 1).ToString(), UriKind.Relative));
     }
 }

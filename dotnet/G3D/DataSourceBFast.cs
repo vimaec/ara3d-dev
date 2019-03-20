@@ -26,7 +26,7 @@ namespace Ara3D
             => Task.FromResult(GetRaw(idx));
 
         private Task<byte[]> GetBuffer(Uri uri)
-            => GetBuffer(int.Parse(uri.LocalPath));
+            => GetBuffer(int.Parse(uri.OriginalString));
 
         public Task<byte[]> ResourceBytesAsync(Uri resourceUri)
             => GetBuffer(resourceUri);
