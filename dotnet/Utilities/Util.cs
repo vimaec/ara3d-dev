@@ -689,9 +689,21 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Writes raw bytes to the stream by creating a memory stream around it. 
+        /// Reads all bytes from a stream
+        /// https://stackoverflow.com/questions/1080442/how-to-convert-an-stream-into-a-byte-in-c
         /// </summary>
-        public static void Write(this BinaryWriter self, IBytes bytes)
+        public static byte[] ReadAllBytes(this Stream stream)
+        {
+            using (var memoryStream = new MemoryStream()) {
+                stream.CopyTo(memoryStream);
+                return memoryStream.ToArray();
+            }
+        }
+
+        /// <summary>
+    /// Writes raw bytes to the stream by creating a memory stream around it. 
+    /// </summary>
+    public static void Write(this BinaryWriter self, IBytes bytes)
         {
             self.Write(bytes.ToBytes());
         }
@@ -1049,9 +1061,12 @@ namespace Ara3D
 
         public static void ToJsonFile(this object o, string filePath)
         {
-            File.Delete(filePath);
             using (var tw = File.CreateText(filePath))
-                new JsonSerializer { Formatting = Formatting.Indented }.Serialize(tw, o);
+                new JsonSerializer
+                {
+                    Formatting = Formatting.Indented,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                }.Serialize(tw, o);
         }
 
         public static string PrettifyJson(this string s)
@@ -1075,21 +1090,26 @@ namespace Ara3D
             File.Delete(fileName);
         }
 
-        public static JObject LoadJson(string filePath)
-        {
-            return JObject.Parse(File.ReadAllText(filePath));
-        }
+        public static JObject LoadJson(string filePath) 
+            => JObject.Parse(File.ReadAllText(filePath));
 
-        public static JArray LoadJsonArray(string filePath)
-        {
-            return JArray.Parse(File.ReadAllText(filePath));
-        }
+        public static JArray LoadJsonArray(string filePath) 
+            => JArray.Parse(File.ReadAllText(filePath));
 
         public static T LoadJsonFromFile<T>(string filePath)
         {
             using (var file = File.OpenText(filePath))
-                return (T)(new JsonSerializer()).Deserialize(file, typeof(T));
+                return LoadJsonFromStream<T>(file);
         }
+
+        public static T LoadJsonFromStream<T>(Stream stream)
+        {
+            using (var reader = new StreamReader(stream))
+                return LoadJsonFromStream<T>(reader);
+        }
+
+        public static T LoadJsonFromStream<T>(StreamReader streamReader)
+            => (T)(new JsonSerializer()).Deserialize(streamReader, typeof(T));       
 
         // File size reporting
 
@@ -1133,9 +1153,15 @@ namespace Ara3D
         /// <summary>
         /// Returns the most recently written to sub-folder
         /// </summary>
-        //public static string GetMostRecentSubFolder(string folderPath)
-        //    => Directory.GetDirectories(folderPath).OrderByDescending(f => new DirectoryInfo(f).LastWriteTime)
-        //        .FirstOrDefault();
+        public static string GetMostRecentSubFolder(string folderPath)
+            => Directory.GetDirectories(folderPath).OrderByDescending(f => new DirectoryInfo(f).LastWriteTime)
+                .FirstOrDefault();
+
+        /// <summary>
+        /// Adds an item to the referenced list, creating it if needed
+        /// </summary>
+        public static void AddToList<T>(ref IList<T> xs, T x)
+            => (xs ?? (xs = new List<T>())).Add(x);
     }
 }
 

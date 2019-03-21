@@ -65,7 +65,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InstancedTests.cs" />
     <Compile Include="TestGeometries.cs" />
     <Compile Include="UnmanagedDataTests.cs" />
     <Compile Include="EditorTests.cs" />
@@ -92,10 +91,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\3dsMaxBridge\Ara3D.3dsMaxBridge.csproj">
-      <Project>{64860ec8-b0eb-44bb-b5bb-039200ada53e}</Project>
-      <Name>Ara3D.3dsMaxBridge</Name>
-    </ProjectReference>
     <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
       <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
       <Name>Ara3D.Geometry</Name>

@@ -11,13 +11,23 @@ namespace Ara3D
         public static IGeometry ReadG3D(string filePath)
             => G3DExtensions.ReadFromFile(filePath).ToIGeometry();
 
+        public static List<IGeometry> LoadGeometriesFromBFast(string filePath)
+            => BFastExtensions.ReadBFast(filePath).LoadGeometries();
+
+        public static List<IGeometry> LoadGeometries(this BFast bfast)
+            => bfast.Buffers
+                .AsParallel().AsOrdered()
+                .Select(b => G3D.Create(b).ToIGeometry())
+                .ToList();
+
+        /*
         public static IList<ManifestSceneNode> ReadManifest(string filePath) 
            => Util.LoadJsonArray(filePath).ToObject<IList<ManifestSceneNode>>();
 
         public static IArray<ISceneNode> ManifestNodesToSceneNodes(this IList<ManifestSceneNode> manifest)
             => manifest.Select(
                 node => new SceneNode(node.ElementId.ToString(), node.GeometryId, node.Transform.ToMatrix(),
-                    node.ElementId, node.MaterialId, node.CategoryId) as ISceneNode).ToIArray();
+                    node.ElementId, node.MaterialId) as ISceneNode).ToIArray();
 
         /// <summary>
         /// Loads a scene from a folder containing G3D files and a manifest. 
@@ -74,5 +84,12 @@ namespace Ara3D
             // Creates a scene API
             return new Scene(geometries.ToIArray(), manifest.ManifestNodesToSceneNodes());
         }
+        */
+
+        public static IScene ReadScene(string folder)
+            => throw new NotImplementedException("See commented out code");
+
+        public static IScene ReadSceneFromBFast(string filePath)
+            => throw new NotImplementedException("See commented out code");
     }
 }

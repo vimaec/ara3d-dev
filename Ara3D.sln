@@ -1,4 +1,5 @@
 ﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2016
@@ -15,9 +16,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.G3SharpBridge", "dotn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.ScriptEditor", "dotnet\AraScriptEditor\Ara3D.ScriptEditor.csproj", "{E52B90C6-9F2F-4C5F-BAFF-BF4F46E9C6A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.3dsMaxBridge", "dotnet\3dsMaxBridge\Ara3D.3dsMaxBridge.csproj", "{64860EC8-B0EB-44BB-B5BB-039200ADA53E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.3dsMaxBridge", "..\revit-dev\3dsMaxBridge\Ara3D.3dsMaxBridge.csproj", "{64860EC8-B0EB-44BB-B5BB-039200ADA53E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.3dsMaxSamples", "dotnet\3dsMaxSamples\Ara3D.3dsMaxSamples.csproj", "{BCF10249-713C-46AD-97EF-BA62A123FBD7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ara3D.3dsMaxSamples", "..\revit-dev\3dsMaxSamples\Ara3D.3dsMaxSamples.csproj", "{BCF10249-713C-46AD-97EF-BA62A123FBD7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ara3D.Parakeet", "dotnet\Parakeet\Ara3D.Parakeet.csproj", "{DEB3F735-979F-4C1C-819D-85E48E23BF52}"
 EndProject

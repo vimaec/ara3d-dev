@@ -1,15 +1,13 @@
-﻿using System;
+﻿ using System;
 using System.Numerics;
 
 namespace Ara3D
 {
     public interface ISceneNode
     {
+        string Name { get; }
         Matrix4x4 Transform { get; }
         int GeometryId { get; }
-        int ElementId { get; }
-        int MaterialId { get; }
-        int CategoryId { get; }
     }
 
     public interface ISceneObject
@@ -26,22 +24,16 @@ namespace Ara3D
 
     public class SceneNode : ISceneNode
     {
-        public SceneNode(string name, int geometryId, Matrix4x4 transform, int elementId, int materialId, int categoryId)
+        public SceneNode(string name, int geometryId, Matrix4x4 transform)
         {
             Name = name;
             GeometryId = geometryId;
             Transform = transform;
-            ElementId = elementId;
-            MaterialId = materialId;
-            CategoryId = categoryId;
         }
 
-        public int GeometryId { get; }
         public string Name { get; }
+        public int GeometryId { get; }
         public Matrix4x4 Transform { get; }
-        public int MaterialId { get; set; }
-        public int CategoryId { get; set; }
-        public int ElementId { get; set; }
     }
 
     public class Scene : IScene
@@ -64,16 +56,6 @@ namespace Ara3D
         }
         public IScene Scene { get; }
         public ISceneNode Node { get; }
-    }
-
-    // TODO: throw this out eventually, only exists for simplification of JSON serialization. 
-    public class ManifestSceneNode 
-    {
-        public float[] Transform { get; set; }
-        public int ElementId { get; set; }
-        public int GeometryId { get; set; }
-        public int MaterialId { get; set; }
-        public int CategoryId { get; set; }
     }
 
     public static class SceneExtensions

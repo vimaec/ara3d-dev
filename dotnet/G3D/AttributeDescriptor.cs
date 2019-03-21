@@ -3,15 +3,17 @@ using System.Runtime.InteropServices;
 
 namespace Ara3D
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 32)]
+    [StructLayout(LayoutKind.Explicit, Pack = 0, Size = 32)]
     public struct AttributeDescriptor
     {
-        public int _association;            // Indicates the part of the geometry that this attribute is associated with 
-        public int _attribute_type;         // n integer values 
-        public int _attribute_type_index;   // each attribute type should have it's own index ( you can have uv0, uv1, etc. )
-        public int _data_arity;             // how many values associated with each element (e.g. UVs might be 2, geometry might be 3, quaternions 4, matrices 9 or 16)
-        public int _data_type;              // the type of individual values (e.g. int32, float64)
-        public int _pad0, _pad1, _pad2;     // ignored, used to bring the alignment up to a power of two.
+        [FieldOffset(0)] public int _association;           // Indicates the part of the geometry that this attribute is associated with 
+        [FieldOffset(4)] public int _attribute_type;        // n integer values 
+        [FieldOffset(8)] public int _attribute_type_index;  // each attribute type should have it's own index ( you can have uv0, uv1, etc. )
+        [FieldOffset(12)] public int _data_arity;           // how many values associated with each element (e.g. UVs might be 2, geometry might be 3, quaternions 4, matrices 9 or 16)
+        [FieldOffset(16)] public int _data_type;            // the type of individual values (e.g. int32, float64)
+        [FieldOffset(20)] public int _pad0;                 // ignored, used to bring the alignment up to a power of two.
+        [FieldOffset(24)] public int _pad1;                 // ignored, used to bring the alignment up to a power of two. 
+        [FieldOffset(28)] public int _pad2;                 // ignored, used to bring the alignment up to a power of two.
 
         public int ItemSize => DataTypeSize(_data_type) * _data_arity;
 
