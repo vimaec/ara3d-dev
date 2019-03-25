@@ -155,29 +155,32 @@ namespace UnityBridge
             if (!matrix.UnityPRS(out var pos, out var rot, out var scl))
                 throw new Exception("Can't decompose matrix");
 
-            ConvertFromRevitToUnityCoords(ref pos, ref rot, ref scl);
+            RevitToUnityCoords(pos, rot, scl, out var outPos, out var outRot, out var outScl);
 
-            transform.position = pos;
-            transform.rotation = rot;
-            transform.localScale = scl;
+            transform.position = outPos;
+            transform.rotation = outRot;
+            transform.localScale = outScl;
         }
 
         /// <summary>
         /// Converts the given Revit-based coordinates into Unity coordinates.
         /// </summary>
-        public static void ConvertFromRevitToUnityCoords(
-            ref UnityEngine.Vector3 pos,
-            ref UnityEngine.Quaternion rot,
-            ref UnityEngine.Vector3 scale)
+        public static void RevitToUnityCoords(
+            UnityEngine.Vector3 pos,
+            UnityEngine.Quaternion rot,
+            UnityEngine.Vector3 scale,
+            out UnityEngine.Vector3 outPos,
+            out UnityEngine.Quaternion outRot,
+            out UnityEngine.Vector3 outScale)
         {
             // Transform space is mirrored on X, and then rotated 90 degrees around X
-            pos = new UnityEngine.Vector3(-pos.x, pos.z, -pos.y);
+            outPos = new UnityEngine.Vector3(-pos.x, pos.z, -pos.y);
 
             // Quaternion is mirrored the same way, but then negated via W = -W because that's just easier to read
-            rot = new Quaternion(rot.x, -rot.z, rot.y, rot.w);
+            outRot = new Quaternion(rot.x, -rot.z, rot.y, rot.w);
 
             // TODO: test this, current scale is completely untested
-            //scale = new UnityEngine.Vector3(scale.x, scale.z, scale.y);
+            outScale = new UnityEngine.Vector3(scale.x, scale.z, scale.y);
         }
 
         /// <summary>
