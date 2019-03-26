@@ -135,6 +135,7 @@ namespace Ara3D
 
         public static T Log<T>(this ILogger logger, string message, Func<T> func,  LogLevel level = LogLevel.Debug, LogLevel exceptionLevel = LogLevel.Critical, bool rethrow = false)
         {
+            DateTime start = DateTime.Now;
             try
             {
                 logger.Log("begin: " + message, level);
@@ -149,10 +150,17 @@ namespace Ara3D
             }
             finally
             {
-                logger.Log("end: " + message, level);
+                logger.Log($"end: {message} | elapsed time (seconds): {(DateTime.Now - start).TotalSeconds}", level);
             }
 
             return default;
         }
+
+        public static Action LogDuration(this ILogger logger, string message, LogLevel level = LogLevel.Debug)
+        {
+            DateTime start = DateTime.Now;
+            logger.Log($"begin: {message}", level);
+            return () => logger.Log($"end: {message} | elapsed time (seconds): {(DateTime.Now - start).TotalSeconds}");
+        }  
     }
 }

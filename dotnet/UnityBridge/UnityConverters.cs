@@ -1,11 +1,15 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using Ara3D;
+using Ara3D.Revit.DataModel;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
+using ILogger = Ara3D.ILogger;
+using System.Linq;
 
 namespace UnityBridge
 {
@@ -152,15 +156,101 @@ namespace UnityBridge
 
         public static void SetFromNode(this Transform transform, ISceneNode node)
         {
-            if (!System.Numerics.Matrix4x4.Decompose(node.Transform, out var scl, out var rot, out var pos))
+            // TODO: Strong assumption - The coordinate system of the ISceneNode's Transform matches that of Revit.
+            transform.SetFromRevitMatrix(node.Transform);
+        }
+
+        public static void SetFromRevitSceneNode(this Transform transform, RevitSceneNode node)
+        {
+            transform.SetFromRevitMatrix(node.Transform);
+        }
+
+        public static void SetFromRevitMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
+        {
+            if (!matrix.UnityPRS(out var pos, out var rot, out var scl))
                 throw new Exception("Can't decompose matrix");
-            
+
+            RevitToUnityCoords(pos, rot, scl, out var outPos, out var outRot, out var outScl);
+
+            transform.position = outPos;
+            transform.rotation = outRot;
+            transform.localScale = outScl;
+        }
+
+        /// <summary>
+        /// Converts the given Revit-based coordinates into Unity coordinates.
+        /// </summary>
+        public static void RevitToUnityCoords(
+            UnityEngine.Vector3 pos,
+            UnityEngine.Quaternion rot,
+            UnityEngine.Vector3 scale,
+            out UnityEngine.Vector3 outPos,
+            out UnityEngine.Quaternion outRot,
+            out UnityEngine.Vector3 outScale)
+        {
             // Transform space is mirrored on X, and then rotated 90 degrees around X
-            transform.position = new UnityEngine.Vector3(-pos.X, pos.Z, -pos.Y);
-            // Quat is mirrored the same way, but then negated via W = -W because that's just easier to read
-            transform.rotation = new UnityEngine.Quaternion(rot.X, -rot.Z, rot.Y, rot.W);
+            outPos = new UnityEngine.Vector3(-pos.x, pos.z, -pos.y);
+
+            // Quaternion is mirrored the same way, but then negated via W = -W because that's just easier to read
+            outRot = new Quaternion(rot.x, -rot.z, rot.y, rot.w);
+
             // TODO: test this, current scale is completely untested
-            transform.localScale = new UnityEngine.Vector3(scl.X, scl.Z, scl.Y);
+            outScale = new UnityEngine.Vector3(scale.x, scale.z, scale.y);
+        }
+
+        /// <summary>
+        /// Extracts the Unity-compatible types for position, rotation, and scale from the given matrix.
+        /// Returns false if the matrix cannot be decomposed.
+        /// </summary>
+        public static bool UnityPRS(
+            this System.Numerics.Matrix4x4 matrix,
+            out UnityEngine.Vector3 position,
+            out UnityEngine.Quaternion rotation,
+            out UnityEngine.Vector3 scale)
+        {
+            position = new UnityEngine.Vector3();
+            rotation = new UnityEngine.Quaternion();
+            scale = new UnityEngine.Vector3(1, 1, 1);
+
+            if (matrix.IsIdentity)
+                return true;
+
+            var decomposed = System.Numerics.Matrix4x4.Decompose(matrix, out var scl, out var rot, out var pos);
+            if (!decomposed)
+                return false;
+
+            position.Set(pos.X, pos.Y, pos.Z);
+            rotation.Set(rot.X, rot.Y, rot.Z, rot.W);
+            scale.Set(scl.X, scl.Y, scl.Z);
+
+            return true;
+        }
+    }
+
+    public class UnityLogger : ILogger
+    {
+        public List<LogEvent> Events = new List<LogEvent>();
+        
+        public ILogger Log(string message = "", LogLevel level = LogLevel.None, int eventId = 0)
+        {
+
+            var e = new LogEvent
+            {
+                EventId = eventId,
+                Index = Events.Count,
+                Message = message,
+                When = DateTime.Now
+            };
+            Events.Add(e);
+
+            UnityEngine.Debug.Log(e);
+
+            return this;
+        }
+
+        public void ExportLog(string path)
+        {
+            File.WriteAllLines(path, Events.Select(e => e.ToString()));
         }
     }
 }
