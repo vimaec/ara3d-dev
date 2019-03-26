@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using Ara3D;
 using Ara3D.Revit.DataModel;
@@ -7,6 +8,8 @@ using UnityEngine.Rendering;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
+using ILogger = Ara3D.ILogger;
+using System.Linq;
 
 namespace UnityBridge
 {
@@ -221,6 +224,33 @@ namespace UnityBridge
             scale.Set(scl.X, scl.Y, scl.Z);
 
             return true;
+        }
+    }
+
+    public class UnityLogger : ILogger
+    {
+        public List<LogEvent> Events = new List<LogEvent>();
+        
+        public ILogger Log(string message = "", LogLevel level = LogLevel.None, int eventId = 0)
+        {
+
+            var e = new LogEvent
+            {
+                EventId = eventId,
+                Index = Events.Count,
+                Message = message,
+                When = DateTime.Now
+            };
+            Events.Add(e);
+
+            UnityEngine.Debug.Log(e);
+
+            return this;
+        }
+
+        public void ExportLog(string path)
+        {
+            File.WriteAllLines(path, Events.Select(e => e.ToString()));
         }
     }
 }
