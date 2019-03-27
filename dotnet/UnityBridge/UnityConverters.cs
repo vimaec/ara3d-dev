@@ -1,15 +1,7 @@
 ﻿using System;
-using System.IO;
-using System.Collections.Generic;
 using Ara3D;
-using Ara3D.Revit.DataModel;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Vector2 = System.Numerics.Vector2;
-using Vector3 = System.Numerics.Vector3;
-using Vector4 = System.Numerics.Vector4;
-using ILogger = Ara3D.ILogger;
-using System.Linq;
 
 namespace UnityBridge
 {
@@ -157,20 +149,15 @@ namespace UnityBridge
         public static void SetFromNode(this Transform transform, ISceneNode node)
         {
             // TODO: Strong assumption - The coordinate system of the ISceneNode's Transform matches that of Revit.
-            transform.SetFromRevitMatrix(node.Transform);
+            transform.SetFromMatrix(node.Transform);
         }
 
-        public static void SetFromRevitSceneNode(this Transform transform, RevitSceneNode node)
-        {
-            transform.SetFromRevitMatrix(node.Transform);
-        }
-
-        public static void SetFromRevitMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
+        public static void SetFromMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
         {
             if (!matrix.UnityPRS(out var pos, out var rot, out var scl))
                 throw new Exception("Can't decompose matrix");
 
-            RevitToUnityCoords(pos, rot, scl, out var outPos, out var outRot, out var outScl);
+            ToUnityCoords(pos, rot, scl, out var outPos, out var outRot, out var outScl);
 
             transform.position = outPos;
             transform.rotation = outRot;
@@ -180,7 +167,7 @@ namespace UnityBridge
         /// <summary>
         /// Converts the given Revit-based coordinates into Unity coordinates.
         /// </summary>
-        public static void RevitToUnityCoords(
+        public static void ToUnityCoords(
             UnityEngine.Vector3 pos,
             UnityEngine.Quaternion rot,
             UnityEngine.Vector3 scale,
@@ -224,33 +211,6 @@ namespace UnityBridge
             scale.Set(scl.X, scl.Y, scl.Z);
 
             return true;
-        }
-    }
-
-    public class UnityLogger : ILogger
-    {
-        public List<LogEvent> Events = new List<LogEvent>();
-        
-        public ILogger Log(string message = "", LogLevel level = LogLevel.None, int eventId = 0)
-        {
-
-            var e = new LogEvent
-            {
-                EventId = eventId,
-                Index = Events.Count,
-                Message = message,
-                When = DateTime.Now
-            };
-            Events.Add(e);
-
-            UnityEngine.Debug.Log(e);
-
-            return this;
-        }
-
-        public void ExportLog(string path)
-        {
-            File.WriteAllLines(path, Events.Select(e => e.ToString()));
         }
     }
 }

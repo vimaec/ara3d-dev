@@ -44,12 +44,9 @@
   <ItemGroup>
     <Compile Include="UnityConverters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnityLogger.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\revit-dev\RevitDataModel\Ara3D.Revit.DataModel.csproj">
-      <Project>{c1d61cf7-bcb8-4db6-a6d8-7a3de02275c9}</Project>
-      <Name>Ara3D.Revit.DataModel</Name>
-    </ProjectReference>
     <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
       <Project>{E89008FA-6D3F-48DE-900A-BE5A9D79F4AE}</Project>
       <Name>Ara3D.Geometry</Name>
