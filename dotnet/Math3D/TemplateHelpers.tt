@@ -48,21 +48,33 @@
 		}
 	}
 
-	private static void CreateBinaryOp(string name, string[] fields, string type, string op)
+	private void CreateBinaryOp(string name, string[] fields, string type, string op)
 	{
-		var combineArgs = "FUBAR"; // string.Join(",", fields.Select(f => $"value1.{f} {op} value2.{f}"));
+		var combineArgs = string.Join(",", fields.Select(f => $"value1.{f} {op} value2.{f}"));
 #>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static operator <#= name #> <#= op #>(<#= name #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs #>);
+		public static <#= name #> operator <#= op #>(<#= name #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs #>);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static <#= name #> operator <#= op #>(<#= name #> value1, <#= type #> value2) => new <#= name #>(<#= combineArgs #>);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static <#= name #> operator <#= op #>(<#= type #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs #>);
 <#+
 	}
 
-	private static void CreateOps(string name, string[] fields, string type)
+	private void CreateVectorOps(string name, string[] fields, string type)
 	{
 		CreateBinaryOp(name, fields, type, "+");
 		CreateBinaryOp(name, fields, type, "-");
 		CreateBinaryOp(name, fields, type, "*");
 		CreateBinaryOp(name, fields, type, "/");
+
+		var ctorArgs = string.Join(", ", fields.Select(f => "value"));
+#>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public <#= name #>(<#= types[0] #> value) : this(<#= ctorArgs #>) { }		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static <#= name #> operator -(<#= name #> value) => Zero - value;
+<#+
 	}
 
 	private static string OneValue(string type) {
@@ -88,6 +100,9 @@
 		var ctorAssign = string.Join(" ", fields.Select((f) => $"{f} = {f.ToLower()};"));
 		var zeroArgs = string.Join(", ", types.Select(ZeroValue));
 		var oneArgs = string.Join(", ", types.Select(ZeroValue));
+		var defaultArgs = string.Join(", ", types.Select(t => $"default({t})"));
+		var minArgs = = string.Join(", ", types.Select(t => $"{t}.MinValue"));
+		var maxArgs = = string.Join(", ", types.Select(t => $"{t}.MaxValue"));
 
 #>
 	public readonly partial struct <#= name #> : IEquatable< <#= name #> >
@@ -97,9 +112,12 @@
 #>
 		public readonly <#= types[i] #> <#= fields[i] #>;
 <#+
-		}
+		}		
 #>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public <#= name #>(<#= ctorArgs #>) { <#= ctorAssign #> }
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public <#= name #>() : this(<#= defaultArgs #>) { }
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override bool Equals(object obj) => obj is <#= name #> x && Equals(x);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -112,9 +130,13 @@
 		public static bool operator ==(<#= opArgs #>) => x0.Equals(x1);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator !=(<#= opArgs #>) => !x0.Equals(x1);
+
+		public static <#= name #> Zero = <#= name #>() { }
+		public static <#= name #> MinValue = <#= name #>(<#= minArgs #>) { }
+		public static <#= name #> MaxValue = <#= name #>(<#= maxArgs #>) { }
 <#+
 		CreateSetters(name, fields, types); 
-		if (isVector) CreateOps(name, fields, types[0]);
+		if (isVector) CreateVectorOps(name, fields, types[0]);
 #>
 	}
 <#+
