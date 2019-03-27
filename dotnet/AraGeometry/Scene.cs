@@ -79,7 +79,8 @@ namespace Ara3D
     }
 
     // TODO: throw this out eventually, only exists for simplification of JSON serialization. 
-    public class ManifestSceneNode 
+    [Serializable]
+    public class ManifestSceneNode
     {
         public float[] Transform { get; set; }
         public int ElementId { get; set; }

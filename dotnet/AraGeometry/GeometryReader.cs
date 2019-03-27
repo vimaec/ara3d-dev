@@ -30,10 +30,14 @@ namespace Ara3D
         {
             // We wait while the loader gets us our resources
             var data = await loader.ResourceManifestAsync();
+            if (data == null)
+                return null;
             // Our load is lazy, which means we only load the bare
             // minimum by default.  Further loads (eg geometry, BIM data)
             // will trigger the fetching of the data required
-            return data != null ? new Scene(ReadManifest(data).ManifestNodesToSceneNodes(), loader) : null;
+            var manifest = ReadManifest(data);
+            var sceneNodes = manifest.ManifestNodesToSceneNodes();
+            return new Scene(sceneNodes, loader);
         }
 
         // A BFast is just a special type of resource loader
