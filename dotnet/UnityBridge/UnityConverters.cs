@@ -163,5 +163,19 @@ namespace UnityBridge
             // TODO: test this, current scale is completely untested
             transform.localScale = new UnityEngine.Vector3(scl.X, scl.Z, scl.Y);
         }
+
+        public static void SetFromMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
+        {
+            if (matrix.IsIdentity)
+                return;
+            if (!System.Numerics.Matrix4x4.Decompose(matrix, out var scl, out var rot, out var pos))
+                throw new Exception("Can't decompose matrix");
+
+            // Transform space is mirrored on X, and then rotated 90 degrees around X
+            transform.position = new UnityEngine.Vector3(-pos.X, pos.Z, -pos.Y);
+            // Quaternion is mirrored the same way, but then negated via W = -W because that's just easier to read
+            transform.rotation = new Quaternion(rot.X, -rot.Z, rot.Y, rot.W);
+        }
+
     }
 }
