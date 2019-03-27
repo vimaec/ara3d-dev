@@ -4,7 +4,6 @@
 
 
 using System;
-using System.Numerics;
 
 namespace Ara3D 
 {

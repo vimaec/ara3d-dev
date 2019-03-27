@@ -12,6 +12,7 @@
 		}
 		var args = sb.ToString();
 #>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public <#= name #> Set<#= field #>(<#= type #> x) => new <#= name #>(<#= args #>);
 <#+
 	}
@@ -28,7 +29,7 @@
 
     private void CreateVectorStruct(string name, string[] fields, string type)
 	{
-		CreateStruct(name, fields, fields.Select(f => type).ToArray());
+		CreateStruct(name, fields, fields.Select(f => type).ToArray(), true);
 	}
 
 	private void CreateRangeStruct(string name, string type) 
@@ -47,6 +48,23 @@
 		}
 	}
 
+	private static void CreateBinaryOp(string name, string[] fields, string type, string op)
+	{
+		var combineArgs = "FUBAR"; // string.Join(",", fields.Select(f => $"value1.{f} {op} value2.{f}"));
+#>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static operator <#= name #> <#= op #>(<#= name #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs #>);
+<#+
+	}
+
+	private static void CreateOps(string name, string[] fields, string type)
+	{
+		CreateBinaryOp(name, fields, type, "+");
+		CreateBinaryOp(name, fields, type, "-");
+		CreateBinaryOp(name, fields, type, "*");
+		CreateBinaryOp(name, fields, type, "/");
+	}
+
 	private static string OneValue(string type) {
 		switch (type)
 		{
@@ -58,7 +76,7 @@
 		}
 	}
 
-    private void CreateStruct(string name, string[] fields, string[] types)
+    private void CreateStruct(string name, string[] fields, string[] types, bool isVector = false)
     {
         var toStringBodyInner = string.Join(", ", fields.Select((f) => $"{f} = {{{f}}}"));
         var toStringBody = $"{name}({toStringBodyInner})";
@@ -82,14 +100,21 @@
 		}
 #>
 		public <#= name #>(<#= ctorArgs #>) { <#= ctorAssign #> }
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override bool Equals(object obj) => obj is <#= name #> x && Equals(x);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override int GetHashCode() => <#= hashBody #>;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override string ToString() => $"<#= toStringBody #>";
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Equals(<#= name #> x) => <#= eqBody #>;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator ==(<#= opArgs #>) => x0.Equals(x1);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator !=(<#= opArgs #>) => !x0.Equals(x1);
 <#+
 		CreateSetters(name, fields, types); 
+		if (isVector) CreateOps(name, fields, types[0]);
 #>
 	}
 <#+

@@ -1,6 +1,5 @@
 ﻿using Ara3D;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Windows.Media.Media3D;
 using Geometry = Ara3D.Geometry;
 

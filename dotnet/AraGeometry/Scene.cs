@@ -1,7 +1,4 @@
-﻿ using System;
-using System.Numerics;
-
-namespace Ara3D
+﻿namespace Ara3D
 {
     public interface ISceneNode
     {

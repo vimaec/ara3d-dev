@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Ara3D;
 using UnityEngine;
 using UnityEngine.Rendering;

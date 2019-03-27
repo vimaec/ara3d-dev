@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace Ara3D
+﻿namespace Ara3D
 {
     public static class Primitives
     {

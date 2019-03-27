@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace Ara3D
 {
@@ -22,7 +21,7 @@ namespace Ara3D
         public ContainmentType Contains(Box box)
         {
             //check if all corner is in sphere
-            bool inside = true;
+            var inside = true;
             foreach (var corner in box.Corners)
             {
                 if (Contains(corner) == ContainmentType.Disjoint)
@@ -84,7 +83,7 @@ namespace Ara3D
         /// </summary>
         public ContainmentType Contains(Vector3 point)
         {
-            Contains(point, out ContainmentType result);
+            Contains(point, out var result);
             return result;
         }
 
@@ -93,7 +92,7 @@ namespace Ara3D
         /// </summary>
         public void Contains(Vector3 point, out ContainmentType result)
         {
-            float sqRadius = Radius * Radius;
+            var sqRadius = Radius * Radius;
             var sqDistance = Vector3.DistanceSquared(point, Center);
             
             if (sqDistance > sqRadius)
@@ -181,7 +180,7 @@ namespace Ara3D
             // The current bounding sphere is just a good approximation and may not enclose all points.            
             // From: Mathematics for 3D Game Programming and Computer Graphics, Eric Lengyel, Third Edition.
             // Page 218
-            float sqRadius = radius * radius;
+            var sqRadius = radius * radius;
             foreach (var pt in points)
             {
                 var diff = pt-center;
@@ -241,7 +240,6 @@ namespace Ara3D
 			return box.Intersects(this);
         }
 
-        /// <summary>
         /// <summary>
         /// Gets whether or not the other <see cref="Sphere"/> intersects with this sphere.
         /// </summary>

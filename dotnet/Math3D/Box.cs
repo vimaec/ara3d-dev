@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace Ara3D
 {
@@ -237,7 +236,7 @@ namespace Ara3D
 
         public bool Intersects(Box box)
         {
-            Intersects(box, out bool result);
+            Intersects(box, out var result);
             return result;
         }
 

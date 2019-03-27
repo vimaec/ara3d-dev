@@ -5,7 +5,6 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using System.Numerics;
 
 namespace Ara3D
 {
@@ -77,7 +76,7 @@ namespace Ara3D
             // Using formula from http://www.mvps.org/directx/articles/catmull/
             // Internally using doubles not to lose precission
             double amountSquared = amount * amount;
-            double amountCubed = amountSquared * amount;
+            var amountCubed = amountSquared * amount;
             return (float)(0.5 * (2.0 * value2 +
                 (value3 - value1) * amount +
                 (2.0 * value1 - 5.0 * value2 + 4.0 * value3 - value4) * amountSquared +
@@ -147,8 +146,8 @@ namespace Ara3D
             // All transformed to double not to lose precission
             // Otherwise, for high numbers of param:amount the result is NaN instead of Infinity
             double v1 = value1, v2 = value2, t1 = tangent1, t2 = tangent2, s = amount, result;
-            double sCubed = s * s * s;
-            double sSquared = s * s;
+            var sCubed = s * s * s;
+            var sSquared = s * s;
 
             if (amount == 0f)
                 result = value1;
@@ -338,7 +337,7 @@ namespace Ara3D
 
         public static Matrix4x4 Inverse(this Matrix4x4 m)
         {
-            if (!Matrix4x4.Invert(m, out Matrix4x4 r))
+            if (!Matrix4x4.Invert(m, out var r))
                 throw new Exception("No inversion of matrix available");
             return r;
         }
