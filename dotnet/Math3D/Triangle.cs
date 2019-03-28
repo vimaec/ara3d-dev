@@ -36,7 +36,5 @@ namespace Ara3D
         // TODO: plane
         // TODO: contained sphere
         // TODO: bounding sphere 
-
-        public static Triangle Zero = new Triangle(Vector3.Zero, Vector3.Zero, Vector3.Zero);                
     }
 }

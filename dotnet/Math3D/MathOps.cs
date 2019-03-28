@@ -6,6 +6,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+// ReSharper disable CompareOfFloatsByEqualityOperator
 
 namespace Ara3D 
 {

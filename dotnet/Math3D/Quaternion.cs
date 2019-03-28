@@ -38,7 +38,7 @@ namespace Ara3D
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Length()
-            => MathF.Sqrt(LengthSquared());
+            => LengthSquared().Sqrt();
 
         /// <summary>
         /// Calculates the length squared of the Quaternion. This operation is cheaper than Length().
@@ -81,7 +81,7 @@ namespace Ara3D
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Quaternion CreateFromAxisAngle(Vector3 axis, float angle)
-            => new Quaternion(axis * MathF.Sin(angle * 0.5f), MathF.Cos(angle * 0.5f));
+            => new Quaternion(axis * (angle * 0.5f).Sin(), (angle * 0.5f).Cos());
 
         /// <summary>
         /// Creates a new Quaternion from the given yaw, pitch, and roll, in radians.
@@ -96,16 +96,16 @@ namespace Ara3D
             //  pitch upward, then yaw to face into the new heading
 
             var halfRoll = roll * 0.5f;
-            var sr = MathF.Sin(halfRoll);
-            var cr = MathF.Cos(halfRoll);
+            var sr = halfRoll.Sin();
+            var cr = halfRoll.Cos();
 
             var halfPitch = pitch * 0.5f;
-            var sp = MathF.Sin(halfPitch);
-            var cp = MathF.Cos(halfPitch);
+            var sp = halfPitch.Sin();
+            var cp = halfPitch.Cos();
 
             var halfYaw = yaw * 0.5f;
-            var sy = MathF.Sin(halfYaw);
-            var cy = MathF.Cos(halfYaw);
+            var sy = halfYaw.Sin();
+            var cy = halfYaw.Cos();
 
             return new Quaternion(
                 cy * sp * cr + sy * cp * sr,
@@ -124,7 +124,7 @@ namespace Ara3D
 
             if (trace > 0.0f)
             {
-                var s = MathF.Sqrt(trace + 1.0f);
+                var s = (trace + 1.0f).Sqrt();
                 s = 0.5f / s;
                 return new Quaternion(
                     (matrix.M23 - matrix.M32) * s,
@@ -134,7 +134,7 @@ namespace Ara3D
             }
             if (matrix.M11 >= matrix.M22 && matrix.M11 >= matrix.M33)
             {
-                var s = MathF.Sqrt(1.0f + matrix.M11 - matrix.M22 - matrix.M33);
+                var s = (1.0f + matrix.M11 - matrix.M22 - matrix.M33).Sqrt();
                 var invS = 0.5f / s;
                 return new Quaternion(0.5f * s,
                     (matrix.M12 + matrix.M21) * invS,
@@ -143,7 +143,7 @@ namespace Ara3D
             }
             if (matrix.M22 > matrix.M33)
             {
-                var s = MathF.Sqrt(1.0f + matrix.M22 - matrix.M11 - matrix.M33);
+                var s = (1.0f + matrix.M22 - matrix.M11 - matrix.M33).Sqrt();
                 var invS = 0.5f / s;
                 return new Quaternion(
                    (matrix.M21 + matrix.M12) * invS,
@@ -152,7 +152,7 @@ namespace Ara3D
                    (matrix.M31 - matrix.M13) * invS);
             }
             {
-                var s = MathF.Sqrt(1.0f + matrix.M33 - matrix.M11 - matrix.M22);
+                var s = (1.0f + matrix.M33 - matrix.M11 - matrix.M22).Sqrt();
                 var invS = 0.5f / s;
                 return new Quaternion(
                     (matrix.M31 + matrix.M13) * invS, 
@@ -203,13 +203,13 @@ namespace Ara3D
             }
             else
             {
-                var omega = MathF.Acos(cosOmega);
-                var invSinOmega = 1 / MathF.Sin(omega);
+                var omega = cosOmega.Acos();
+                var invSinOmega = 1 / omega.Sin();
 
-                s1 = MathF.Sin((1.0f - t) * omega) * invSinOmega;
+                s1 = ((1.0f - t) * omega).Sin() * invSinOmega;
                 s2 = (flip)
-                    ? -MathF.Sin(t * omega) * invSinOmega
-                    : MathF.Sin(t * omega) * invSinOmega;
+                    ? -(t * omega).Sin() * invSinOmega
+                    : (t * omega).Sin() * invSinOmega;
             }
 
             return quaternion1 * s1 + quaternion2 * s2;

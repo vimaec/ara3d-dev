@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 
 namespace Ara3D
 {
@@ -14,7 +15,22 @@ namespace Ara3D
     [StructLayout(LayoutKind.Sequential)]
     public struct Matrix4x4 : IEquatable<Matrix4x4>
     {
-        #region Public Fields
+        public Vector3 Col0 => new Vector3(M11, M21, M31);
+        public Vector3 Col1 => new Vector3(M12, M22, M32);
+        public Vector3 Col2 => new Vector3(M13, M23, M33);
+        public Vector3 Col3 => new Vector3(M14, M24, M34);
+
+        public Vector3 Row0 => new Vector3(M11, M12, M13);
+        public Vector3 Row1 => new Vector3(M21, M22, M23);
+        public Vector3 Row2 => new Vector3(M31, M32, M33);
+        public Vector3 Row3 => new Vector3(M41, M42, M43);
+
+        public Vector3 GetRow(int row) 
+            => row == 0 ? Row0 : row == 1 ? Row1 : row == 2 ? Row2 : Row3;
+
+        public Vector3 GetCol(int col)
+            => col == 0 ? Col0 : col == 1 ? Col1 : col == 2 ? Col2 : Col3;
+
         /// <summary>
         /// Value at row 1, column 1 of the matrix.
         /// </summary>
@@ -82,20 +98,17 @@ namespace Ara3D
         /// Value at row 4, column 4 of the matrix.
         /// </summary>
         public float M44;
-        #endregion Public Fields
-
-        private static readonly Matrix4x4 _identity = new Matrix4x4
+        
+        /// <summary>
+        /// Returns the multiplicative identity matrix.
+        /// </summary>
+        public static Matrix4x4 Identity = new Matrix4x4
         (
             1f, 0f, 0f, 0f,
             0f, 1f, 0f, 0f,
             0f, 0f, 1f, 0f,
             0f, 0f, 0f, 1f
         );
-
-        /// <summary>
-        /// Returns the multiplicative identity matrix.
-        /// </summary>
-        public static Matrix4x4 Identity => _identity;
 
         /// <summary>
         /// Returns whether the matrix is the identity matrix.
@@ -107,22 +120,11 @@ namespace Ara3D
                        M41 == 0f && M42 == 0f && M43 == 0f;
 
         /// <summary>
-        /// Gets or sets the translation component of this matrix.
+        /// Gets the translation component of this matrix.
         /// </summary>
         public Vector3 Translation
-        {
-            get
-            {
-                return new Vector3(M41, M42, M43);
-            }
-            set
-            {
-                M41 = value.X;
-                M42 = value.Y;
-                M43 = value.Z;
-            }
-        }
-
+            => new Vector3(M41, M42, M43);
+        
         /// <summary>
         /// Constructs a Matrix4x4 from the given components.
         /// </summary>
@@ -152,6 +154,15 @@ namespace Ara3D
             M44 = m44;
         }
 
+        public static Matrix4x4 FromRows(Vector3 row0, Vector3 row1, Vector3 row2)
+            => FromRows(row0, row1, row2, Vector3.Zero);
+
+        public static Matrix4x4 FromRows(Vector3 row0, Vector3 row1, Vector3 row2, Vector3 pos)
+            => new Matrix4x4(row0.X, row0.Y, row0.Z, 0f,
+                row1.X, row1.Y, row1.Z, 0f,
+                row2.X, row2.Y, row2.Z, 0f,
+                pos.X, pos.Y, pos.Z, 1f);
+
         /// <summary>
         /// Creates a spherical billboard that rotates around a specified object position.
         /// </summary>
@@ -177,11 +188,10 @@ namespace Ara3D
             }
             else
             {
-                zaxis = zaxis * (1.0f / MathOps.Sqrt(norm));
+                zaxis = zaxis * (1.0f / norm.Sqrt());
             }
 
             var xaxis = Vector3.Cross(cameraUpVector, zaxis).Normal();
-
             var yaxis = Vector3.Cross(zaxis, xaxis);
 
             Matrix4x4 result;
@@ -235,7 +245,7 @@ namespace Ara3D
             }
             else
             {
-                faceDir = faceDir * 1.0f / MathOps.Sqrt(norm);
+                faceDir = faceDir * 1.0f / norm.Sqrt();
             }
 
             var yaxis = rotateAxis;
@@ -245,16 +255,16 @@ namespace Ara3D
             // Treat the case when angle between faceDir and rotateAxis is too close to 0.
             var dot = Vector3.Dot(rotateAxis, faceDir);
 
-            if (MathOps.Abs(dot) > minAngle)
+            if (dot.Abs() > minAngle)
             {
                 zaxis = objectForwardVector;
 
                 // Make sure passed values are useful for compute.
                 dot = Vector3.Dot(rotateAxis, zaxis);
 
-                if (MathOps.Abs(dot) > minAngle)
+                if (dot.Abs() > minAngle)
                 {
-                    zaxis = (MathOps.Abs(rotateAxis.Z) > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
+                    zaxis = (rotateAxis.Z.Abs() > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
                 }
 
                 xaxis = Vector3.Cross(rotateAxis, zaxis).Normal();
@@ -553,8 +563,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathOps.Cos(radians);
-            var s = MathOps.Sin(radians);
+            var c = radians.Cos();
+            var s = radians.Sin();
 
             // [  1  0  0  0 ]
             // [  0  c  s  0 ]
@@ -590,8 +600,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathOps.Cos(radians);
-            var s = MathOps.Sin(radians);
+            var c = radians.Cos();
+            var s = radians.Sin();
 
             var y = centerPoint.Y * (1 - c) + centerPoint.Z * s;
             var z = centerPoint.Z * (1 - c) - centerPoint.Y * s;
@@ -629,8 +639,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathOps.Cos(radians);
-            var s = MathOps.Sin(radians);
+            var c = radians.Cos();
+            var s = radians.Sin();
 
             // [  c  0 -s  0 ]
             // [  0  1  0  0 ]
@@ -666,8 +676,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathOps.Cos(radians);
-            var s = MathOps.Sin(radians);
+            var c = radians.Cos();
+            var s = radians.Sin();
 
             var x = centerPoint.X * (1 - c) - centerPoint.Z * s;
             var z = centerPoint.Z * (1 - c) + centerPoint.X * s;
@@ -705,8 +715,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathOps.Cos(radians);
-            var s = MathOps.Sin(radians);
+            var c = radians.Cos();
+            var s = radians.Sin();
 
             // [  c  s  0  0 ]
             // [ -s  c  0  0 ]
@@ -742,8 +752,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathOps.Cos(radians);
-            var s = MathOps.Sin(radians);
+            var c = radians.Cos();
+            var s = radians.Sin();
 
             var x = centerPoint.X * (1 - c) + centerPoint.Y * s;
             var y = centerPoint.Y * (1 - c) - centerPoint.X * s;
@@ -806,7 +816,7 @@ namespace Ara3D
             //     [ zx-cosa*zx-sina*y zy-cosa*zy+sina*x   zz+cosa*(1-zz)  ]
             //
             float x = axis.X, y = axis.Y, z = axis.Z;
-            float sa = MathOps.Sin(angle), ca = MathOps.Cos(angle);
+            float sa = angle.Sin(), ca = angle.Cos();
             float xx = x * x, yy = y * y, zz = z * z;
             float xy = x * y, xz = x * z, yz = y * z;
 
@@ -854,7 +864,7 @@ namespace Ara3D
             if (nearPlaneDistance >= farPlaneDistance)
                 throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance));
 
-            var yScale = 1.0f / MathOps.Tan(fieldOfView * 0.5f);
+            var yScale = 1.0f / (fieldOfView * 0.5f).Tan();
             var xScale = yScale / aspectRatio;
 
             Matrix4x4 result;
@@ -1387,7 +1397,7 @@ namespace Ara3D
 
             var det = a * a11 + b * a12 + c * a13 + d * a14;
 
-            if (MathOps.Abs(det) < float.Epsilon)
+            if (det.Abs() < float.Epsilon)
             {
                 result = new Matrix4x4(float.NaN, float.NaN, float.NaN, float.NaN,
                                        float.NaN, float.NaN, float.NaN, float.NaN,
@@ -1433,223 +1443,6 @@ namespace Ara3D
             result.M44 = +(a * fk_gj - b * ek_gi + c * ej_fi) * invDet;
 
             return true;
-        }
-
-
-        struct CanonicalBasis
-        {
-            public Vector3 Row0;
-            public Vector3 Row1;
-            public Vector3 Row2;
-        };
-
-
-        struct VectorBasis
-        {
-            public unsafe Vector3* Element0;
-            public unsafe Vector3* Element1;
-            public unsafe Vector3* Element2;
-        }
-
-        /// <summary>
-        /// Attempts to extract the scale, translation, and rotation components from the given scale/rotation/translation matrix.
-        /// If successful, the out parameters will contained the extracted values.
-        /// </summary>
-        /// <param name="matrix">The source matrix.</param>
-        /// <param name="scale">The scaling component of the transformation matrix.</param>
-        /// <param name="rotation">The rotation component of the transformation matrix.</param>
-        /// <param name="translation">The translation component of the transformation matrix</param>
-        /// <returns>True if the source matrix was successfully decomposed; False otherwise.</returns>
-        public static bool Decompose(Matrix4x4 matrix, out Vector3 scale, out Quaternion rotation, out Vector3 translation)
-        {
-            var result = true;
-
-            unsafe
-            {
-                fixed (Vector3* scaleBase = &scale)
-                {
-                    var pfScales = (float*)scaleBase;
-                    const float EPSILON = 0.0001f;
-                    float det;
-
-                    VectorBasis vectorBasis;
-                    var pVectorBasis = (Vector3**)&vectorBasis;
-
-                    var matTemp = Matrix4x4.Identity;
-                    var canonicalBasis = new CanonicalBasis();
-                    var pCanonicalBasis = &canonicalBasis.Row0;
-
-                    canonicalBasis.Row0 = new Vector3(1.0f, 0.0f, 0.0f);
-                    canonicalBasis.Row1 = new Vector3(0.0f, 1.0f, 0.0f);
-                    canonicalBasis.Row2 = new Vector3(0.0f, 0.0f, 1.0f);
-
-                    translation = new Vector3(
-                        matrix.M41,
-                        matrix.M42,
-                        matrix.M43);
-
-                    pVectorBasis[0] = (Vector3*)&matTemp.M11;
-                    pVectorBasis[1] = (Vector3*)&matTemp.M21;
-                    pVectorBasis[2] = (Vector3*)&matTemp.M31;
-
-                    *(pVectorBasis[0]) = new Vector3(matrix.M11, matrix.M12, matrix.M13);
-                    *(pVectorBasis[1]) = new Vector3(matrix.M21, matrix.M22, matrix.M23);
-                    *(pVectorBasis[2]) = new Vector3(matrix.M31, matrix.M32, matrix.M33);
-
-                    scale.X = pVectorBasis[0]->Length();
-                    scale.Y = pVectorBasis[1]->Length();
-                    scale.Z = pVectorBasis[2]->Length();
-
-                    uint a, b, c;
-                    #region Ranking
-                    float x = pfScales[0], y = pfScales[1], z = pfScales[2];
-                    if (x < y)
-                    {
-                        if (y < z)
-                        {
-                            a = 2;
-                            b = 1;
-                            c = 0;
-                        }
-                        else
-                        {
-                            a = 1;
-
-                            if (x < z)
-                            {
-                                b = 2;
-                                c = 0;
-                            }
-                            else
-                            {
-                                b = 0;
-                                c = 2;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (x < z)
-                        {
-                            a = 2;
-                            b = 0;
-                            c = 1;
-                        }
-                        else
-                        {
-                            a = 0;
-
-                            if (y < z)
-                            {
-                                b = 2;
-                                c = 1;
-                            }
-                            else
-                            {
-                                b = 1;
-                                c = 2;
-                            }
-                        }
-                    }
-                    #endregion
-
-                    if (pfScales[a] < EPSILON)
-                    {
-                        *(pVectorBasis[a]) = pCanonicalBasis[a];
-                    }
-
-                    *pVectorBasis[a] = Vector3.Normalize(*pVectorBasis[a]);
-
-                    if (pfScales[b] < EPSILON)
-                    {
-                        uint cc;
-                        float fAbsX, fAbsY, fAbsZ;
-
-                        fAbsX = MathOps.Abs(pVectorBasis[a]->X);
-                        fAbsY = MathOps.Abs(pVectorBasis[a]->Y);
-                        fAbsZ = MathOps.Abs(pVectorBasis[a]->Z);
-
-                        #region Ranking
-                        if (fAbsX < fAbsY)
-                        {
-                            if (fAbsY < fAbsZ)
-                            {
-                                cc = 0;
-                            }
-                            else
-                            {
-                                if (fAbsX < fAbsZ)
-                                {
-                                    cc = 0;
-                                }
-                                else
-                                {
-                                    cc = 2;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (fAbsX < fAbsZ)
-                            {
-                                cc = 1;
-                            }
-                            else
-                            {
-                                if (fAbsY < fAbsZ)
-                                {
-                                    cc = 1;
-                                }
-                                else
-                                {
-                                    cc = 2;
-                                }
-                            }
-                        }
-                        #endregion
-
-                        *pVectorBasis[b] = Vector3.Cross(*pVectorBasis[a], *(pCanonicalBasis + cc));
-                    }
-
-                    *pVectorBasis[b] = Vector3.Normalize(*pVectorBasis[b]);
-
-                    if (pfScales[c] < EPSILON)
-                    {
-                        *pVectorBasis[c] = Vector3.Cross(*pVectorBasis[a], *pVectorBasis[b]);
-                    }
-
-                    *pVectorBasis[c] = Vector3.Normalize(*pVectorBasis[c]);
-
-                    det = matTemp.GetDeterminant();
-
-                    // use Kramer's rule to check for handedness of coordinate system
-                    if (det < 0.0f)
-                    {
-                        // switch coordinate system by negating the scale and inverting the basis vector on the x-axis
-                        pfScales[a] = -pfScales[a];
-                        *pVectorBasis[a] = -(*pVectorBasis[a]);
-
-                        det = -det;
-                    }
-
-                    det -= 1.0f;
-                    det *= det;
-
-                    if ((EPSILON < det))
-                    {
-                        // Non-SRT matrix encountered
-                        rotation = Quaternion.Identity;
-                        result = false;
-                    }
-                    else
-                    {
-                        // generate the quaternion from the matrix
-                        rotation = Quaternion.CreateFromRotationMatrix(matTemp);
-                    }
-                }
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -2031,6 +1824,147 @@ namespace Ara3D
                        M31.GetHashCode() + M32.GetHashCode() + M33.GetHashCode() + M34.GetHashCode() +
                        M41.GetHashCode() + M42.GetHashCode() + M43.GetHashCode() + M44.GetHashCode();
             }
+        }
+
+        /// <summary>
+        /// Attempts to extract the scale, translation, and rotation components from the given scale/rotation/translation matrix.
+        /// If successful, the out parameters will contained the extracted values.
+        /// https://referencesource.microsoft.com/#System.Numerics/System/Numerics/Matrix4x4.cs
+        /// </summary>        
+        public static bool Decompose(Matrix4x4 matrix, out Vector3 scale, out Quaternion rotation,
+            out Vector3 translation)
+        {
+            var result = true;
+
+            var pfScales = new float[3];
+            const float EPSILON = 0.0001f;
+
+            //VectorBasis vectorBasis;
+            var pVectorBasis = new Vector3[3]; // (Vector3**)&vectorBasis;
+
+            var matTemp = Identity;
+            var pCanonicalBasis = new[] {
+                new Vector3(1.0f, 0.0f, 0.0f),
+                new Vector3(0.0f, 1.0f, 0.0f),
+                new Vector3(0.0f, 0.0f, 1.0f)
+            };
+
+            translation = matrix.Translation;
+
+            pVectorBasis[0] = matrix.GetRow(0);
+            pVectorBasis[1] = matrix.GetRow(1);
+            pVectorBasis[2] = matrix.GetRow(2);
+
+            pfScales[0] = pVectorBasis[0].Length();
+            pfScales[1] = pVectorBasis[1].Length();
+            pfScales[2] = pVectorBasis[2].Length();
+
+            uint a, b, c;
+            float x = pfScales[0], y = pfScales[1], z = pfScales[2];
+            if (x < y)
+            {
+                if (y < z)
+                {
+                    a = 2;
+                    b = 1;
+                    c = 0;
+                }
+                else
+                {
+                    a = 1;
+
+                    if (x < z)
+                    {
+                        b = 2;
+                        c = 0;
+                    }
+                    else
+                    {
+                        b = 0;
+                        c = 2;
+                    }
+                }
+            }
+            else
+            {
+                if (x < z)
+                {
+                    a = 2;
+                    b = 0;
+                    c = 1;
+                }
+                else
+                {
+                    a = 0;
+
+                    if (y < z)
+                    {
+                        b = 2;
+                        c = 1;
+                    }
+                    else
+                    {
+                        b = 1;
+                        c = 2;
+                    }
+                }
+            }
+
+            if (pfScales[a] < EPSILON)
+                pVectorBasis[a] = pCanonicalBasis[a];
+
+            pVectorBasis[a] = pVectorBasis[a].Normal();
+
+            if (pfScales[b] < EPSILON)
+            {
+                var fAbsX = pVectorBasis[a].X.Abs();
+                var fAbsY = pVectorBasis[a].Y.Abs();
+                var fAbsZ = pVectorBasis[a].Z.Abs();
+
+                var cc = (fAbsX < fAbsY)
+                    ? (fAbsY < fAbsZ) ? 0 : (fAbsX < fAbsZ) ? 0 : 2
+                    : (fAbsX < fAbsZ) ? 1 : (fAbsY < fAbsZ) ? 1 : 2;
+
+                pVectorBasis[b] = pVectorBasis[a].Cross(pCanonicalBasis[cc]);
+            }
+
+            pVectorBasis[b] = pVectorBasis[b].Normal();
+
+            if (pfScales[c] < EPSILON)
+            {
+                pVectorBasis[c] = pVectorBasis[a].Cross(pVectorBasis[b]);
+            }
+
+            pVectorBasis[c] = pVectorBasis[c].Normal();
+
+            var det = matTemp.GetDeterminant();
+
+            // use Kramer's rule to check for handedness of coordinate system
+            if (det < 0.0f)
+            {
+                // switch coordinate system by negating the scale and inverting the basis vector on the x-axis
+                pfScales[a] = -pfScales[a];
+                pVectorBasis[a] = -pVectorBasis[a];
+                det = -det;
+            }
+
+            det -= 1.0f;
+            det *= det;
+
+            if (EPSILON < det)
+            {
+                // Non-SRT matrix encountered
+                rotation = Quaternion.Identity;
+                result = false;
+            }
+            else
+            {
+                // generate the quaternion from the matrix
+                rotation = Quaternion.CreateFromRotationMatrix(FromRows(pVectorBasis[a], pVectorBasis[b], pVectorBasis[c]));
+            }
+
+            scale = new Vector3(pfScales[0], pfScales[1], pfScales[2]);
+            return result;
         }
     }
 }

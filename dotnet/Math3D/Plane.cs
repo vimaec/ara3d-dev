@@ -40,12 +40,12 @@ namespace Ara3D
         {
             const float FLT_EPSILON = 1.192092896e-07f; // smallest such that 1.0+FLT_EPSILON != 1.0
             var normalLengthSquared = value.Normal.LengthSquared();
-            if (MathOps.Abs(normalLengthSquared - 1.0f) < FLT_EPSILON)
+            if ((normalLengthSquared - 1.0f).Abs() < FLT_EPSILON)
             {
                 // It already normalized, so we don't need to farther process.
                 return value;
             }
-            var normalLength = MathOps.Sqrt(normalLengthSquared);
+            var normalLength = normalLengthSquared.Sqrt();
             return new Plane(
                 value.Normal / normalLength,
                 value.D / normalLength);

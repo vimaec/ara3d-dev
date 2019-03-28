@@ -12,13 +12,7 @@ namespace Ara3D
         public Vector2 this[int n] => n == 0 ? A : n == 1 ? B : C;
     
         // Compute the signed area of a triangle.
-        public float Area 
-        {
-            get
-            {
-                return 0.5f * (A.X * (C.Y - B.Y) + B.X * (A.Y - C.Y) + C.X * (B.Y - A.Y));
-            }
-        }
+        public float Area => 0.5f * (A.X * (C.Y - B.Y) + B.X * (A.Y - C.Y) + C.X * (B.Y - A.Y));
 
         // Test if a given point p2 is on the left side of the line formed by p0-p1.
         public static bool OnLeftSideOfLine(Vector2 p0, Vector2 p1, Vector2 p2)
@@ -29,7 +23,7 @@ namespace Ara3D
         // Test if a given point is inside a given triangle in R2.
         public bool Contains(Vector2 pp)
         {
-            // Point in triangle test using baryzentric coordinates
+            // Point in triangle test using barycentric coordinates
             var v0 = B-A;
             var v1 = C-A;
             var v2 = pp - A;

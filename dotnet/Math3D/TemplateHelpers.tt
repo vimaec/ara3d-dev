@@ -87,7 +87,7 @@
 
 		foreach (var f in fields) {
 #>
-		public static <#= name #> Unit<#= f #> = Zero.Set<#= f #>(<#= one #> );
+		public static <#= name #> Unit<#= f #> = Zero.Set<#= f #>(<#= one #>);
 <#+
 		}
 
@@ -118,6 +118,7 @@
 		var maxArgs = string.Join(", ", types.Select(t => $"{t}.MaxValue"));
 
 #>
+	[StructLayout(LayoutKind.Sequential, Pack=4)]
 	public readonly partial struct <#= name #> : IEquatable< <#= name #> >
 	{ 
 <#+

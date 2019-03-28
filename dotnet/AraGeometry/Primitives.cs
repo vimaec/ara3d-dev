@@ -3,7 +3,7 @@
     public static class Primitives
     {
         public static IGeometry ToGeometry(this Box box)
-            => Geometry.QuadMesh(box.Corners.ToIArray(), LinqArray.Create(
+            => box.Corners.ToIArray().QuadMesh(LinqArray.Create(
             // front 
             0, 1, 2, 3,
             // back
@@ -23,11 +23,10 @@
         public static float Sqrt2 = 2.0f.Sqrt();
 
         public static readonly IGeometry Tetrahedron
-            = Geometry.TriMesh(LinqArray.Create(
-                    new Vector3(1f, 0.0f, -1f / Sqrt2),
-                    new Vector3(-1f, 0.0f, -1f / Sqrt2),
-                    new Vector3(0.0f, 1f, 1f / Sqrt2),
-                    new Vector3(0.0f, -1f, 1f / Sqrt2)),
-                LinqArray.Create(0, 1, 2, 1, 0, 3, 0, 2, 3, 1, 3, 2));
+            = LinqArray.Create(
+                new Vector3(1f, 0.0f, -1f / Sqrt2),
+                new Vector3(-1f, 0.0f, -1f / Sqrt2),
+                new Vector3(0.0f, 1f, 1f / Sqrt2),
+                new Vector3(0.0f, -1f, 1f / Sqrt2)).TriMesh(LinqArray.Create(0, 1, 2, 1, 0, 3, 0, 2, 3, 1, 3, 2));
     }
 }

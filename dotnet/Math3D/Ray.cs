@@ -137,7 +137,7 @@ namespace Ara3D
             // if y = distance between ray position and sphere centre
             // if z = the distance we've travelled along the ray
             // if x^2 + z^2 - y^2 < 0, we do not intersect
-            var dist = sphereRadiusSquared + distanceAlongRay * distanceAlongRay - differenceLengthSquared;
+            var dist = sphereRadiusSquared + distanceAlongRay.Sqr() - differenceLengthSquared;
             return (dist < 0) ? null : distanceAlongRay - (float?)Math.Sqrt(dist);
         }
     }

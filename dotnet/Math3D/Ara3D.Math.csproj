@@ -51,7 +51,6 @@
     <Compile Include="Hash.cs" />
     <Compile Include="IntrinsicAttribute.cs" />
     <Compile Include="Line.cs" />
-    <Compile Include="MathF.cs" />
     <Compile Include="MathOpsPartial.cs" />
     <Compile Include="MathOps.cs">
       <AutoGen>True</AutoGen>
@@ -64,9 +63,7 @@
     <Compile Include="Quaternion.cs" />
     <Compile Include="RandomNumberGenerator.cs" />
     <Compile Include="Ray.cs" />
-    <Compile Include="Register.cs" />
     <Compile Include="Sphere.cs" />
-    <Compile Include="SR.cs" />
     <Compile Include="Structs.cs">
       <DependentUpon>Structs.tt</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -75,11 +72,8 @@
     <Compile Include="Triangle.cs" />
     <Compile Include="Triangle2D.cs" />
     <Compile Include="Vector2.cs" />
-    <Compile Include="Vector2_Intrinsics.cs" />
     <Compile Include="Vector3.cs" />
-    <Compile Include="Vector3_Intrinsics.cs" />
     <Compile Include="Vector4.cs" />
-    <Compile Include="Vector4_Intrinsics.cs" />
     <Compile Include="VectorHelper.cs" />
   </ItemGroup>
   <ItemGroup>

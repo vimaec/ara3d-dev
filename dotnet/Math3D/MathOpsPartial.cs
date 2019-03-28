@@ -13,36 +13,6 @@ namespace Ara3D
     /// </summary>
     public static partial class MathOps
     {
-    	/// <summary>
-        /// Represents the mathematical constant e(2.71828175).
-        /// </summary>
-        public const float E = (float)Math.E;
-        
-        /// <summary>
-        /// Represents the log base ten of e(0.4342945).
-        /// </summary>
-        public const float Log10E = 0.4342945f;
-        
-        /// <summary>
-        /// Represents the log base two of e(1.442695).
-        /// </summary>
-        public const float Log2E = 1.442695f;
-        
-        /// <summary>
-        /// Represents the value of pi(3.14159274).
-        /// </summary>
-        public const float Pi = (float)Math.PI;
-        
-        /// <summary>
-        /// Represents the value of pi divided by two(1.57079637).
-        /// </summary>
-        public const float PiOver2 = (float)(Math.PI / 2.0);
-        
-        /// <summary>
-        /// Represents the value of pi divided by four(0.7853982).
-        /// </summary>
-        public const float PiOver4 = (float)(Math.PI / 4.0);
-        
         /// <summary>
         /// Represents the value of pi times two(6.28318548).
         /// </summary>
@@ -257,12 +227,12 @@ namespace Ara3D
         /// <returns>The new angle, in radians.</returns>
         public static float WrapAngle(float angle)
         {
-            if ((angle > -Pi) && (angle <= Pi))
+            if ((angle > -Constants.Pi) && (angle <= Constants.Pi))
                 return angle;
             angle %= TwoPi;
-            if (angle <= -Pi)
+            if (angle <= -Constants.Pi)
                 return angle + TwoPi;
-            if (angle > Pi)
+            if (angle > Constants.Pi)
                 return angle - TwoPi;
             return angle;
         }

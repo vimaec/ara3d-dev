@@ -111,7 +111,7 @@ namespace Ara3D
         public static Sphere CreateFromBoundingBox(Box box)
         {
             var center = box.Center;
-            var radius = Vector3.Distance(center, box.Max);
+            var radius = center.Distance(box.Max);
             return new Sphere(center, radius);
         }
 
@@ -155,9 +155,9 @@ namespace Ara3D
             if (numPoints == 0)
                 throw new ArgumentException("You should have at least one point in points.");
 
-            var sqDistX = Vector3.DistanceSquared(maxx, minx);
-            var sqDistY = Vector3.DistanceSquared(maxy, miny);
-            var sqDistZ = Vector3.DistanceSquared(maxz, minz);
+            var sqDistX = maxx.DistanceSquared(minx);
+            var sqDistY = maxy.DistanceSquared(miny);
+            var sqDistZ = maxz.DistanceSquared(minz);
 
             // Pick the pair of most distant points.
             var min = minx;
@@ -174,7 +174,7 @@ namespace Ara3D
             }
             
             var center = (min + max) * 0.5f;
-            var radius = Vector3.Distance(max, center);
+            var radius = max.Distance(center);
             
             // Test every point and expand the sphere.
             // The current bounding sphere is just a good approximation and may not enclose all points.            
@@ -212,7 +212,7 @@ namespace Ara3D
         /// </summary>
         public Sphere Merge(Sphere additional)
         {
-            var ocenterToaCenter = Vector3.Subtract(additional.Center, Center);
+            var ocenterToaCenter = additional.Center - Center;
             var distance = ocenterToaCenter.Length();
             if (distance <= Radius + additional.Radius)//intersect
             {
@@ -245,7 +245,7 @@ namespace Ara3D
         /// </summary>
         public bool Intersects(Sphere sphere)
         {
-            var sqDistance = Vector3.DistanceSquared(sphere.Center, Center);
+            var sqDistance = sphere.Center.DistanceSquared(Center);
             return !(sqDistance > (sphere.Radius + Radius) * (sphere.Radius + Radius));
         }
 

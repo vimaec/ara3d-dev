@@ -170,89 +170,89 @@ namespace Ara3D
 	{
 	
 		public static IArray< int > Add(this IArray< int > self, IArray< int > other) { return self.Zip(other, MathOps.Add); }
-		public static IArray< int > Add(this IArray< int > self, int scalar) { return self.Select(x => MathOps.Add(x, scalar)); }
-		public static IArray< int > Add(this int self, IArray< int > vector) { return vector.Select(x => MathOps.Add(self, x)); }
-		public static IArray< int > Mul(this IArray< int > self, IArray< int > other) { return self.Zip(other, MathOps.Mul); }
-		public static IArray< int > Mul(this IArray< int > self, int scalar) { return self.Select(x => MathOps.Mul(x, scalar)); }
-		public static IArray< int > Mul(this int self, IArray< int > vector) { return vector.Select(x => MathOps.Mul(self, x)); }
-		public static IArray< int > Sub(this IArray< int > self, IArray< int > other) { return self.Zip(other, MathOps.Sub); }
-		public static IArray< int > Sub(this IArray< int > self, int scalar) { return self.Select(x => MathOps.Sub(x, scalar)); }
-		public static IArray< int > Sub(this int self, IArray< int > vector) { return vector.Select(x => MathOps.Sub(self, x)); }
-		public static IArray< int > Div(this IArray< int > self, IArray< int > other) { return self.Zip(other, MathOps.Div); }
-		public static IArray< int > Div(this IArray< int > self, int scalar) { return self.Select(x => MathOps.Div(x, scalar)); }
-		public static IArray< int > Div(this int self, IArray< int > vector) { return vector.Select(x => MathOps.Div(self, x)); }
+		public static IArray< int > Add(this IArray< int > self, int scalar) { return self.Select(x => x.Add(scalar)); }
+		public static IArray< int > Add(this int self, IArray< int > vector) { return vector.Select(x => self.Add(x)); }
+		public static IArray< int > Mul(this IArray< int > self, IArray< int > other) { return self.Zip(other, MathOps.Multiply); }
+		public static IArray< int > Mul(this IArray< int > self, int scalar) { return self.Select(x => x.Multiply(scalar)); }
+		public static IArray< int > Mul(this int self, IArray< int > vector) { return vector.Select(x => self.Multiply(x)); }
+		public static IArray< int > Sub(this IArray< int > self, IArray< int > other) { return self.Zip(other, MathOps.Subtract); }
+		public static IArray< int > Sub(this IArray< int > self, int scalar) { return self.Select(x => x.Subtract(scalar)); }
+		public static IArray< int > Sub(this int self, IArray< int > vector) { return vector.Select(x => self.Subtract(x)); }
+		public static IArray< int > Div(this IArray< int > self, IArray< int > other) { return self.Zip(other, MathOps.Divide); }
+		public static IArray< int > Div(this IArray< int > self, int scalar) { return self.Select(x => x.Divide(scalar)); }
+		public static IArray< int > Div(this int self, IArray< int > vector) { return vector.Select(x => self.Divide(x)); }
 		public static IArray< long > Add(this IArray< long > self, IArray< long > other) { return self.Zip(other, MathOps.Add); }
-		public static IArray< long > Add(this IArray< long > self, long scalar) { return self.Select(x => MathOps.Add(x, scalar)); }
-		public static IArray< long > Add(this long self, IArray< long > vector) { return vector.Select(x => MathOps.Add(self, x)); }
-		public static IArray< long > Mul(this IArray< long > self, IArray< long > other) { return self.Zip(other, MathOps.Mul); }
-		public static IArray< long > Mul(this IArray< long > self, long scalar) { return self.Select(x => MathOps.Mul(x, scalar)); }
-		public static IArray< long > Mul(this long self, IArray< long > vector) { return vector.Select(x => MathOps.Mul(self, x)); }
-		public static IArray< long > Sub(this IArray< long > self, IArray< long > other) { return self.Zip(other, MathOps.Sub); }
-		public static IArray< long > Sub(this IArray< long > self, long scalar) { return self.Select(x => MathOps.Sub(x, scalar)); }
-		public static IArray< long > Sub(this long self, IArray< long > vector) { return vector.Select(x => MathOps.Sub(self, x)); }
-		public static IArray< long > Div(this IArray< long > self, IArray< long > other) { return self.Zip(other, MathOps.Div); }
-		public static IArray< long > Div(this IArray< long > self, long scalar) { return self.Select(x => MathOps.Div(x, scalar)); }
-		public static IArray< long > Div(this long self, IArray< long > vector) { return vector.Select(x => MathOps.Div(self, x)); }
+		public static IArray< long > Add(this IArray< long > self, long scalar) { return self.Select(x => x.Add(scalar)); }
+		public static IArray< long > Add(this long self, IArray< long > vector) { return vector.Select(x => self.Add(x)); }
+		public static IArray< long > Mul(this IArray< long > self, IArray< long > other) { return self.Zip(other, MathOps.Multiply); }
+		public static IArray< long > Mul(this IArray< long > self, long scalar) { return self.Select(x => x.Multiply(scalar)); }
+		public static IArray< long > Mul(this long self, IArray< long > vector) { return vector.Select(x => self.Multiply(x)); }
+		public static IArray< long > Sub(this IArray< long > self, IArray< long > other) { return self.Zip(other, MathOps.Subtract); }
+		public static IArray< long > Sub(this IArray< long > self, long scalar) { return self.Select(x => x.Subtract(scalar)); }
+		public static IArray< long > Sub(this long self, IArray< long > vector) { return vector.Select(x => self.Subtract(x)); }
+		public static IArray< long > Div(this IArray< long > self, IArray< long > other) { return self.Zip(other, MathOps.Divide); }
+		public static IArray< long > Div(this IArray< long > self, long scalar) { return self.Select(x => x.Divide(scalar)); }
+		public static IArray< long > Div(this long self, IArray< long > vector) { return vector.Select(x => self.Divide(x)); }
 		public static IArray< float > Add(this IArray< float > self, IArray< float > other) { return self.Zip(other, MathOps.Add); }
-		public static IArray< float > Add(this IArray< float > self, float scalar) { return self.Select(x => MathOps.Add(x, scalar)); }
-		public static IArray< float > Add(this float self, IArray< float > vector) { return vector.Select(x => MathOps.Add(self, x)); }
-		public static IArray< float > Mul(this IArray< float > self, IArray< float > other) { return self.Zip(other, MathOps.Mul); }
-		public static IArray< float > Mul(this IArray< float > self, float scalar) { return self.Select(x => MathOps.Mul(x, scalar)); }
-		public static IArray< float > Mul(this float self, IArray< float > vector) { return vector.Select(x => MathOps.Mul(self, x)); }
-		public static IArray< float > Sub(this IArray< float > self, IArray< float > other) { return self.Zip(other, MathOps.Sub); }
-		public static IArray< float > Sub(this IArray< float > self, float scalar) { return self.Select(x => MathOps.Sub(x, scalar)); }
-		public static IArray< float > Sub(this float self, IArray< float > vector) { return vector.Select(x => MathOps.Sub(self, x)); }
-		public static IArray< float > Div(this IArray< float > self, IArray< float > other) { return self.Zip(other, MathOps.Div); }
-		public static IArray< float > Div(this IArray< float > self, float scalar) { return self.Select(x => MathOps.Div(x, scalar)); }
-		public static IArray< float > Div(this float self, IArray< float > vector) { return vector.Select(x => MathOps.Div(self, x)); }
+		public static IArray< float > Add(this IArray< float > self, float scalar) { return self.Select(x => x.Add(scalar)); }
+		public static IArray< float > Add(this float self, IArray< float > vector) { return vector.Select(x => self.Add(x)); }
+		public static IArray< float > Mul(this IArray< float > self, IArray< float > other) { return self.Zip(other, MathOps.Multiply); }
+		public static IArray< float > Mul(this IArray< float > self, float scalar) { return self.Select(x => x.Multiply(scalar)); }
+		public static IArray< float > Mul(this float self, IArray< float > vector) { return vector.Select(x => self.Multiply(x)); }
+		public static IArray< float > Sub(this IArray< float > self, IArray< float > other) { return self.Zip(other, MathOps.Subtract); }
+		public static IArray< float > Sub(this IArray< float > self, float scalar) { return self.Select(x => x.Subtract(scalar)); }
+		public static IArray< float > Sub(this float self, IArray< float > vector) { return vector.Select(x => self.Subtract(x)); }
+		public static IArray< float > Div(this IArray< float > self, IArray< float > other) { return self.Zip(other, MathOps.Divide); }
+		public static IArray< float > Div(this IArray< float > self, float scalar) { return self.Select(x => x.Divide(scalar)); }
+		public static IArray< float > Div(this float self, IArray< float > vector) { return vector.Select(x => self.Divide(x)); }
 		public static IArray< double > Add(this IArray< double > self, IArray< double > other) { return self.Zip(other, MathOps.Add); }
-		public static IArray< double > Add(this IArray< double > self, double scalar) { return self.Select(x => MathOps.Add(x, scalar)); }
-		public static IArray< double > Add(this double self, IArray< double > vector) { return vector.Select(x => MathOps.Add(self, x)); }
-		public static IArray< double > Mul(this IArray< double > self, IArray< double > other) { return self.Zip(other, MathOps.Mul); }
-		public static IArray< double > Mul(this IArray< double > self, double scalar) { return self.Select(x => MathOps.Mul(x, scalar)); }
-		public static IArray< double > Mul(this double self, IArray< double > vector) { return vector.Select(x => MathOps.Mul(self, x)); }
-		public static IArray< double > Sub(this IArray< double > self, IArray< double > other) { return self.Zip(other, MathOps.Sub); }
-		public static IArray< double > Sub(this IArray< double > self, double scalar) { return self.Select(x => MathOps.Sub(x, scalar)); }
-		public static IArray< double > Sub(this double self, IArray< double > vector) { return vector.Select(x => MathOps.Sub(self, x)); }
-		public static IArray< double > Div(this IArray< double > self, IArray< double > other) { return self.Zip(other, MathOps.Div); }
-		public static IArray< double > Div(this IArray< double > self, double scalar) { return self.Select(x => MathOps.Div(x, scalar)); }
-		public static IArray< double > Div(this double self, IArray< double > vector) { return vector.Select(x => MathOps.Div(self, x)); }
+		public static IArray< double > Add(this IArray< double > self, double scalar) { return self.Select(x => x.Add(scalar)); }
+		public static IArray< double > Add(this double self, IArray< double > vector) { return vector.Select(x => self.Add(x)); }
+		public static IArray< double > Mul(this IArray< double > self, IArray< double > other) { return self.Zip(other, MathOps.Multiply); }
+		public static IArray< double > Mul(this IArray< double > self, double scalar) { return self.Select(x => x.Multiply(scalar)); }
+		public static IArray< double > Mul(this double self, IArray< double > vector) { return vector.Select(x => self.Multiply(x)); }
+		public static IArray< double > Sub(this IArray< double > self, IArray< double > other) { return self.Zip(other, MathOps.Subtract); }
+		public static IArray< double > Sub(this IArray< double > self, double scalar) { return self.Select(x => x.Subtract(scalar)); }
+		public static IArray< double > Sub(this double self, IArray< double > vector) { return vector.Select(x => self.Subtract(x)); }
+		public static IArray< double > Div(this IArray< double > self, IArray< double > other) { return self.Zip(other, MathOps.Divide); }
+		public static IArray< double > Div(this IArray< double > self, double scalar) { return self.Select(x => x.Divide(scalar)); }
+		public static IArray< double > Div(this double self, IArray< double > vector) { return vector.Select(x => self.Divide(x)); }
 		public static IArray< Vector2 > Add(this IArray< Vector2 > self, IArray< Vector2 > other) { return self.Zip(other, MathOps.Add); }
-		public static IArray< Vector2 > Add(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => MathOps.Add(x, scalar)); }
-		public static IArray< Vector2 > Add(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => MathOps.Add(self, x)); }
-		public static IArray< Vector2 > Mul(this IArray< Vector2 > self, IArray< Vector2 > other) { return self.Zip(other, MathOps.Mul); }
-		public static IArray< Vector2 > Mul(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => MathOps.Mul(x, scalar)); }
-		public static IArray< Vector2 > Mul(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => MathOps.Mul(self, x)); }
-		public static IArray< Vector2 > Sub(this IArray< Vector2 > self, IArray< Vector2 > other) { return self.Zip(other, MathOps.Sub); }
-		public static IArray< Vector2 > Sub(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => MathOps.Sub(x, scalar)); }
-		public static IArray< Vector2 > Sub(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => MathOps.Sub(self, x)); }
-		public static IArray< Vector2 > Div(this IArray< Vector2 > self, IArray< Vector2 > other) { return self.Zip(other, MathOps.Div); }
-		public static IArray< Vector2 > Div(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => MathOps.Div(x, scalar)); }
-		public static IArray< Vector2 > Div(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => MathOps.Div(self, x)); }
+		public static IArray< Vector2 > Add(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => x.Add(scalar)); }
+		public static IArray< Vector2 > Add(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => self.Add(x)); }
+		public static IArray< Vector2 > Mul(this IArray< Vector2 > self, IArray< Vector2 > other) { return self.Zip(other, MathOps.Multiply); }
+		public static IArray< Vector2 > Mul(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => x.Multiply(scalar)); }
+		public static IArray< Vector2 > Mul(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => self.Multiply(x)); }
+		public static IArray< Vector2 > Sub(this IArray< Vector2 > self, IArray< Vector2 > other) { return self.Zip(other, MathOps.Subtract); }
+		public static IArray< Vector2 > Sub(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => x.Subtract(scalar)); }
+		public static IArray< Vector2 > Sub(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => self.Subtract(x)); }
+		public static IArray< Vector2 > Div(this IArray< Vector2 > self, IArray< Vector2 > other) { return self.Zip(other, MathOps.Divide); }
+		public static IArray< Vector2 > Div(this IArray< Vector2 > self, Vector2 scalar) { return self.Select(x => x.Divide(scalar)); }
+		public static IArray< Vector2 > Div(this Vector2 self, IArray< Vector2 > vector) { return vector.Select(x => self.Divide(x)); }
 		public static IArray< Vector3 > Add(this IArray< Vector3 > self, IArray< Vector3 > other) { return self.Zip(other, MathOps.Add); }
-		public static IArray< Vector3 > Add(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => MathOps.Add(x, scalar)); }
-		public static IArray< Vector3 > Add(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => MathOps.Add(self, x)); }
-		public static IArray< Vector3 > Mul(this IArray< Vector3 > self, IArray< Vector3 > other) { return self.Zip(other, MathOps.Mul); }
-		public static IArray< Vector3 > Mul(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => MathOps.Mul(x, scalar)); }
-		public static IArray< Vector3 > Mul(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => MathOps.Mul(self, x)); }
-		public static IArray< Vector3 > Sub(this IArray< Vector3 > self, IArray< Vector3 > other) { return self.Zip(other, MathOps.Sub); }
-		public static IArray< Vector3 > Sub(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => MathOps.Sub(x, scalar)); }
-		public static IArray< Vector3 > Sub(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => MathOps.Sub(self, x)); }
-		public static IArray< Vector3 > Div(this IArray< Vector3 > self, IArray< Vector3 > other) { return self.Zip(other, MathOps.Div); }
-		public static IArray< Vector3 > Div(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => MathOps.Div(x, scalar)); }
-		public static IArray< Vector3 > Div(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => MathOps.Div(self, x)); }
+		public static IArray< Vector3 > Add(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => x.Add(scalar)); }
+		public static IArray< Vector3 > Add(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => self.Add(x)); }
+		public static IArray< Vector3 > Mul(this IArray< Vector3 > self, IArray< Vector3 > other) { return self.Zip(other, MathOps.Multiply); }
+		public static IArray< Vector3 > Mul(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => x.Multiply(scalar)); }
+		public static IArray< Vector3 > Mul(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => self.Multiply(x)); }
+		public static IArray< Vector3 > Sub(this IArray< Vector3 > self, IArray< Vector3 > other) { return self.Zip(other, MathOps.Subtract); }
+		public static IArray< Vector3 > Sub(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => x.Subtract(scalar)); }
+		public static IArray< Vector3 > Sub(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => self.Subtract(x)); }
+		public static IArray< Vector3 > Div(this IArray< Vector3 > self, IArray< Vector3 > other) { return self.Zip(other, MathOps.Divide); }
+		public static IArray< Vector3 > Div(this IArray< Vector3 > self, Vector3 scalar) { return self.Select(x => x.Divide(scalar)); }
+		public static IArray< Vector3 > Div(this Vector3 self, IArray< Vector3 > vector) { return vector.Select(x => self.Divide(x)); }
 		public static IArray< Vector4 > Add(this IArray< Vector4 > self, IArray< Vector4 > other) { return self.Zip(other, MathOps.Add); }
-		public static IArray< Vector4 > Add(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => MathOps.Add(x, scalar)); }
-		public static IArray< Vector4 > Add(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => MathOps.Add(self, x)); }
-		public static IArray< Vector4 > Mul(this IArray< Vector4 > self, IArray< Vector4 > other) { return self.Zip(other, MathOps.Mul); }
-		public static IArray< Vector4 > Mul(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => MathOps.Mul(x, scalar)); }
-		public static IArray< Vector4 > Mul(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => MathOps.Mul(self, x)); }
-		public static IArray< Vector4 > Sub(this IArray< Vector4 > self, IArray< Vector4 > other) { return self.Zip(other, MathOps.Sub); }
-		public static IArray< Vector4 > Sub(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => MathOps.Sub(x, scalar)); }
-		public static IArray< Vector4 > Sub(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => MathOps.Sub(self, x)); }
-		public static IArray< Vector4 > Div(this IArray< Vector4 > self, IArray< Vector4 > other) { return self.Zip(other, MathOps.Div); }
-		public static IArray< Vector4 > Div(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => MathOps.Div(x, scalar)); }
-		public static IArray< Vector4 > Div(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => MathOps.Div(self, x)); }
+		public static IArray< Vector4 > Add(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => x.Add(scalar)); }
+		public static IArray< Vector4 > Add(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => self.Add(x)); }
+		public static IArray< Vector4 > Mul(this IArray< Vector4 > self, IArray< Vector4 > other) { return self.Zip(other, MathOps.Multiply); }
+		public static IArray< Vector4 > Mul(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => x.Multiply(scalar)); }
+		public static IArray< Vector4 > Mul(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => self.Multiply(x)); }
+		public static IArray< Vector4 > Sub(this IArray< Vector4 > self, IArray< Vector4 > other) { return self.Zip(other, MathOps.Subtract); }
+		public static IArray< Vector4 > Sub(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => x.Subtract(scalar)); }
+		public static IArray< Vector4 > Sub(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => self.Subtract(x)); }
+		public static IArray< Vector4 > Div(this IArray< Vector4 > self, IArray< Vector4 > other) { return self.Zip(other, MathOps.Divide); }
+		public static IArray< Vector4 > Div(this IArray< Vector4 > self, Vector4 scalar) { return self.Select(x => x.Divide(scalar)); }
+		public static IArray< Vector4 > Div(this Vector4 self, IArray< Vector4 > vector) { return vector.Select(x => self.Divide(x)); }
 
         public static IArray<double> Abs (this IArray< double > self) { return self.Select(MathOps.Abs); }
         public static IArray<float> Abs (this IArray< float > self) { return self.Select(MathOps.Abs); }
@@ -392,11 +392,11 @@ namespace Ara3D
 
 		public static double Variance(this IArray<int> self) { var mean = self.Average(); return self.Select(x => MathOps.Sqr(x - mean)).Average(); }
 		public static double Variance(this IArray<long> self) { var mean = self.Average(); return self.Select(x => MathOps.Sqr(x - mean)).Average(); }
-		public static double Variance(this IArray<float> self) { var mean = self.Average(); return self.Select(x => MathOps.Sqr(x - mean)).Average(); }
-		public static double Variance(this IArray<double> self) { var mean = self.Average(); return self.Select(x => MathOps.Sqr(x - mean)).Average(); }
-		public static Vector2 Variance(this IArray<Vector2> self) { var mean = self.Average(); return self.Select(x => MathOps.Sqr(x - mean)).Average(); }
-		public static Vector3 Variance(this IArray<Vector3> self) { var mean = self.Average(); return self.Select(x => MathOps.Sqr(x - mean)).Average(); }
-		public static Vector4 Variance(this IArray<Vector4> self) { var mean = self.Average(); return self.Select(x => MathOps.Sqr(x - mean)).Average(); }
+		public static double Variance(this IArray<float> self) { var mean = self.Average(); return self.Select(x => (x - mean).Sqr()).Average(); }
+		public static double Variance(this IArray<double> self) { var mean = self.Average(); return self.Select(x => (x - mean).Sqr()).Average(); }
+		public static Vector2 Variance(this IArray<Vector2> self) { var mean = self.Average(); return self.Select(x => (x - mean).Sqr()).Average(); }
+		public static Vector3 Variance(this IArray<Vector3> self) { var mean = self.Average(); return self.Select(x => (x - mean).Sqr()).Average(); }
+		public static Vector4 Variance(this IArray<Vector4> self) { var mean = self.Average(); return self.Select(x => (x - mean).Sqr()).Average(); }
 
 		public static double StdDev(this IArray<int> self) { return self.Variance().Sqrt(); }
 		public static double StdDev(this IArray<long> self) { return self.Variance().Sqrt(); }
