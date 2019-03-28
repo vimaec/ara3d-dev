@@ -16,62 +16,6 @@ namespace Ara3D
     public partial struct Vector3 
     {
         /// <summary>
-        /// Returns the vector (0,0,0).
-        /// </summary>
-        public static Vector3 Zero => new Vector3();
-        /// <summary>
-        /// Returns the vector (1,1,1).
-        /// </summary>
-        public static Vector3 One => new Vector3(1.0f, 1.0f, 1.0f);
-        /// <summary>
-        /// Returns the vector (1,0,0).
-        /// </summary>
-        public static Vector3 UnitX => new Vector3(1.0f, 0.0f, 0.0f);
-        /// <summary>
-        /// Returns the vector (0,1,0).
-        /// </summary>
-        public static Vector3 UnitY => new Vector3(0.0f, 1.0f, 0.0f);
-        /// <summary>
-        /// Returns the vector (0,0,1).
-        /// </summary>
-        public static Vector3 UnitZ => new Vector3(0.0f, 0.0f, 1.0f);
-
-        /// <summary>
-        /// Returns the length of the vector.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float Length()
-            => MathF.Sqrt(LengthSquared());
-
-        /// <summary>
-        /// Returns the length of the vector squared. This operation is cheaper than Length().
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float LengthSquared()
-            => Dot(this, this);
-
-        /// <summary>
-        /// Returns the Euclidean distance between the two given points.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Distance(Vector3 value1, Vector3 value2)
-            => (value1 - value2).Length();
-
-        /// <summary>
-        /// Returns the Euclidean distance squared between the two given points.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float DistanceSquared(Vector3 value1, Vector3 value2)
-            => (value1 - value2).Length();
-
-        /// <summary>
-        /// Returns a vector with the same direction as the given vector, but with a length of 1.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Normalize(Vector3 value)
-            => value / value.Length();
-    
-        /// <summary>
         /// Computes the cross product of two vectors.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -79,7 +23,20 @@ namespace Ara3D
             => new Vector3(
                 vector1.Y * vector2.Z - vector1.Z * vector2.Y,
                 vector1.Z * vector2.X - vector1.X * vector2.Z,
-                vector1.X * vector2.Y - vector1.Y * vector2.X);        
+                vector1.X * vector2.Y - vector1.Y * vector2.X);
+
+        /// <summary>
+        /// Returns the cross product between this Vector and another 
+        /// </summary>
+        public Vector3 Cross(Vector3 other)
+            => Cross(this, other);
+
+        /// <summary>
+        /// Returns the mixed product
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double MixedProduct(Vector3 v1, Vector3 v2, Vector3 v3)
+            => v1.Cross(v2).Dot(v3);       
 
         /// <summary>
         /// Returns the reflection of a vector off a surface that has the specified normal.
@@ -87,37 +44,6 @@ namespace Ara3D
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 Reflect(Vector3 vector, Vector3 normal)
             => vector - normal * Dot(vector, normal) * 2f;
-
-        /// <summary>
-        /// Restricts a vector between a min and max value.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Clamp(Vector3 value1, Vector3 min, Vector3 max)
-        {
-            // This compare order is very important!!!
-            // We must follow HLSL behavior in the case user specified min value is bigger than max value.
-
-            var x = value1.X;
-            x = (x > max.X) ? max.X : x;
-            x = (x < min.X) ? min.X : x;
-
-            var y = value1.Y;
-            y = (y > max.Y) ? max.Y : y;
-            y = (y < min.Y) ? min.Y : y;
-
-            var z = value1.Z;
-            z = (z > max.Z) ? max.Z : z;
-            z = (z < min.Z) ? min.Z : z;
-
-            return new Vector3(x, y, z);
-        }
-
-        /// <summary>
-        /// Linearly interpolates between two vectors based on the given weighting.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Lerp(Vector3 value1, Vector3 value2, float amount)
-            => value1 * (1f - amount) + value2 * amount;
 
         /// <summary>
         /// Transforms a vector by the given matrix.
@@ -164,62 +90,5 @@ namespace Ara3D
                 value.X * (xy2 + wz2) + value.Y * (1.0f - xx2 - zz2) + value.Z * (yz2 - wx2),
                 value.X * (xz2 - wy2) + value.Y * (yz2 + wx2) + value.Z * (1.0f - xx2 - yy2));
         }
-
-
-        /// <summary>
-        /// Adds two vectors together.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Add(Vector3 left, Vector3 right)
-            => left + right;
-
-        /// <summary>
-        /// Subtracts the second vector from the first.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Subtract(Vector3 left, Vector3 right)
-            => left - right;        
-
-        /// <summary>
-        /// Multiplies two vectors together.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Multiply(Vector3 left, Vector3 right)
-            => left * right;        
-
-        /// <summary>
-        /// Multiplies a vector by the given scalar.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Multiply(Vector3 left, float right)
-            => left * right;        
-
-        /// <summary>
-        /// Multiplies a vector by the given scalar.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Multiply(float left, Vector3 right)
-            => left * right;        
-
-        /// <summary>
-        /// Divides the first vector by the second.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Divide(Vector3 left, Vector3 right)
-            => left / right;        
-
-        /// <summary>
-        /// Divides the vector by the given scalar.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Divide(Vector3 left, float divisor)
-            => left / divisor;        
-
-        /// <summary>
-        /// Negates a given vector.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Negate(Vector3 value)
-            => -value;
     }
 }

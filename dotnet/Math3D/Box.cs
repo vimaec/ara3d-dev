@@ -189,28 +189,20 @@ namespace Ara3D
         {
             var minVec = Constants.MaxVector;
             var maxVec = Constants.MinVector;
-            foreach (var ptVector in points)
+            foreach (var pt in points)
             {
-                minVec.X = (minVec.X < ptVector.X) ? minVec.X : ptVector.X;
-                minVec.Y = (minVec.Y < ptVector.Y) ? minVec.Y : ptVector.Y;
-                minVec.Z = (minVec.Z < ptVector.Z) ? minVec.Z : ptVector.Z;
-                maxVec.X = (maxVec.X > ptVector.X) ? maxVec.X : ptVector.X;
-                maxVec.Y = (maxVec.Y > ptVector.Y) ? maxVec.Y : ptVector.Y;
-                maxVec.Z = (maxVec.Z > ptVector.Z) ? maxVec.Z : ptVector.Z;
+                minVec = minVec.Min(pt);
+                maxVec = maxVec.Min(pt);
             }
             return new Box(minVec, maxVec);
         }
 
         public static Box Create(params Vector3[] points)
-        {
-            return Create(points.AsEnumerable());
-        }
-
+            => Create(points.AsEnumerable());
+        
         public static Box CreateFromSphere(Sphere sphere)
-        {
-            return new Box(sphere.Center - new Vector3(sphere.Radius), sphere.Center + new Vector3(sphere.Radius));
-        }
-
+            => new Box(sphere.Center - new Vector3(sphere.Radius), sphere.Center + new Vector3(sphere.Radius));
+        
         /// <summary>
         /// This is the four front corners followed by the four back corners all as if looking from the front
         /// going in clockwise order from upper left. 
@@ -295,49 +287,48 @@ namespace Ara3D
         {
             // See http://zach.in.tu-clausthal.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html
 
-            Vector3 positiveVertex;
-            Vector3 negativeVertex;
+            float ax, ay, az, bx, by, bz;
 
             if (plane.Normal.X >= 0)
             {
-                positiveVertex.X = Max.X;
-                negativeVertex.X = Min.X;
+                ax = Max.X;
+                bx = Min.X;
             }
             else
             {
-                positiveVertex.X = Min.X;
-                negativeVertex.X = Max.X;
+                ax = Min.X;
+                bx = Max.X;
             }
 
             if (plane.Normal.Y >= 0)
             {
-                positiveVertex.Y = Max.Y;
-                negativeVertex.Y = Min.Y;
+                ay = Max.Y;
+                by = Min.Y;
             }
             else
             {
-                positiveVertex.Y = Min.Y;
-                negativeVertex.Y = Max.Y;
+                ay = Min.Y;
+                by = Max.Y;
             }
 
             if (plane.Normal.Z >= 0)
             {
-                positiveVertex.Z = Max.Z;
-                negativeVertex.Z = Min.Z;
+                az = Max.Z;
+                bz = Min.Z;
             }
             else
             {
-                positiveVertex.Z = Min.Z;
-                negativeVertex.Z = Max.Z;
+                az = Min.Z;
+                bz = Max.Z;
             }
 
             // Inline Vector3.Dot(plane.Normal, negativeVertex) + plane.D;
-            var distance = plane.Normal.X * negativeVertex.X + plane.Normal.Y * negativeVertex.Y + plane.Normal.Z * negativeVertex.Z + plane.D;
+            var distance = plane.Normal.X * bx + plane.Normal.Y * by + plane.Normal.Z * bz + plane.D;
             if (distance > 0)
                 return PlaneIntersectionType.Front;
 
             // Inline Vector3.Dot(plane.Normal, positiveVertex) + plane.D;
-            distance = plane.Normal.X * positiveVertex.X + plane.Normal.Y * positiveVertex.Y + plane.Normal.Z * positiveVertex.Z + plane.D;
+            distance = plane.Normal.X * ax + plane.Normal.Y * ay + plane.Normal.Z * az + plane.D;
             if (distance < 0)
                 return PlaneIntersectionType.Back;
 
@@ -345,6 +336,6 @@ namespace Ara3D
         }
 
         public static readonly Box Unit 
-            = new Box(Vector3.Zero, Vector3.One);
+            = new Box(Vector3.Zero, new Vector3(1));
     }
 }

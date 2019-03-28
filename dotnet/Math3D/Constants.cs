@@ -18,6 +18,10 @@ namespace Ara3D
         public const float HalfPi = Pi / 2f;
         public const float TwoPi = Pi * 2f;
         public const float Tolerance = 0.0000001f;
+        public const float Log10E = 0.4342945f;
+        public const float Log2E = 1.442695f;
+        public const float E = (float)Math.E;
+
 
         public readonly static Vector3 NaNVector = new Vector3(float.NaN, float.NaN, float.NaN);
         public readonly static Vector3 InfVector = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);

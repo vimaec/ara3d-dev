@@ -260,48 +260,6 @@ namespace Ara3D
         /// <summary>
         /// Flips the sign of each component of the quaternion.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion Negate(Quaternion value)
-            => -value;
-
-        /// <summary>
-        /// Adds two Quaternions element-by-element.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion Add(Quaternion value1, Quaternion value2)
-            => value1 + value2;
-
-        /// <summary>
-        /// Subtracts one Quaternion from another.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion Subtract(Quaternion value1, Quaternion value2)
-            => value1 - value2;
-
-        /// <summary>
-        /// Multiplies two Quaternions together.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion Multiply(Quaternion value1, Quaternion value2)
-            => value1 * value2;
-
-        /// <summary>
-        /// Multiplies a Quaternion by a scalar value.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion Multiply(Quaternion value1, float value2)
-            => new Quaternion(value1.X * value2, value1.Y * value2, value1.Z * value2, value1.W * value2);
-
-        /// <summary>
-        /// Divides a Quaternion by another Quaternion.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion Divide(Quaternion value1, Quaternion value2)
-            => value1 / value2;
-
-        /// <summary>
-        /// Flips the sign of each component of the quaternion.
-        /// </summary>
         public static Quaternion operator -(Quaternion value)
             => new Quaternion(-value.X, -value.Y, -value.Z, -value.W);
 

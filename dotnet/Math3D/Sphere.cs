@@ -67,7 +67,7 @@ namespace Ara3D
         /// </summary>
         public ContainmentType Contains(Sphere sphere)
         {
-            var sqDistance = Vector3.DistanceSquared(sphere.Center, Center);
+            var sqDistance = sphere.Center.DistanceSquared(Center);
 
             if (sqDistance > (sphere.Radius + Radius) * (sphere.Radius + Radius))
                 return  ContainmentType.Disjoint;
@@ -93,7 +93,7 @@ namespace Ara3D
         public void Contains(Vector3 point, out ContainmentType result)
         {
             var sqRadius = Radius * Radius;
-            var sqDistance = Vector3.DistanceSquared(point, Center);
+            var sqDistance = point.DistanceSquared(Center);
             
             if (sqDistance > sqRadius)
                 result = ContainmentType.Disjoint;

@@ -48,16 +48,29 @@
 		}
 	}
 
+	private static string OneValue(string type) {
+		switch (type)
+		{
+		case "int": return "1";
+		case "float": return "1f";
+		case "double": return "1.0";
+		case "long": return "1L";
+		default: return type + ".One";
+		}
+	}
+
 	private void CreateBinaryOp(string name, string[] fields, string type, string op)
 	{
-		var combineArgs = string.Join(",", fields.Select(f => $"value1.{f} {op} value2.{f}"));
+		var combineArgs0 = string.Join(",", fields.Select(f => $"value1.{f} {op} value2.{f}"));
+		var combineArgs1 = string.Join(",", fields.Select(f => $"value1.{f} {op} value2"));
+		var combineArgs2 = string.Join(",", fields.Select(f => $"value1 {op} value2.{f}"));
 #>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static <#= name #> operator <#= op #>(<#= name #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs #>);
+		public static <#= name #> operator <#= op #>(<#= name #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs0 #>);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static <#= name #> operator <#= op #>(<#= name #> value1, <#= type #> value2) => new <#= name #>(<#= combineArgs #>);
+		public static <#= name #> operator <#= op #>(<#= name #> value1, <#= type #> value2) => new <#= name #>(<#= combineArgs1 #>);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static <#= name #> operator <#= op #>(<#= type #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs #>);
+		public static <#= name #> operator <#= op #>(<#= type #> value1, <#= name #> value2) => new <#= name #>(<#= combineArgs2 #>);
 <#+
 	}
 
@@ -69,23 +82,25 @@
 		CreateBinaryOp(name, fields, type, "/");
 
 		var ctorArgs = string.Join(", ", fields.Select(f => "value"));
+		var dotArgs = string.Join(" + ", fields.Select(f => $"value1.{f} * value2.{f}"));
+		var one = OneValue(type);
+
+		foreach (var f in fields) {
+#>
+		public static <#= name #> Unit<#= f #> = Zero.Set<#= f #>(<#= one #> );
+<#+
+		}
+
 #>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public <#= name #>(<#= types[0] #> value) : this(<#= ctorArgs #>) { }		
+		public <#= name #>(<#= type #> value) : this(<#= ctorArgs #>) { }		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static <#= name #> operator -(<#= name #> value) => Zero - value;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static <#= type #> Dot(<#= name #> value1, <#= name #> value2) => <#= dotArgs #>;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public <#= type #> Dot(<#= name #> value) => <#= name #>.Dot(this, value);
 <#+
-	}
-
-	private static string OneValue(string type) {
-		switch (type)
-		{
-		case "int": return "1";
-		case "float": return "1f";
-		case "double": return "1.0";
-		case "long": return "1L";
-		default: return type + ".One";
-		}
 	}
 
     private void CreateStruct(string name, string[] fields, string[] types, bool isVector = false)
@@ -98,11 +113,9 @@
         var opArgs = $"{name} x0, {name} x1";				
 		var ctorArgs = string.Join(", ", fields.Zip(types, (field, type) => $"{type} {field.ToLower()}"));
 		var ctorAssign = string.Join(" ", fields.Select((f) => $"{f} = {f.ToLower()};"));
-		var zeroArgs = string.Join(", ", types.Select(ZeroValue));
-		var oneArgs = string.Join(", ", types.Select(ZeroValue));
 		var defaultArgs = string.Join(", ", types.Select(t => $"default({t})"));
-		var minArgs = = string.Join(", ", types.Select(t => $"{t}.MinValue"));
-		var maxArgs = = string.Join(", ", types.Select(t => $"{t}.MaxValue"));
+		var minArgs = string.Join(", ", types.Select(t => $"{t}.MinValue"));
+		var maxArgs = string.Join(", ", types.Select(t => $"{t}.MaxValue"));
 
 #>
 	public readonly partial struct <#= name #> : IEquatable< <#= name #> >
@@ -117,8 +130,6 @@
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public <#= name #>(<#= ctorArgs #>) { <#= ctorAssign #> }
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public <#= name #>() : this(<#= defaultArgs #>) { }
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override bool Equals(object obj) => obj is <#= name #> x && Equals(x);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override int GetHashCode() => <#= hashBody #>;
@@ -130,10 +141,9 @@
 		public static bool operator ==(<#= opArgs #>) => x0.Equals(x1);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator !=(<#= opArgs #>) => !x0.Equals(x1);
-
-		public static <#= name #> Zero = <#= name #>() { }
-		public static <#= name #> MinValue = <#= name #>(<#= minArgs #>) { }
-		public static <#= name #> MaxValue = <#= name #>(<#= maxArgs #>) { }
+		public static <#= name #> Zero = new <#= name #>(<#= defaultArgs #>);
+		public static <#= name #> MinValue = new <#= name #>(<#= minArgs #>);
+		public static <#= name #> MaxValue = new <#= name #>(<#= maxArgs #>);
 <#+
 		CreateSetters(name, fields, types); 
 		if (isVector) CreateVectorOps(name, fields, types[0]);

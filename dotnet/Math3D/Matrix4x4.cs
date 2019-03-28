@@ -177,10 +177,10 @@ namespace Ara3D
             }
             else
             {
-                zaxis = Vector3.Multiply(zaxis, 1.0f / MathF.Sqrt(norm));
+                zaxis = zaxis * (1.0f / MathOps.Sqrt(norm));
             }
 
-            var xaxis = Vector3.Normalize(Vector3.Cross(cameraUpVector, zaxis));
+            var xaxis = Vector3.Cross(cameraUpVector, zaxis).Normal();
 
             var yaxis = Vector3.Cross(zaxis, xaxis);
 
@@ -219,7 +219,7 @@ namespace Ara3D
         public static Matrix4x4 CreateConstrainedBillboard(Vector3 objectPosition, Vector3 cameraPosition, Vector3 rotateAxis, Vector3 cameraForwardVector, Vector3 objectForwardVector)
         {
             const float epsilon = 1e-4f;
-            const float minAngle = 1.0f - (0.1f * (MathF.PI / 180.0f)); // 0.1 degrees
+            const float minAngle = 1.0f - (0.1f * (Constants.Pi / 180.0f)); // 0.1 degrees
 
             // Treat the case when object and camera positions are too close.
             var faceDir = new Vector3(
@@ -235,7 +235,7 @@ namespace Ara3D
             }
             else
             {
-                faceDir = Vector3.Multiply(faceDir, (1.0f / MathF.Sqrt(norm)));
+                faceDir = faceDir * 1.0f / MathOps.Sqrt(norm);
             }
 
             var yaxis = rotateAxis;
@@ -245,25 +245,25 @@ namespace Ara3D
             // Treat the case when angle between faceDir and rotateAxis is too close to 0.
             var dot = Vector3.Dot(rotateAxis, faceDir);
 
-            if (MathF.Abs(dot) > minAngle)
+            if (MathOps.Abs(dot) > minAngle)
             {
                 zaxis = objectForwardVector;
 
                 // Make sure passed values are useful for compute.
                 dot = Vector3.Dot(rotateAxis, zaxis);
 
-                if (MathF.Abs(dot) > minAngle)
+                if (MathOps.Abs(dot) > minAngle)
                 {
-                    zaxis = (MathF.Abs(rotateAxis.Z) > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
+                    zaxis = (MathOps.Abs(rotateAxis.Z) > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
                 }
 
-                xaxis = Vector3.Normalize(Vector3.Cross(rotateAxis, zaxis));
-                zaxis = Vector3.Normalize(Vector3.Cross(xaxis, rotateAxis));
+                xaxis = Vector3.Cross(rotateAxis, zaxis).Normal();
+                zaxis = Vector3.Cross(xaxis, rotateAxis).Normal();
             }
             else
             {
-                xaxis = Vector3.Normalize(Vector3.Cross(rotateAxis, faceDir));
-                zaxis = Vector3.Normalize(Vector3.Cross(xaxis, yaxis));
+                xaxis = Vector3.Cross(rotateAxis, faceDir).Normal();
+                zaxis = Vector3.Cross(xaxis, yaxis).Normal();
             }
 
             Matrix4x4 result;
@@ -553,8 +553,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathF.Cos(radians);
-            var s = MathF.Sin(radians);
+            var c = MathOps.Cos(radians);
+            var s = MathOps.Sin(radians);
 
             // [  1  0  0  0 ]
             // [  0  c  s  0 ]
@@ -590,8 +590,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathF.Cos(radians);
-            var s = MathF.Sin(radians);
+            var c = MathOps.Cos(radians);
+            var s = MathOps.Sin(radians);
 
             var y = centerPoint.Y * (1 - c) + centerPoint.Z * s;
             var z = centerPoint.Z * (1 - c) - centerPoint.Y * s;
@@ -629,8 +629,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathF.Cos(radians);
-            var s = MathF.Sin(radians);
+            var c = MathOps.Cos(radians);
+            var s = MathOps.Sin(radians);
 
             // [  c  0 -s  0 ]
             // [  0  1  0  0 ]
@@ -666,8 +666,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathF.Cos(radians);
-            var s = MathF.Sin(radians);
+            var c = MathOps.Cos(radians);
+            var s = MathOps.Sin(radians);
 
             var x = centerPoint.X * (1 - c) - centerPoint.Z * s;
             var z = centerPoint.Z * (1 - c) + centerPoint.X * s;
@@ -705,8 +705,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathF.Cos(radians);
-            var s = MathF.Sin(radians);
+            var c = MathOps.Cos(radians);
+            var s = MathOps.Sin(radians);
 
             // [  c  s  0  0 ]
             // [ -s  c  0  0 ]
@@ -742,8 +742,8 @@ namespace Ara3D
         {
             Matrix4x4 result;
 
-            var c = MathF.Cos(radians);
-            var s = MathF.Sin(radians);
+            var c = MathOps.Cos(radians);
+            var s = MathOps.Sin(radians);
 
             var x = centerPoint.X * (1 - c) + centerPoint.Y * s;
             var y = centerPoint.Y * (1 - c) - centerPoint.X * s;
@@ -806,7 +806,7 @@ namespace Ara3D
             //     [ zx-cosa*zx-sina*y zy-cosa*zy+sina*x   zz+cosa*(1-zz)  ]
             //
             float x = axis.X, y = axis.Y, z = axis.Z;
-            float sa = MathF.Sin(angle), ca = MathF.Cos(angle);
+            float sa = MathOps.Sin(angle), ca = MathOps.Cos(angle);
             float xx = x * x, yy = y * y, zz = z * z;
             float xy = x * y, xz = x * z, yz = y * z;
 
@@ -842,7 +842,7 @@ namespace Ara3D
         /// <returns>The perspective projection matrix.</returns>
         public static Matrix4x4 CreatePerspectiveFieldOfView(float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
         {
-            if (fieldOfView <= 0.0f || fieldOfView >= MathF.PI)
+            if (fieldOfView <= 0.0f || fieldOfView >= Constants.Pi)
                 throw new ArgumentOutOfRangeException(nameof(fieldOfView));
 
             if (nearPlaneDistance <= 0.0f)
@@ -854,7 +854,7 @@ namespace Ara3D
             if (nearPlaneDistance >= farPlaneDistance)
                 throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance));
 
-            var yScale = 1.0f / MathF.Tan(fieldOfView * 0.5f);
+            var yScale = 1.0f / MathOps.Tan(fieldOfView * 0.5f);
             var xScale = yScale / aspectRatio;
 
             Matrix4x4 result;
@@ -1023,9 +1023,9 @@ namespace Ara3D
         /// <returns>The view matrix.</returns>
         public static Matrix4x4 CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
         {
-            var zaxis = Vector3.Normalize(cameraPosition - cameraTarget);
-            var xaxis = Vector3.Normalize(Vector3.Cross(cameraUpVector, zaxis));
-            var yaxis = Vector3.Cross(zaxis, xaxis);
+            var zaxis = (cameraPosition - cameraTarget).Normal();
+            var xaxis = cameraUpVector.Cross(zaxis).Normal();
+            var yaxis = zaxis.Cross(xaxis);
 
             Matrix4x4 result;
 
@@ -1058,9 +1058,9 @@ namespace Ara3D
         /// <returns>The world matrix.</returns>
         public static Matrix4x4 CreateWorld(Vector3 position, Vector3 forward, Vector3 up)
         {
-            var zaxis = Vector3.Normalize(-forward);
-            var xaxis = Vector3.Normalize(Vector3.Cross(up, zaxis));
-            var yaxis = Vector3.Cross(zaxis, xaxis);
+            var zaxis = (-forward).Normal();
+            var xaxis = up.Cross(zaxis).Normal();
+            var yaxis = zaxis.Cross(xaxis);
 
             Matrix4x4 result;
 
@@ -1132,11 +1132,7 @@ namespace Ara3D
         /// <param name="roll">Angle of rotation, in radians, around the Z-axis.</param>
         /// <returns>The rotation matrix.</returns>
         public static Matrix4x4 CreateFromYawPitchRoll(float yaw, float pitch, float roll)
-        {
-            var q = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
-
-            return Matrix4x4.CreateFromQuaternion(q);
-        }
+            => CreateFromQuaternion(Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll));        
 
         /// <summary>
         /// Creates a Matrix that flattens geometry into a specified Plane as if casting a shadow from a specified light source.
@@ -1391,7 +1387,7 @@ namespace Ara3D
 
             var det = a * a11 + b * a12 + c * a13 + d * a14;
 
-            if (MathF.Abs(det) < float.Epsilon)
+            if (MathOps.Abs(det) < float.Epsilon)
             {
                 result = new Matrix4x4(float.NaN, float.NaN, float.NaN, float.NaN,
                                        float.NaN, float.NaN, float.NaN, float.NaN,
@@ -1569,9 +1565,9 @@ namespace Ara3D
                         uint cc;
                         float fAbsX, fAbsY, fAbsZ;
 
-                        fAbsX = MathF.Abs(pVectorBasis[a]->X);
-                        fAbsY = MathF.Abs(pVectorBasis[a]->Y);
-                        fAbsZ = MathF.Abs(pVectorBasis[a]->Z);
+                        fAbsX = MathOps.Abs(pVectorBasis[a]->X);
+                        fAbsY = MathOps.Abs(pVectorBasis[a]->Y);
+                        fAbsZ = MathOps.Abs(pVectorBasis[a]->Z);
 
                         #region Ranking
                         if (fAbsX < fAbsY)
