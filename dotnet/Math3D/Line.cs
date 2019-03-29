@@ -18,6 +18,6 @@ namespace Ara3D
         public Vector3 MidPoint => A.Average(B);
         public Line Normal => new Line(A, A + Vector.Normal());
         public Vector3 Lerp(float amount) => A.Lerp(B, amount);
-        public Line SetLength(float length) => new Line(A, A + Vector.AlongVector(length));
+        public Line SetLength(float length) => new Line(A, A + Vector.Along(length));
     }
 }

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Ara3D
@@ -113,12 +112,10 @@ namespace Ara3D
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Dot(Plane plane, Vector4 value)
-        {
-            return plane.Normal.X * value.X +
+            => plane.Normal.X * value.X +
                    plane.Normal.Y * value.Y +
                    plane.Normal.Z * value.Z +
-                   plane.D * value.W;
-        }
+                   plane.D * value.W;        
 
         /// <summary>
         /// Returns the dot product of a specified Vector3 and the normal vector of this Plane plus the distance (D) value of the Plane.
@@ -133,5 +130,14 @@ namespace Ara3D
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float DotNormal(Plane plane, Vector3 value)
             => plane.Normal.Dot(value);
+
+        /// <summary>
+        /// Returns a value less than zero if the points is below the plane, above zero if above the plane, or zero if coplanar
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float ClassifyPoint(Vector3 point)
+            => point.Dot(Normal) + D;        
     }
 }

@@ -19,11 +19,11 @@ var floatTypes = new[] { "float", "double" };
 var nonVectorTypes = intTypes.Concat(floatTypes);
 var comparableTypes = nonVectorTypes;
 var vectorTypes = new[] { "Vector2", "Vector3", "Vector4", "DVector2", "DVector3", "DVector4" };
+var floatAndVectorTypes = floatTypes.Concat(vectorTypes);
 var types = nonVectorTypes.Concat(vectorTypes);
 var araBinaryOps = new[] { "Add", "Subtract", "Multiply", "Divide" };
 var araCompOps = new[] { "Gt", "Lt", "GtEq", "LtEq", "Eq", "NEq" };
 var sysBinaryOps = new[] { "Atan2", "Log", "Pow" };
-
 var araUnaryOps = new[] { "Inverse", "Ceiling", "Floor", "Round", "Truncate", "Sqr", "Cube" };
 var sysUnaryOps = new[] { "Abs", "Acos", "Asin", "Atan", "Cos", "Cosh", "Exp", "Log", "Log10", "Sin", "Sinh", "Sqrt", "Tan", "Tanh" };
 var allUnaryOps = sysUnaryOps.Concat(araUnaryOps);
@@ -50,13 +50,18 @@ foreach (var op in sysUnaryOps) {
 <# 
 foreach (var t in floatTypes) { 
 #>
-		public static <#= t #> Sqr (this <#= t #> x) => x * x;
-		public static <#= t #> Cube (this <#= t #> x) => x * x * x; 
 		public static <#= t #> Inverse (this <#= t #> x) => (<#= t #>)1 / x; 		
 		public static <#= t #> Truncate (this <#= t #> x) => (<#= t #>)Math.Truncate(x); 
 		public static <#= t #> Ceiling (this <#= t #> x) => (<#= t #>)Math.Ceiling(x); 
 		public static <#= t #> Floor (this <#= t #> x) => (<#= t #>)Math.Floor(x);
 		public static <#= t #> Round (this <#= t #> x) => (<#= t #>)System.Math.Round(x); 
+		public static <#= t #> ToRadians(this <#= t #> x) => (<#= t #>)(x * Constants.DegreesToRadians);
+		public static <#= t #> ToDegrees(this <#= t #> x) => (<#= t #>)(x * Constants.RadiansToDegrees);
+		public static <#= t #> Distance(this <#= t #> v1, <#= t #> v2) => (v1 - v2).Abs();
+		public static bool IsInfinity(this <#= t #> v) => <#= t #>.IsInfinity(v);
+		public static bool IsNaN(this <#= t #> v) => <#= t #>.IsNaN(v);
+		public static bool AlmostEquals(this <#= t #> v1, <#= t #> v2) => (v2 - v1).AlmostZero();
+		public static bool AlmostZero(this <#= t #> v, float tolerance = Constants.Tolerance) => v.Abs() < tolerance;
 <# } #>
 
 <# 
@@ -72,6 +77,9 @@ foreach (var t in types) {
 <#
 foreach (var t in nonVectorTypes) { 
 #>
+		public static bool WithinInterval(this <#= t #> v, <#= t #> min, <#= t #> max) => v >= min && v <= max;
+		public static <#= t #> Sqr (this <#= t #> x) => x * x;
+		public static <#= t #> Cube (this <#= t #> x) => x * x * x; 
         public static <#= t #> Min (this <#= t #> v1, <#= t #> v2) => Math.Min(v1, v2);
         public static <#= t #> Max (this <#= t #> v1, <#= t #> v2) => Math.Max(v1, v2); 
 <# } #>
@@ -105,6 +113,25 @@ foreach (var t in intTypes) {
 		public static <#= t #> XOr (this <#= t #> a, <#= t #> b) => a | b & ~(a & b);
 		public static <#= t #> NOr (this <#= t #> a, <#= t #> b) => ~(a | b); 
 		public static <#= t #> Not (this <#= t #> a) => ~a;
+		public static <#= t #> Abs (this <#= t #> a) => Math.Abs(a);
+		public static <#= t #> DivideRoundUp (this <#= t #> a, <#= t #> b) => a / b + (a % b > 0 ? 1 : 0);
+        public static bool IsEven (this <#= t #> n) => n % 2 == 0;        
+        public static bool IsOdd (this <#= t #> n) => n % 2 == 1;
+		public static bool IsPowerOfTwo (this <#= t #> v) => v > 0 && (v & (v - 1)) == 0;
+        public static bool IsNaN (this <#= t #> n) => false;
+<# } #>
+
+
+<# 
+foreach (var v in floatAndVectorTypes) { 
+#>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Lerp(this <#= v #> v1, <#= v #> v2, float t) => v1 + (v2 - v1) * t;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> LerpPrecise(this <#= v #> v1, <#= v #> v2, float t) => ((1 - t) * v1) + (v2 * t);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> ClampLower(this <#= v #> v, <#= v #> min) => v.Max(min);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> ClampUpper(this <#= v #> v, <#= v #> max) => v.Min(max);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Clamp(this <#= v #> v, <#= v #> min, <#= v #> max) => v.Min(max).Max(min);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Average(this <#= v #> v1, <#= v #> v2) => v1.Lerp(v2, 0.5f);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Barycentric(this <#= v #> v1, <#= v #> v2, <#= v #> v3, float u, float v) => v1 + (v2 - v1) * u + (v3 - v1) * v;        
 <# } #>
 
 <#
@@ -116,14 +143,11 @@ for (var i=0; i < vectorTypes.Length; ++i) {
 	var minBody = $"new {v}(" + string.Join(", ", fields.Select(f => $"v1.{f}.Min(v2.{f})")) + ")";
 	var maxBody = $"new {v}(" + string.Join(", ", fields.Select(f => $"v1.{f}.Max(v2.{f})")) + ")";
 #>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= s #> DistanceSquared(this <#= v #> v1, <#= v #> v2) => (v1 - v2).LengthSquared();
+		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= s #> Distance(this <#= v #> v1, <#= v #> v2) => (v1 - v2).Length();
 		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= s #> LengthSquared(this <#= v #> v) => v.Dot(v);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= s #> Length(this <#= v #> v) => v.LengthSquared().Sqrt();
 		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Normal(this <#= v #> v) => v / v.Length();
-		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= s #> DistanceSquared(this <#= v #> v1, <#= v #> v2) => (v1 - v2).LengthSquared();
-		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= s #> Distance(this <#= v #> v1, <#= v #> v2) => (v1 - v2).Length();
-		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Lerp(this <#= v #> v1, <#= v #> v2, float t) => v1 + (v2 - v1) * t;
-		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Clamp(this <#= v #> v, <#= v #> min, <#= v #> max) => v.Min(max).Max(min);
-		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Average(this <#= v #> v1, <#= v #> v2) => v1.Lerp(v2, 0.5f);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= s #> Dot(this <#= v #> v1, <#= v #> v2) => <#= dotBody #>;
 		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Min(this <#= v #> v1, <#= v #> v2) => <#= minBody #>;
 		[MethodImpl(MethodImplOptions.AggressiveInlining)] public static <#= v #> Max(this <#= v #> v1, <#= v #> v2) => <#= maxBody #>;

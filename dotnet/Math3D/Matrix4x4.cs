@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
 
 namespace Ara3D
 {
@@ -186,8 +185,8 @@ namespace Ara3D
                 zaxis = zaxis * (1.0f / norm.Sqrt());
             }
 
-            var xaxis = Vector3.Cross(cameraUpVector, zaxis).Normal();
-            var yaxis = Vector3.Cross(zaxis, xaxis);
+            var xaxis = cameraUpVector.Cross(zaxis).Normal();
+            var yaxis = zaxis.Cross(xaxis);
 
             Matrix4x4 result;
 
@@ -256,13 +255,13 @@ namespace Ara3D
                     zaxis = (rotateAxis.Z.Abs() > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
                 }
 
-                xaxis = Vector3.Cross(rotateAxis, zaxis).Normal();
-                zaxis = Vector3.Cross(xaxis, rotateAxis).Normal();
+                xaxis = rotateAxis.Cross(zaxis).Normal();
+                zaxis = xaxis.Cross(rotateAxis).Normal();
             }
             else
             {
-                xaxis = Vector3.Cross(rotateAxis, faceDir).Normal();
-                zaxis = Vector3.Cross(xaxis, yaxis).Normal();
+                xaxis = rotateAxis.Cross(faceDir).Normal();
+                zaxis = xaxis.Cross(yaxis).Normal();
             }
 
             Matrix4x4 result;

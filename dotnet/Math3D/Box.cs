@@ -21,7 +21,8 @@ namespace Ara3D
         public Vector3[] Corners 
             => GetCorners(new Vector3[8]);
 
-        public static readonly Box Empty = new Box(Constants.MaxVector, Constants.MinVector);
+        public static readonly Box Empty 
+            = new Box(Vector3.MaxValue, Vector3.MinValue);
 
         public bool IsEmpty 
             => !IsValid;
@@ -187,8 +188,8 @@ namespace Ara3D
         /// </summary>
         public static Box Create(IEnumerable<Vector3> points)
         {
-            var minVec = Constants.MaxVector;
-            var maxVec = Constants.MinVector;
+            var minVec = Vector3.MaxValue;
+            var maxVec = Vector3.MinValue;
             foreach (var pt in points)
             {
                 minVec = minVec.Min(pt);

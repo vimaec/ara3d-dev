@@ -54,6 +54,7 @@ namespace ScintillaPrinting
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Exception: {ex}");
                 return false;
             }
         }

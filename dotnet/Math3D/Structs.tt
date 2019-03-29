@@ -11,12 +11,14 @@
 // MIT License - Copyright (C) Ara 3D, Inc.  
 // This file is subject to the terms and conditions defined in   
 // file 'LICENSE.txt', which is part of this source code package.  
+// ReSharper disable CompareOfFloatsByEqualityOperator
   
 using System;    
 using System.Runtime.CompilerServices; 
+using System.Runtime.InteropServices;
 
 namespace Ara3D      
-{ 
+{
 <# 
 	CreateVectorStruct("Vector2", new[] { "X", "Y" }, "float");    
 	CreateVectorStruct("Vector3", new[] { "X", "Y", "Z" }, "float");     
@@ -30,7 +32,7 @@ namespace Ara3D
 	CreateStruct("DPlane", new[] { "Normal", "D" }, new[] { "DVector3", "double" });
 
 	CreateStruct("Quaternion", new[] { "X", "Y", "Z", "W" }, new [] { "float", "float", "float", "float" });
-	CreateStruct("DQuaternion", new[] { "X", "Y", "Z", "W" },  new [] { "double", "double", "double", "double" });
+	CreateStruct("DQuaternion", new[] { "X", "Y", "Z", "W" }, new [] { "double", "double", "double", "double" });
 
 	// Various types of intervals (and bounding structs)  
 	CreateRangeStruct("Interval", "float");
@@ -58,7 +60,7 @@ namespace Ara3D
 	// These are plain old vector types (they will need mathematical operators)
 	CreateVectorStruct("Int2", new[] { "A", "B" }, "int");    
 	CreateVectorStruct("Int3", new[] { "A", "B", "C" }, "int");    
-	CreateVectorStruct("Int4", new[] { "A", "B", "C", "D" }, "int");    	
+	CreateVectorStruct("Int4", new[] { "A", "B", "C", "D" }, "int");
 
 	// TODO: the double operators are not yet finished.
 #>
