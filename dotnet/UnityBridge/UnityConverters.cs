@@ -137,23 +137,7 @@ namespace UnityBridge
         public static void SetFromNode(this Transform transform, ISceneNode node)
             => transform.SetFromMatrix(node.Transform);
 
-        public static void SetFromMatrix(this Transform transform, Ara3D.Matrix4x4 matrix)
-        {
-            // TODO: Strong assumption - The coordinate system of the ISceneNode's Transform matches that of Revit.
-            transform.SetFromMatrix(node.Transform);
-        }
-
-        public static void SetFromMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
-        {
-<<<<<<< HEAD
-=======
-            // TODO: Strong assumption - The coordinate system of the ISceneNode's Transform matches that of Revit.
-            transform.SetFromMatrix(node.Transform);
-        }
-
-        public static void SetFromMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
-        {
->>>>>>> 6be607ed149c829dc719a562e81c99f9703308f0
+        public static void SetFromMatrix(this Transform transform, Ara3D.Matrix4x4 matrix) { 
             if (!matrix.UnityPRS(out var pos, out var rot, out var scl))
                 throw new Exception("Can't decompose matrix");
 
@@ -179,7 +163,7 @@ namespace UnityBridge
             outPos = new UnityEngine.Vector3(-pos.x, pos.z, -pos.y);
 
             // Quaternion is mirrored the same way, but then negated via W = -W because that's just easier to read
-            outRot = new Quaternion(rot.x, -rot.z, rot.y, rot.w);
+            outRot = new UnityEngine.Quaternion(rot.x, -rot.z, rot.y, rot.w);
 
             // TODO: test this, current scale is completely untested
             outScale = new UnityEngine.Vector3(scale.x, scale.z, scale.y);
@@ -190,7 +174,7 @@ namespace UnityBridge
         /// Returns false if the matrix cannot be decomposed.
         /// </summary>
         public static bool UnityPRS(
-            this System.Numerics.Matrix4x4 matrix,
+            this Ara3D.Matrix4x4 matrix,
             out UnityEngine.Vector3 position,
             out UnityEngine.Quaternion rotation,
             out UnityEngine.Vector3 scale)
@@ -202,7 +186,7 @@ namespace UnityBridge
             if (matrix.IsIdentity)
                 return true;
 
-            var decomposed = System.Numerics.Matrix4x4.Decompose(matrix, out var scl, out var rot, out var pos);
+            var decomposed = Ara3D.Matrix4x4.Decompose(matrix, out var scl, out var rot, out var pos);
             if (!decomposed)
                 return false;
 
