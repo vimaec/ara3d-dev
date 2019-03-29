@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Numerics;
 using NUnit.Framework;
 
 namespace Ara3D
@@ -8,8 +7,8 @@ namespace Ara3D
     [TestFixture]
     public static class TestGeometries
     {
-        public static IGeometry XYTriangle = Geometry.TriMesh(new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 0f, 0f) }.ToIArray(), 3.Range());
-        public static IGeometry XYQuad = Geometry.QuadMesh(new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 1f, 0f), new Vector3(1f, 0f, 0f) }.ToIArray(), 4.Range());
+        public static IGeometry XYTriangle = new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 0f, 0f) }.ToIArray().TriMesh(3.Range());
+        public static IGeometry XYQuad = new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 1f, 0f), new Vector3(1f, 0f, 0f) }.ToIArray().QuadMesh(4.Range());
         public static IGeometry XYQuadFromFunc = Geometry.QuadMesh(uv => uv.To3D(), 1, 1);
         public static IGeometry XYQuad2x2 = Geometry.QuadMesh(uv => uv.To3D(), 2, 2);
         public static IGeometry XYTriangleTwice = XYTriangle.Merge(XYTriangle.Translate(new Vector3(1, 0, 0)));
@@ -18,7 +17,7 @@ namespace Ara3D
         public static readonly int[] TestTetrahedronIndices = { 0, 1, 2, 0, 3, 1, 1, 3, 2, 2, 3, 0 };
 
         public static IGeometry Tetrahedron =
-            Geometry.TriMesh(TestTetrahedronVertices.ToIArray(), TestTetrahedronIndices.ToIArray());
+            TestTetrahedronVertices.ToIArray().TriMesh(TestTetrahedronIndices.ToIArray());
 
         public static IGeometry Torus = Geometry.QuadMesh(uv => TorusFunction(uv, 10, 0.2f), 10, 24);
 
@@ -132,7 +131,6 @@ namespace Ara3D
             CompareGeometries(g, g.Translate(Vector3.Zero));
             CompareGeometries(g, g.Scale(1.0f));
             CompareGeometries(g, g.Scale(10f).Scale(0.1f));
-            CompareGeometries(g, g.Translate(Vector3.One).Translate(-Vector3.One));
             CompareGeometries(g, g.Transform(Matrix4x4.Identity));
 
             // Converting to G3Sharp is not going to give the same result if we convert.

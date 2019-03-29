@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using Ara3D;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Vector2 = System.Numerics.Vector2;
-using Vector3 = System.Numerics.Vector3;
-using Vector4 = System.Numerics.Vector4;
 
 namespace UnityBridge
 {
@@ -140,28 +136,19 @@ namespace UnityBridge
         }
         */
 
-        // TODO: support matrices once we have our own math classes
-        //public static void SetAra3DMatrix(this Transform transform, System.Numerics.Matrix4x4 mat)
-        //    => transform.SetAra3DMatrix(mat.ToFloats());
-
-        public static void SetAra3DMatrix(this Transform transform, float[] mtx)
-        {
-            transform.position = new UnityEngine.Vector3(-mtx[12], mtx[13], mtx[14]);
-
-            // TODO: Mat to quat
-        }
-
         public static void SetFromNode(this Transform transform, ISceneNode node)
+            => transform.SetFromMatrix(node.Transform);
+
+        public static void SetFromMatrix(this Transform transform, Ara3D.Matrix4x4 matrix)
         {
-            if (!System.Numerics.Matrix4x4.Decompose(node.Transform, out var scl, out var rot, out var pos))
+            if (!Ara3D.Matrix4x4.Decompose(matrix, out var scl, out var rot, out var pos))
                 throw new Exception("Can't decompose matrix");
-            
+
             // Transform space is mirrored on X, and then rotated 90 degrees around X
             transform.position = new UnityEngine.Vector3(-pos.X, pos.Z, -pos.Y);
-            // Quat is mirrored the same way, but then negated via W = -W because that's just easier to read
+            // Quaternion is mirrored the same way, but then negated via W = -W because that's just easier to read
             transform.rotation = new UnityEngine.Quaternion(rot.X, -rot.Z, rot.Y, rot.W);
-            // TODO: test this, current scale is completely untested
-            transform.localScale = new UnityEngine.Vector3(scl.X, scl.Z, scl.Y);
         }
+
     }
 }

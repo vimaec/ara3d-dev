@@ -5,7 +5,6 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using System.Numerics;
 
 namespace Ara3D
 {
@@ -14,36 +13,6 @@ namespace Ara3D
     /// </summary>
     public static partial class MathOps
     {
-    	/// <summary>
-        /// Represents the mathematical constant e(2.71828175).
-        /// </summary>
-        public const float E = (float)Math.E;
-        
-        /// <summary>
-        /// Represents the log base ten of e(0.4342945).
-        /// </summary>
-        public const float Log10E = 0.4342945f;
-        
-        /// <summary>
-        /// Represents the log base two of e(1.442695).
-        /// </summary>
-        public const float Log2E = 1.442695f;
-        
-        /// <summary>
-        /// Represents the value of pi(3.14159274).
-        /// </summary>
-        public const float Pi = (float)Math.PI;
-        
-        /// <summary>
-        /// Represents the value of pi divided by two(1.57079637).
-        /// </summary>
-        public const float PiOver2 = (float)(Math.PI / 2.0);
-        
-        /// <summary>
-        /// Represents the value of pi divided by four(0.7853982).
-        /// </summary>
-        public const float PiOver4 = (float)(Math.PI / 4.0);
-        
         /// <summary>
         /// Represents the value of pi times two(6.28318548).
         /// </summary>
@@ -77,7 +46,7 @@ namespace Ara3D
             // Using formula from http://www.mvps.org/directx/articles/catmull/
             // Internally using doubles not to lose precission
             double amountSquared = amount * amount;
-            double amountCubed = amountSquared * amount;
+            var amountCubed = amountSquared * amount;
             return (float)(0.5 * (2.0 * value2 +
                 (value3 - value1) * amount +
                 (2.0 * value1 - 5.0 * value2 + 4.0 * value3 - value4) * amountSquared +
@@ -147,8 +116,8 @@ namespace Ara3D
             // All transformed to double not to lose precission
             // Otherwise, for high numbers of param:amount the result is NaN instead of Infinity
             double v1 = value1, v2 = value2, t1 = tangent1, t2 = tangent2, s = amount, result;
-            double sCubed = s * s * s;
-            double sSquared = s * s;
+            var sCubed = s * s * s;
+            var sSquared = s * s;
 
             if (amount == 0f)
                 result = value1;
@@ -258,12 +227,12 @@ namespace Ara3D
         /// <returns>The new angle, in radians.</returns>
         public static float WrapAngle(float angle)
         {
-            if ((angle > -Pi) && (angle <= Pi))
+            if ((angle > -Constants.Pi) && (angle <= Constants.Pi))
                 return angle;
             angle %= TwoPi;
-            if (angle <= -Pi)
+            if (angle <= -Constants.Pi)
                 return angle + TwoPi;
-            if (angle > Pi)
+            if (angle > Constants.Pi)
                 return angle - TwoPi;
             return angle;
         }
@@ -338,7 +307,7 @@ namespace Ara3D
 
         public static Matrix4x4 Inverse(this Matrix4x4 m)
         {
-            if (!Matrix4x4.Invert(m, out Matrix4x4 r))
+            if (!Matrix4x4.Invert(m, out var r))
                 throw new Exception("No inversion of matrix available");
             return r;
         }

@@ -39,7 +39,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
@@ -50,6 +49,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="ContainmentType.cs" />
     <Compile Include="Hash.cs" />
+    <Compile Include="IntrinsicAttribute.cs" />
     <Compile Include="Line.cs" />
     <Compile Include="MathOpsPartial.cs" />
     <Compile Include="MathOps.cs">
@@ -57,7 +57,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MathOps.tt</DependentUpon>
     </Compile>
+    <Compile Include="Matrix4x4.cs" />
+    <Compile Include="Plane.cs" />
     <Compile Include="PlaneIntersectionType.cs" />
+    <Compile Include="Quaternion.cs" />
     <Compile Include="RandomNumberGenerator.cs" />
     <Compile Include="Ray.cs" />
     <Compile Include="Sphere.cs" />
@@ -68,6 +71,9 @@
     </Compile>
     <Compile Include="Triangle.cs" />
     <Compile Include="Triangle2D.cs" />
+    <Compile Include="Vector2.cs" />
+    <Compile Include="Vector3.cs" />
+    <Compile Include="Vector4.cs" />
     <Compile Include="VectorHelper.cs" />
   </ItemGroup>
   <ItemGroup>

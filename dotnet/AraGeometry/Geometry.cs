@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 
 namespace Ara3D
@@ -200,7 +199,7 @@ namespace Ara3D
 
         public static IArray<Triangle> Triangles(this Face self)
         {
-            if (self.Count < 3) return Triangle.Zero.Repeat(0);
+            if (self.Count < 3) return new Triangle(Vector3.Zero, Vector3.Zero, Vector3.Zero).Repeat(0);
             var pts = self.Points();
             if (self.Count == 3) return new Triangle(pts[0], pts[1], pts[2]).Repeat(1);
             return (self.Count - 2).Select(i => new Triangle(pts[0], pts[i + 1], pts[i + 2]));
@@ -211,7 +210,7 @@ namespace Ara3D
             => Math.Abs(Vector3.Dot(v3 - v1, Vector3.Cross(v2 - v1, v4 - v1))) < epsilon;        
 
         public static Vector3 Normal(this Face self)
-            => Vector3.Normalize(Vector3.Cross(self.Binormal(), self.Tangent()));
+            => Vector3.Cross(self.Binormal(), self.Tangent()).Normal();
         
         public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
             => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs, materialIds).ToIGeometry();

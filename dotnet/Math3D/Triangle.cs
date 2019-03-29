@@ -3,8 +3,6 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-using System.Numerics;
-
 namespace Ara3D
 {
     public partial struct Triangle 
@@ -38,7 +36,5 @@ namespace Ara3D
         // TODO: plane
         // TODO: contained sphere
         // TODO: bounding sphere 
-
-        public static Triangle Zero = new Triangle(Vector3.Zero, Vector3.Zero, Vector3.Zero);                
     }
 }

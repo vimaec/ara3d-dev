@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
 
 namespace Ara3D
 {
@@ -130,7 +129,7 @@ namespace Ara3D
             self.CompactInPlace();
             var verts = self.Vertices().Select(ToNumerics).ToIArray();
             var indices = self.TrianglesBuffer.ToIArray();
-            return Geometry.TriMesh(verts, indices);
+            return verts.TriMesh(indices);
         }
 
         public static Vector3d ToVector3D(this Vector3 self)

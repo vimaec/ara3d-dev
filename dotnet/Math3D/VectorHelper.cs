@@ -5,41 +5,12 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using System.Numerics;
 
 namespace Ara3D
 {
     public static class VectorHelper
     {
-        public static Vector2 Select(this Vector2 self, Func<float, float> f)
-        {
-            return new Vector2(f(self.X), f(self.Y));
-        }
-
-        public static Vector3 Select(this Vector3 self, Func<float, float> f)
-        {
-            return new Vector3(f(self.X), f(self.Y), f(self.Y));
-        }
-
-        public static Vector4 Select(this Vector4 self, Func<float, float> f)
-        {
-            return new Vector4(f(self.X), f(self.Y), f(self.Z), f(self.W));
-        }
-
-        public static Vector2 Zip(this Vector2 self, Vector2 v, Func<float, float, float> f)
-        {
-            return new Vector2(f(self.X, v.X), f(self.Y, v.Y));
-        }
-
-        public static Vector3 Zip(this Vector3 self, Vector3 v, Func<float, float, float> f)
-        {
-            return new Vector3(f(self.X, v.X), f(self.Y, v.Y), f(self.Z, v.Z));
-        }
-
-        public static Vector4 Zip(this Vector4 self, Vector4 v, Func<float, float, float> f)
-        {
-            return new Vector4(f(self.X, v.X), f(self.Y, v.Y), f(self.Z, v.Z), f(self.W, v.W));
-        }
+       
 
         // TODO: I am not implementing all of these for all of the different types of Vectors
 
@@ -96,11 +67,6 @@ namespace Ara3D
         public static Vector3 To3D(this Vector2 self)
         {
             return new Vector3(self.X, self.Y, 0);
-        }
-
-        public static double MixedProduct(this Vector3 v1, Vector3 v2, Vector3 v3)
-        {
-            return v1.Cross(v2).Dot(v3);
         }
 
         public static bool AlmostEquals(this Vector3 self, Vector3 other, float tolerance = Constants.Tolerance)
