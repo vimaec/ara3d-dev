@@ -166,11 +166,6 @@ namespace Ara3D
         /// <summary>
         /// Creates a spherical billboard that rotates around a specified object position.
         /// </summary>
-        /// <param name="objectPosition">Position of the object the billboard will rotate around.</param>
-        /// <param name="cameraPosition">Position of the camera.</param>
-        /// <param name="cameraUpVector">The up vector of the camera.</param>
-        /// <param name="cameraForwardVector">The forward vector of the camera.</param>
-        /// <returns>The created billboard matrix</returns>
         public static Matrix4x4 CreateBillboard(Vector3 objectPosition, Vector3 cameraPosition, Vector3 cameraUpVector, Vector3 cameraForwardVector)
         {
             const float epsilon = 1e-4f;
@@ -220,12 +215,6 @@ namespace Ara3D
         /// <summary>
         /// Creates a cylindrical billboard that rotates around a specified axis.
         /// </summary>
-        /// <param name="objectPosition">Position of the object the billboard will rotate around.</param>
-        /// <param name="cameraPosition">Position of the camera.</param>
-        /// <param name="rotateAxis">Axis to rotate the billboard around.</param>
-        /// <param name="cameraForwardVector">Forward vector of the camera.</param>
-        /// <param name="objectForwardVector">Forward vector of the object.</param>
-        /// <returns>The created billboard matrix.</returns>
         public static Matrix4x4 CreateConstrainedBillboard(Vector3 objectPosition, Vector3 cameraPosition, Vector3 rotateAxis, Vector3 cameraForwardVector, Vector3 objectForwardVector)
         {
             const float epsilon = 1e-4f;
@@ -332,10 +321,6 @@ namespace Ara3D
         /// <summary>
         /// Creates a translation matrix.
         /// </summary>
-        /// <param name="xPosition">The amount to translate on the X-axis.</param>
-        /// <param name="yPosition">The amount to translate on the Y-axis.</param>
-        /// <param name="zPosition">The amount to translate on the Z-axis.</param>
-        /// <returns>The translation matrix.</returns>
         public static Matrix4x4 CreateTranslation(float xPosition, float yPosition, float zPosition)
         {
             Matrix4x4 result;
@@ -460,9 +445,6 @@ namespace Ara3D
         /// <summary>
         /// Creates a scaling matrix with a center point.
         /// </summary>
-        /// <param name="scales">The vector containing the amount to scale by on each axis.</param>
-        /// <param name="centerPoint">The center point.</param>
-        /// <returns>The scaling matrix.</returns>
         public static Matrix4x4 CreateScale(Vector3 scales, Vector3 centerPoint)
         {
             Matrix4x4 result;
@@ -557,8 +539,6 @@ namespace Ara3D
         /// <summary>
         /// Creates a matrix for rotating points around the X-axis.
         /// </summary>
-        /// <param name="radians">The amount, in radians, by which to rotate around the X-axis.</param>
-        /// <returns>The rotation matrix.</returns>
         public static Matrix4x4 CreateRotationX(float radians)
         {
             Matrix4x4 result;
@@ -1578,40 +1558,26 @@ namespace Ara3D
         /// <summary>
         /// Adds two matrices together.
         /// </summary>
-        /// <param name="value1">The first source matrix.</param>
-        /// <param name="value2">The second source matrix.</param>
-        /// <returns>The resulting matrix.</returns>
         public static Matrix4x4 Add(Matrix4x4 value1, Matrix4x4 value2) => value1 + value2;
 
         /// <summary>
         /// Subtracts the second matrix from the first.
         /// </summary>
-        /// <param name="value1">The first source matrix.</param>
-        /// <param name="value2">The second source matrix.</param>
-        /// <returns>The result of the subtraction.</returns>
         public static Matrix4x4 Subtract(Matrix4x4 value1, Matrix4x4 value2) => value1 - value2;
 
         /// <summary>
         /// Multiplies a matrix by another matrix.
         /// </summary>
-        /// <param name="value1">The first source matrix.</param>
-        /// <param name="value2">The second source matrix.</param>
-        /// <returns>The result of the multiplication.</returns>
         public static Matrix4x4 Multiply(Matrix4x4 value1, Matrix4x4 value2) => value1 * value2;
 
         /// <summary>
         /// Multiplies a matrix by a scalar value.
         /// </summary>
-        /// <param name="value1">The source matrix.</param>
-        /// <param name="value2">The scaling factor.</param>
-        /// <returns>The scaled matrix.</returns>
         public static Matrix4x4 Multiply(Matrix4x4 value1, float value2) => value1 * value2;
 
         /// <summary>
         /// Returns a new matrix with the negated elements of the given matrix.
         /// </summary>
-        /// <param name="value">The source matrix.</param>
-        /// <returns>The negated matrix.</returns>
         public static Matrix4x4 operator -(Matrix4x4 value)
         {
             Matrix4x4 m;
