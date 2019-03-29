@@ -120,7 +120,6 @@ namespace UnityBridge
                     }
             }
 
-
             r.RecalculateNormals();
             return r;
 
@@ -146,6 +145,15 @@ namespace UnityBridge
 
         public static void SetFromMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
         {
+<<<<<<< HEAD
+=======
+            // TODO: Strong assumption - The coordinate system of the ISceneNode's Transform matches that of Revit.
+            transform.SetFromMatrix(node.Transform);
+        }
+
+        public static void SetFromMatrix(this Transform transform, System.Numerics.Matrix4x4 matrix)
+        {
+>>>>>>> 6be607ed149c829dc719a562e81c99f9703308f0
             if (!matrix.UnityPRS(out var pos, out var rot, out var scl))
                 throw new Exception("Can't decompose matrix");
 
