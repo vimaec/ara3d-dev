@@ -320,30 +320,8 @@ namespace Ara3D
         /// <summary>
         /// Creates a translation matrix.
         /// </summary>
-        public static Matrix4x4 CreateTranslation(float xPosition, float yPosition, float zPosition)
-        {
-            Matrix4x4 result;
-
-            result.M11 = 1.0f;
-            result.M12 = 0.0f;
-            result.M13 = 0.0f;
-            result.M14 = 0.0f;
-            result.M21 = 0.0f;
-            result.M22 = 1.0f;
-            result.M23 = 0.0f;
-            result.M24 = 0.0f;
-            result.M31 = 0.0f;
-            result.M32 = 0.0f;
-            result.M33 = 1.0f;
-            result.M34 = 0.0f;
-
-            result.M41 = xPosition;
-            result.M42 = yPosition;
-            result.M43 = zPosition;
-            result.M44 = 1.0f;
-
-            return result;
-        }
+        public static Matrix4x4 CreateTranslation(float x, float y, float z)
+            => CreateTranslation(new Vector3(x, y, z));
 
         /// <summary>
         /// Creates a scaling matrix.

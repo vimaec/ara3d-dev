@@ -16,9 +16,7 @@ namespace Ara3D
 
         // Test if a given point p2 is on the left side of the line formed by p0-p1.
         public static bool OnLeftSideOfLine(Vector2 p0, Vector2 p1, Vector2 p2)
-        {
-            return new Triangle2(p0, p2, p1).Area > 0;
-        }
+            => new Triangle2(p0, p2, p1).Area > 0;        
 
         // Test if a given point is inside a given triangle in R2.
         public bool Contains(Vector2 pp)

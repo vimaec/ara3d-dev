@@ -9,8 +9,8 @@ namespace Ara3D
     {
         public static IGeometry XYTriangle = new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 0f, 0f) }.ToIArray().TriMesh(3.Range());
         public static IGeometry XYQuad = new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 1f, 0f), new Vector3(1f, 0f, 0f) }.ToIArray().QuadMesh(4.Range());
-        public static IGeometry XYQuadFromFunc = Geometry.QuadMesh(uv => uv.To3D(), 1, 1);
-        public static IGeometry XYQuad2x2 = Geometry.QuadMesh(uv => uv.To3D(), 2, 2);
+        public static IGeometry XYQuadFromFunc = Geometry.QuadMesh(uv => uv.ToVector3(), 1, 1);
+        public static IGeometry XYQuad2x2 = Geometry.QuadMesh(uv => uv.ToVector3(), 2, 2);
         public static IGeometry XYTriangleTwice = XYTriangle.Merge(XYTriangle.Translate(new Vector3(1, 0, 0)));
 
         public static readonly Vector3[] TestTetrahedronVertices = { Vector3.Zero, Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ };

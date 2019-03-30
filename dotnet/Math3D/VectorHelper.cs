@@ -44,14 +44,22 @@ namespace Ara3D
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 Rejection(this Vector3 v1, Vector3 v2)
-            => v1 - v1.Projection(v2);        
+            => v1 - v1.Projection(v2);
 
+        // The smaller of the two possible angles between the two vectors is returned, therefore the result will never be greater than 180 degrees or smaller than -180 degrees.
+        // If you imagine the from and to vectors as lines on a piece of paper, both originating from the same point, then the /axis/ vector would point up out of the paper.
+        // The measured angle between the two vectors would be positive in a clockwise direction and negative in an anti-clockwise direction.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float SignedAngle(Vector3 from, Vector3 to, Vector3 axis)
+            => Angle(from, to) * Math.Sign(axis.Dot(from.Cross(to)));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Angle(this Vector3 v1, Vector3 v2, float tolerance = Constants.Tolerance)
         {
-            if (v1.IsZeroOrInvalid() || v2.IsZeroOrInvalid() || v1.AlmostEquals(v2, tolerance))
+            var d = v1.LengthSquared() * v2.LengthSquared().Sqrt();
+            if (d < tolerance)
                 return 0;
-            // TODO: this looks incorrect (shouldn't it be Math.Max??)
-            return Math.Min(1.0f, v1.Normal().Dot(v2.Normal())).Acos();
+            return (v1.Dot(v2) / d).Clamp(-1F, 1F).Acos();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

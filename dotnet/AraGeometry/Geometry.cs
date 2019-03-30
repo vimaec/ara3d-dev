@@ -207,7 +207,7 @@ namespace Ara3D
 
         // https://en.wikipedia.org/wiki/Coplanarity
         public static bool Coplanar(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, float epsilon = EPSILON)
-            => Math.Abs(Vector3.Dot(v3 - v1, Vector3.Cross(v2 - v1, v4 - v1))) < epsilon;        
+            => Math.Abs(Vector3.Dot(v3 - v1, (v2 - v1).Cross(v4 - v1))) < epsilon;        
 
         public static Vector3 Normal(this Face self)
             => Vector3.Cross(self.Binormal(), self.Tangent()).Normal();
