@@ -76,9 +76,9 @@
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
       <Name>Ara3D.LinqArray</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Math3D\Ara3D.Math.csproj">
+    <ProjectReference Include="..\Math3D\Ara3D.Math3D.csproj">
       <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
-      <Name>Ara3D.Math</Name>
+      <Name>Ara3D.Math3D</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
       <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
