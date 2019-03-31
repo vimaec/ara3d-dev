@@ -63,15 +63,22 @@ Originally Ara3D used `System.Numerics` directly but we ran into several issues:
 Because System.Numerics is based on very well-known and proven algorithms that arent likely to change, we found it 
 to be a reasonable approach to fork the code, and put it into a stsandalone library 
 
+## Why not use SharpDX
+
+The [SharpDX mathematics library](https://github.com/sharpdx/SharpDX/tree/master/Source/SharpDX.Mathematics) is closely related to MonoGame. 
+It has many of the same data structures and algorithms, and follows a similar style. The main reason for not using it,
+other than the same reasons we are not using MonoGame, is that library is no
+longer being actively maintained.
+
 ## Why not use Unity.Mathematics
 
 In the last year Unity released a prototype library called [`Unity.Mathematics`](https://github.com/Unity-Technologies/Unity.Mathematics).
 The reasons this library are not used:
 
-* Unity.Mathematics is not using a widely recognized open-source license 
+* Unity.Mathematics is licened under a non-standard open-source license 
 * The API is a work in progress and we may introduce breaking changes
 * The API supports a very limited set of types and operations (basically that of GLSL)
-* The library nomenclature and style is based on GLSL rather than C# System Libraries
+* The library nomenclature and coding style is based on GLSL rather than C# System Libraries
 
 ## What Structs are Provided
 
@@ -132,5 +139,5 @@ create efficient generic code for numerical types.
 * [Xenko](https://github.com/xenko3d/xenko/blob/master/sources/core/Xenko.Core.Mathematics)
 * [Unity.Mathematics](https://github.com/Unity-Technologies/Unity.Mathematics)
 * [Unity Reference](https://github.com/Unity-Technologies/UnityCsReference/tree/master/Runtime/Export)
-* [SharpDX](https://github.com/sharpdx/SharpDX)
+* [SharpDX Mathematics](https://github.com/sharpdx/SharpDX/tree/master/Source/SharpDX.Mathematics)
 * [A Vector Type for C# - R Potter via Code Project](https://www.codeproject.com/Articles/17425/A-Vector-Type-for-C)

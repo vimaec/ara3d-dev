@@ -1,6 +1,6 @@
 # Writing a High Performance Portable 3D Math Library in C# 
 
-If anyone told me that they wrote their own 3D Math library in C#, I would roll my eyes and assume just an other example of "not invented here" (NIH) syndrome. This is the story about why at Ara3D we nonetheless felt compelled to write and maintain our own library, and how we went about making sure it was the best possible library. 
+If anyone told me that they wrote their own 3D Math library in C#, I would be rolling my eyes and assume it was just an other example of "not invented here" (NIH) syndrome. This is the story about why at Ara3D we nonetheless felt compelled to write and maintain our own library, and how we went about making sure it was the best possible library. 
 
 ## My First C# 3D Math Library: MonoGame 
 

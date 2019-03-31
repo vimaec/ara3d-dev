@@ -425,14 +425,14 @@ namespace Ara3D.Tests
             Vector2 v = new Vector2(1.0f, 2.0f);
 
             Matrix4x4 m =
-                Matrix4x4.CreateRotationX(MathHelper.ToRadians(30.0f)) *
-                Matrix4x4.CreateRotationY(MathHelper.ToRadians(30.0f)) *
-                Matrix4x4.CreateRotationZ(MathHelper.ToRadians(30.0f));
+                Matrix4x4.CreateRotationX(30f.ToRadians()) *
+                Matrix4x4.CreateRotationY(30f.ToRadians()) *
+                Matrix4x4.CreateRotationZ(30f.ToRadians());
             Quaternion q = Quaternion.CreateFromRotationMatrix(m);
 
             Vector2 expected = MathOps.Transform(v, m);
             Vector2 actual = MathOps.Transform(v, q);
-            Assert.True(MathHelper.Equal(expected, actual), "Vector2f.Transform did not return the expected value.");
+            Assert.True(expected.AlmostEquals(actual));
         }
 
         // A test for Transform (Vector2f, Quaternion)

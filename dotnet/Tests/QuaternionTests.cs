@@ -517,20 +517,6 @@ namespace Ara3D.Tests
                 , $"Quaternion.Inverse - did not return the expected value: expected {new Quaternion(float.NaN, float.NaN, float.NaN, float.NaN)} actual {actual}");
         }
 
-        // A test for ToString ()
-        [Test]
-        public void QuaternionToStringTest()
-        {
-            Quaternion target = new Quaternion(-1.0f, 2.2f, 3.3f, -4.4f);
-
-            string expected = string.Format(CultureInfo.CurrentCulture
-                , "{{X:{0} Y:{1} Z:{2} W:{3}}}"
-                , -1.0f, 2.2f, 3.3f, -4.4f);
-
-            string actual = target.ToString();
-            Assert.AreEqual(expected, actual);
-        }
-
         // A test for Add (Quaternion, Quaternion)
         [Test]
         public void QuaternionAddTest()
@@ -548,18 +534,7 @@ namespace Ara3D.Tests
             Quaternion a = new Quaternion(1.0f, 2.0f, 3.0f, 4.0f);
             Quaternion b = new Quaternion(5.0f, 6.0f, 7.0f, 8.0f);
             Quaternion expected = new Quaternion(-0.045977015f, -0.09195402f, -7.450581E-9f, 0.402298868f);
-            Assert.AreEqual(expected, a / b);
-        }
-
-        // A test for GetHashCode ()
-        [Test]
-        public void QuaternionGetHashCodeTest()
-        {
-            Quaternion a = new Quaternion(1.0f, 2.0f, 3.0f, 4.0f);
-
-            int expected = unchecked(a.X.GetHashCode() + a.Y.GetHashCode() + a.Z.GetHashCode() + a.W.GetHashCode());
-            int actual = a.GetHashCode();
-            Assert.AreEqual(expected, actual);
+            Assert.IsTrue(MathHelper.Equal(expected, a / b));
         }
 
         // A test for Multiply (Quaternion, float)

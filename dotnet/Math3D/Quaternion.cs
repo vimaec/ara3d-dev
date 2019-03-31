@@ -50,19 +50,11 @@ namespace Ara3D
             => X * X + Y * Y + Z * Z + W * W;
 
         /// <summary>
-        /// The inverse of the length
-        /// </summary>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float InverseLength()
-            => 1.0f / Length();
-
-        /// <summary>
         /// Divides each component of the Quaternion by the length of the Quaternion.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Quaternion Normalize()
-            => this * InverseLength();
+            => this * Length().Inverse();
 
         /// <summary>
         /// Returns the conjugate of the quaternion
@@ -76,7 +68,7 @@ namespace Ara3D
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Quaternion Inverse()
-            => Conjugate().Normalize();
+            => Conjugate() * LengthSquared().Inverse();
 
         /// <summary>
         /// Creates a Quaternion from a normalized vector axis and an angle to rotate about the vector.
@@ -127,12 +119,13 @@ namespace Ara3D
             if (trace > 0.0f)
             {
                 var s = (trace + 1.0f).Sqrt();
+                var w = s * 0.5f;
                 s = 0.5f / s;
                 return new Quaternion(
                     (matrix.M23 - matrix.M32) * s,
                     (matrix.M31 - matrix.M13) * s,
                     (matrix.M12 - matrix.M21) * s,
-                    s * 0.5f);
+                    w);
             }
             if (matrix.M11 >= matrix.M22 && matrix.M11 >= matrix.M33)
             {

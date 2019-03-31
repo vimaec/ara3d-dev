@@ -1803,9 +1803,9 @@ namespace Ara3D
 
             translation = matrix.Translation;
 
-            pVectorBasis[0] = matrix.GetRow(0);
-            pVectorBasis[1] = matrix.GetRow(1);
-            pVectorBasis[2] = matrix.GetRow(2);
+            pVectorBasis[0] = matrix.Row0;
+            pVectorBasis[1] = matrix.Row1;
+            pVectorBasis[2] = matrix.Row2;
 
             pfScales[0] = pVectorBasis[0].Length();
             pfScales[1] = pVectorBasis[1].Length();

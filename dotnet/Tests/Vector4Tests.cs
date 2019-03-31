@@ -368,7 +368,7 @@ namespace Ara3D.Tests
             Vector4 expected = new Vector4(10.316987f, 22.183012f, 30.3660259f, 1.0f);
             Vector4 actual;
 
-            actual = MathOps.Transform(v.ToVector4(), m);
+            actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -389,7 +389,7 @@ namespace Ara3D.Tests
             Vector4 expected = new Vector4(12.19198728f, 21.53349376f, 32.61602545f, 1.0f);
             Vector4 actual;
 
-            actual = MathOps.Transform(v.ToVector4(), m);
+            actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "MathOps.Transform did not return the expected value.");
         }
 
@@ -463,7 +463,7 @@ namespace Ara3D.Tests
             m.M43 = 30.0f;
 
             Vector4 expected = MathOps.Transform(new Vector4(v, 1.0f), m);
-            Vector4 actual = MathOps.Transform(v.ToVector4(), m);
+            Vector4 actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -476,7 +476,7 @@ namespace Ara3D.Tests
             Matrix4x4 m = new Matrix4x4();
             Vector4 expected = new Vector4(0, 0, 0, 0);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), m);
+            Vector4 actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -489,7 +489,7 @@ namespace Ara3D.Tests
             Matrix4x4 m = Matrix4x4.Identity;
             Vector4 expected = new Vector4(1.0f, 2.0f, 3.0f, 1.0f);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), m);
+            Vector4 actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -509,7 +509,7 @@ namespace Ara3D.Tests
             m.M43 = 30.0f;
 
             Vector4 expected = MathOps.Transform(new Vector4(v, 0.0f, 1.0f), m);
-            Vector4 actual = MathOps.Transform(v.ToVector4(), m);
+            Vector4 actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -522,7 +522,7 @@ namespace Ara3D.Tests
             Matrix4x4 m = new Matrix4x4();
             Vector4 expected = new Vector4(0, 0, 0, 0);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), m);
+            Vector4 actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -535,7 +535,7 @@ namespace Ara3D.Tests
             Matrix4x4 m = Matrix4x4.Identity;
             Vector4 expected = new Vector4(1.0f, 2.0f, 0, 1.0f);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), m);
+            Vector4 actual = MathOps.TransformToVector4(v, m);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -552,10 +552,10 @@ namespace Ara3D.Tests
 
             Quaternion q = Quaternion.CreateFromRotationMatrix(m);
 
-            Vector4 expected = MathOps.Transform(v.ToVector4(), m);
+            Vector4 expected = MathOps.TransformToVector4(v, m);
             Vector4 actual;
 
-            actual = MathOps.Transform(v.ToVector4(), q);
+            actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -571,10 +571,10 @@ namespace Ara3D.Tests
                 Matrix4x4.CreateRotationZ(MathHelper.ToRadians(30.0f));
             Quaternion q = Quaternion.CreateFromRotationMatrix(m);
 
-            Vector4 expected = MathOps.Transform(v.ToVector4(), m);
+            Vector4 expected = MathOps.TransformToVector4(v, m);
             Vector4 actual;
 
-            actual = MathOps.Transform(v.ToVector4(), q);
+            actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "MathOps.Transform did not return the expected value.");
         }
 
@@ -642,8 +642,8 @@ namespace Ara3D.Tests
                 Matrix4x4.CreateRotationZ(MathHelper.ToRadians(30.0f));
             Quaternion q = Quaternion.CreateFromRotationMatrix(m);
 
-            Vector4 expected = MathOps.Transform(v.ToVector4(), m);
-            Vector4 actual = MathOps.Transform(v.ToVector4(), q);
+            Vector4 expected = MathOps.TransformToVector4(v, m);
+            Vector4 actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -656,7 +656,7 @@ namespace Ara3D.Tests
             Quaternion q = new Quaternion();
             Vector4 expected = new Vector4(v, 1.0f);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), q);
+            Vector4 actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -669,7 +669,7 @@ namespace Ara3D.Tests
             Quaternion q = Quaternion.Identity;
             Vector4 expected = new Vector4(1.0f, 2.0f, 3.0f, 1.0f);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), q);
+            Vector4 actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -686,8 +686,8 @@ namespace Ara3D.Tests
                 Matrix4x4.CreateRotationZ(MathHelper.ToRadians(30.0f));
             Quaternion q = Quaternion.CreateFromRotationMatrix(m);
 
-            Vector4 expected = MathOps.Transform(v.ToVector4(), m);
-            Vector4 actual = MathOps.Transform(v.ToVector4(), q);
+            Vector4 expected = MathOps.TransformToVector4(v, m);
+            Vector4 actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -700,7 +700,7 @@ namespace Ara3D.Tests
             Quaternion q = new Quaternion();
             Vector4 expected = new Vector4(1.0f, 2.0f, 0, 1.0f);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), q);
+            Vector4 actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 
@@ -713,7 +713,7 @@ namespace Ara3D.Tests
             Quaternion q = Quaternion.Identity;
             Vector4 expected = new Vector4(1.0f, 2.0f, 0, 1.0f);
 
-            Vector4 actual = MathOps.Transform(v.ToVector4(), q);
+            Vector4 actual = MathOps.TransformToVector4(v, q);
             Assert.True(MathHelper.Equal(expected, actual), "Vector4f.Transform did not return the expected value.");
         }
 

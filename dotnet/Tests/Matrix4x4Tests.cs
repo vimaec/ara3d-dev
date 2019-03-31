@@ -655,7 +655,7 @@ namespace Ara3D.Tests
                     //
                     foreach (Vector3 point in points)
                     {
-                        Vector4 v4 = MathOps.Transform(point.ToVector4(), m);
+                        Vector4 v4 = MathOps.TransformToVector4(point, m);
 
                         Vector3 sp = new Vector3(v4.X, v4.Y, v4.Z) / v4.W;
 

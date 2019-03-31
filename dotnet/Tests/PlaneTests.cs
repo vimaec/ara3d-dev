@@ -47,17 +47,6 @@ namespace Ara3D.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        // A test for GetHashCode ()
-        [Test]
-        public void PlaneGetHashCodeTest()
-        {
-            Plane target = new Plane(1.0f, 2.0f, 3.0f, 4.0f);
-
-            int expected = target.Normal.GetHashCode() + target.D.GetHashCode();
-            int actual = target.GetHashCode();
-            Assert.AreEqual(expected, actual);
-        }
-
         // A test for Plane (float, float, float, float)
         [Test]
         public void PlaneConstructorTest1()
@@ -268,19 +257,6 @@ namespace Ara3D.Tests
             Assert.AreEqual(40, sizeof(PlanePlusFloat_2x));
         }
         */
-
-        [Test]
-        public void PlaneToStringTest()
-        {
-            Plane target = new Plane(1, 2, 3, 4);
-            string expected = string.Format(
-                CultureInfo.CurrentCulture,
-                "{{Normal:{0:G} D:{1}}}",
-                target.Normal,
-                target.D);
-
-            Assert.AreEqual(expected, target.ToString());
-        }
 
         [StructLayout(LayoutKind.Sequential)]
         struct Plane_2x
