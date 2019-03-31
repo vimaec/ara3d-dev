@@ -1791,21 +1791,17 @@ namespace Ara3D
             var pfScales = new float[3];
             const float EPSILON = 0.0001f;
 
-            //VectorBasis vectorBasis;
-            var pVectorBasis = new Vector3[3]; // (Vector3**)&vectorBasis;
-
-            var matTemp = Identity;
             var pCanonicalBasis = new[] {
-                new Vector3(1.0f, 0.0f, 0.0f),
-                new Vector3(0.0f, 1.0f, 0.0f),
-                new Vector3(0.0f, 0.0f, 1.0f)
+                Vector3.UnitX,
+                Vector3.UnitY,
+                Vector3.UnitZ,
             };
 
-            translation = matrix.Translation;
-
-            pVectorBasis[0] = matrix.Row0;
-            pVectorBasis[1] = matrix.Row1;
-            pVectorBasis[2] = matrix.Row2;
+            var pVectorBasis = new[] {
+                matrix.Row0,
+                matrix.Row1,
+                matrix.Row2
+            };
 
             pfScales[0] = pVectorBasis[0].Length();
             pfScales[1] = pVectorBasis[1].Length();
@@ -1817,23 +1813,18 @@ namespace Ara3D
             {
                 if (y < z)
                 {
-                    a = 2;
-                    b = 1;
-                    c = 0;
+                    a = 2; b = 1; c = 0;
                 }
                 else
                 {
                     a = 1;
-
                     if (x < z)
                     {
-                        b = 2;
-                        c = 0;
+                        b = 2; c = 0;
                     }
                     else
                     {
-                        b = 0;
-                        c = 2;
+                        b = 0; c = 2;
                     }
                 }
             }
@@ -1841,9 +1832,7 @@ namespace Ara3D
             {
                 if (x < z)
                 {
-                    a = 2;
-                    b = 0;
-                    c = 1;
+                    a = 2; b = 0; c = 1;
                 }
                 else
                 {
@@ -1851,13 +1840,11 @@ namespace Ara3D
 
                     if (y < z)
                     {
-                        b = 2;
-                        c = 1;
+                        b = 2; c = 1;
                     }
                     else
                     {
-                        b = 1;
-                        c = 2;
+                        b = 1; c = 2;
                     }
                 }
             }
@@ -1873,10 +1860,43 @@ namespace Ara3D
                 var fAbsY = pVectorBasis[a].Y.Abs();
                 var fAbsZ = pVectorBasis[a].Z.Abs();
 
-                var cc = (fAbsX < fAbsY)
-                    ? (fAbsY < fAbsZ) ? 0 : (fAbsX < fAbsZ) ? 0 : 2
-                    : (fAbsX < fAbsZ) ? 1 : (fAbsY < fAbsZ) ? 1 : 2;
-
+                var cc = 0;
+                if (fAbsX < fAbsY)
+                {
+                    if (fAbsY < fAbsZ)
+                    {
+                        cc = 0;
+                    }
+                    else
+                    {
+                        if (fAbsX < fAbsZ)
+                        {
+                            cc = 0;
+                        }
+                        else
+                        {
+                            cc = 2;
+                        }
+                    }
+                }
+                else
+                {
+                    if (fAbsX < fAbsZ)
+                    {
+                        cc = 1;
+                    }
+                    else
+                    {
+                        if (fAbsY < fAbsZ)
+                        {
+                            cc = 1;
+                        }
+                        else
+                        {
+                            cc = 2;
+                        }
+                    }
+                }
                 pVectorBasis[b] = pVectorBasis[a].Cross(pCanonicalBasis[cc]);
             }
 
@@ -1889,7 +1909,9 @@ namespace Ara3D
 
             pVectorBasis[c] = pVectorBasis[c].Normalize();
 
-            var det = matTemp.GetDeterminant();
+            // Update mat tmp;
+            var det = FromRows(pVectorBasis[0], pVectorBasis[1], pVectorBasis[2])
+                .GetDeterminant();
 
             // use Kramer's rule to check for handedness of coordinate system
             if (det < 0.0f)
@@ -1912,9 +1934,11 @@ namespace Ara3D
             else
             {
                 // generate the quaternion from the matrix
-                rotation = Quaternion.CreateFromRotationMatrix(FromRows(pVectorBasis[a], pVectorBasis[b], pVectorBasis[c]));
+                var matTemp = FromRows(pVectorBasis[0], pVectorBasis[1], pVectorBasis[2]);
+                rotation = Quaternion.CreateFromRotationMatrix(matTemp);
             }
 
+            translation = matrix.Translation;
             scale = new Vector3(pfScales[0], pfScales[1], pfScales[2]);
             return result;
         }
