@@ -194,7 +194,7 @@ namespace Ara3D.Tests
             // TODO: test writing using Helix
 
             // Check that reading the G3D back-in yields the same IGeometry
-            var g2 = Util.TimeIt(() => G3DExtensions.ReadFromFile(g3dFileName).ToIGeometry(), "Reading time for G3D");
+            var g2 = Ara3D.Util.TimeIt(() => G3DExtensions.ReadFromFile(g3dFileName).ToIGeometry(), "Reading time for G3D");
             TestGeometries.CompareGeometries(g, g2);
         }
 
@@ -208,7 +208,7 @@ namespace Ara3D.Tests
 
                 Console.WriteLine("HelixToolkit OBJ Reader");
                 Console.WriteLine("=======================");
-                var helixObjModel3DGroup = Util.TimeIt(
+                var helixObjModel3DGroup = Ara3D.Util.TimeIt(
                     () => Helix.LoadFileModel3DGroup(f), "Loading OBJ with Helix");
 
                 var gFromHelix = helixObjModel3DGroup.ToIGeometry();
@@ -216,7 +216,7 @@ namespace Ara3D.Tests
 
                 Console.WriteLine("geometry3Sharp OBJ Reader");
                 Console.WriteLine("=========================");
-                var g3SharpObjList = Util.TimeIt(
+                var g3SharpObjList = Ara3D.Util.TimeIt(
                     () => G3Sharp.LoadMeshes(f), $"Loading OBJ with geometry3Sharp");
 
                 for (var i = 0; i < g3SharpObjList.Count; ++i)

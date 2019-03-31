@@ -1,6 +1,10 @@
-﻿namespace Ara3D
+﻿// MIT License 
+// Copyright (C) 2019 Ara 3D. Inc
+// https://ara3d.com
+
+namespace Ara3D
 {
-    public static class Random
+    public static class StatelessRandom
     {
         public static uint RandomUInt(int index, int seed) 
             => (uint)Hash.Combine(seed, index);        

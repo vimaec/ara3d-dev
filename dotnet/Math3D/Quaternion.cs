@@ -1,3 +1,6 @@
+// MIT License 
+// Copyright (C) 2019 Ara 3D. Inc
+// https://ara3d.com
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
@@ -21,8 +24,7 @@ namespace Ara3D
         /// <summary>
         /// Returns whether the Quaternion is the identity Quaternion.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsIdentity() 
+        public bool IsIdentity 
             => this == Identity;
 
         /// <summary>
@@ -300,7 +302,10 @@ namespace Ara3D
 
             var dot = q1x * q2x + q1y * q2y + q1z * q2z;
 
-            return new Quaternion(q1x * q2w + q2x * q1w + cx, q1y * q2w + q2y * q1w + cy, q1z * q2w + q2z * q1w + cz,
+            return new Quaternion(
+                q1x * q2w + q2x * q1w + cx, 
+                q1y * q2w + q2y * q1w + cy, 
+                q1z * q2w + q2z * q1w + cz,
                 q1w * q2w - dot);
         }
 

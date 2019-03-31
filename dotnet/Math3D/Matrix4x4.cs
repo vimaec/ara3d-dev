@@ -1,3 +1,6 @@
+// MIT License 
+// Copyright (C) 2019 Ara 3D. Inc
+// https://ara3d.com
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
@@ -123,6 +126,12 @@ namespace Ara3D
         /// </summary>
         public Vector3 Translation
             => new Vector3(M41, M42, M43);
+
+        /// <summary>
+        /// Sets the translation component of this matrix, returning a new Matrix
+        /// </summary>
+        public Matrix4x4 SetTranslation(Vector3 v)
+            => FromRows(Row0, Row1, Row2, v);
         
         /// <summary>
         /// Constructs a Matrix4x4 from the given components.
@@ -185,7 +194,7 @@ namespace Ara3D
                 zaxis = zaxis * (1.0f / norm.Sqrt());
             }
 
-            var xaxis = cameraUpVector.Cross(zaxis).Normal();
+            var xaxis = cameraUpVector.Cross(zaxis).Normalize();
             var yaxis = zaxis.Cross(xaxis);
 
             Matrix4x4 result;
@@ -255,13 +264,13 @@ namespace Ara3D
                     zaxis = (rotateAxis.Z.Abs() > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
                 }
 
-                xaxis = rotateAxis.Cross(zaxis).Normal();
-                zaxis = xaxis.Cross(rotateAxis).Normal();
+                xaxis = rotateAxis.Cross(zaxis).Normalize();
+                zaxis = xaxis.Cross(rotateAxis).Normalize();
             }
             else
             {
-                xaxis = rotateAxis.Cross(faceDir).Normal();
-                zaxis = xaxis.Cross(yaxis).Normal();
+                xaxis = rotateAxis.Cross(faceDir).Normalize();
+                zaxis = xaxis.Cross(yaxis).Normalize();
             }
 
             Matrix4x4 result;
@@ -455,7 +464,7 @@ namespace Ara3D
         /// </summary>
         /// <param name="scale">The uniform scaling factor.</param>
         /// <returns>The scaling matrix.</returns>
-        public static Matrix4x4 CreateScale(float scale)
+        public static Matrix4x4 CreateScale(float scale)            
         {
             Matrix4x4 result;
 
@@ -990,8 +999,8 @@ namespace Ara3D
         /// <returns>The view matrix.</returns>
         public static Matrix4x4 CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
         {
-            var zaxis = (cameraPosition - cameraTarget).Normal();
-            var xaxis = cameraUpVector.Cross(zaxis).Normal();
+            var zaxis = (cameraPosition - cameraTarget).Normalize();
+            var xaxis = cameraUpVector.Cross(zaxis).Normalize();
             var yaxis = zaxis.Cross(xaxis);
 
             Matrix4x4 result;
@@ -1025,8 +1034,8 @@ namespace Ara3D
         /// <returns>The world matrix.</returns>
         public static Matrix4x4 CreateWorld(Vector3 position, Vector3 forward, Vector3 up)
         {
-            var zaxis = (-forward).Normal();
-            var xaxis = up.Cross(zaxis).Normal();
+            var zaxis = (-forward).Normalize();
+            var xaxis = up.Cross(zaxis).Normalize();
             var yaxis = zaxis.Cross(xaxis);
 
             Matrix4x4 result;
@@ -1856,7 +1865,7 @@ namespace Ara3D
             if (pfScales[a] < EPSILON)
                 pVectorBasis[a] = pCanonicalBasis[a];
 
-            pVectorBasis[a] = pVectorBasis[a].Normal();
+            pVectorBasis[a] = pVectorBasis[a].Normalize();
 
             if (pfScales[b] < EPSILON)
             {
@@ -1871,14 +1880,14 @@ namespace Ara3D
                 pVectorBasis[b] = pVectorBasis[a].Cross(pCanonicalBasis[cc]);
             }
 
-            pVectorBasis[b] = pVectorBasis[b].Normal();
+            pVectorBasis[b] = pVectorBasis[b].Normalize();
 
             if (pfScales[c] < EPSILON)
             {
                 pVectorBasis[c] = pVectorBasis[a].Cross(pVectorBasis[b]);
             }
 
-            pVectorBasis[c] = pVectorBasis[c].Normal();
+            pVectorBasis[c] = pVectorBasis[c].Normalize();
 
             var det = matTemp.GetDeterminant();
 

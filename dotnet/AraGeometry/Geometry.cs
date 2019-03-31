@@ -210,7 +210,7 @@ namespace Ara3D
             => Math.Abs(Vector3.Dot(v3 - v1, (v2 - v1).Cross(v4 - v1))) < epsilon;        
 
         public static Vector3 Normal(this Face self)
-            => Vector3.Cross(self.Binormal(), self.Tangent()).Normal();
+            => self.Binormal().Cross(self.Tangent()).Normalize();
         
         public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
             => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs, materialIds).ToIGeometry();

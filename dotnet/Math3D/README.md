@@ -1,9 +1,53 @@
-# Ara3D.Math
+# Ara3D.Math3D
 
-**Ara3D.Math** is a portable high-performance 3D math library from [Ara3D](https://ara3d.com) written in pure C# with no 
+**Ara3D.Math3D** is a portable high-performance 3D math library from [Ara3D](https://ara3d.com) written in pure C# with no 
 dependencies. Math3D was forked from the core classes provided in the CoreFX implementation of 
 [System.Numerics](https://github.com/dotnet/corefx/tree/master/src/System.Numerics.Vectors/src/System/Numerics) and 
 [MonoGame](https://github.com/MonoGame/MonoGame) an open-source version of XNA.
+
+## Aggressive Method Inlining
+
+One of the most effective compiler optimizations is method inlining. Unfortunately as soon as you pass a struct 
+as a formal arg the [method will not be inlined](https://stackoverflow.com/a/55432110/184528).
+
+Ara3D.Math3D uses an attribute `[MethodImpl(MethodImplOptions.AggressiveInlining)]` to overcome the 
+inefficiency of structs not-being inlined. This is the approach used 
+
+Because the `MonoGame` framework is an older code-base, it adopted an awkward coding of style of passing structs by `ref` 
+to overcome the performance hit caused by non-inlining of methods.  
+
+## A Design Goal: Matching the System.Numerics API
+
+Rather than presenting C# programmers with an unfamiliar interface in the library, we have attempted to 
+match the System.Numerics API as closely as possible (with the exception of making the structs immutable). 
+This has made it easier for us to adapt existing code bases to use `Ara3D.Math` and to reuse the rich 
+set of tests provided by the CoreFX framework. 
+
+## Where are the Tests? 
+
+Ara3D.Math3D is used in a number of different open-source libraries developed by Ara3D, inluding a Geometry library.
+In order to facilitate development and testing all Ara3D open-source libraries are developed in a central 
+repository at [github.com/ara3d/ara3d-dev](https://github.com/ara3d/ara3d-dev). 
+
+You can find the [tests of this library here](https://github.com/ara3d/ara3d-dev/tree/master/dotnet/Tests).
+
+## Immutable Structs
+
+Microsoft's recommendations around [struct design](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/struct)
+are to make structs immutable. Oddly enough this is violated by the System.Numerics library. 
+
+By opting to make data types immutable by default eliminates large categories of bugs like race conditions, 
+invariant violations after construction. 
+
+## Why not use MonoGame
+
+MonoGame is a mature library with a rich set of 3D algorithms and data structures, a subset of which are very similar
+to `System.Numerics`. 
+
+* Layout in memory is not fixed 
+* The API emphasizes usage of `out` and `ref` parameters, rather than using an object-oriented syntax 
+* There are no double-precision versions of the functions and classes
+* The API surface is incomplete 
 
 ## Why not use System.Numerics
 
@@ -31,7 +75,7 @@ The reasons this library are not used:
 
 ## What Structs are Provided
 
-The following is a list of data structure that are provide by Ara3D.Math
+The following is a list of data structures that are provide by Ara3D.Math
 
 	* Ara3D.Vector2
 	* Ara3D.Vector3
@@ -67,23 +111,26 @@ The following is a list of data structure that are provide by Ara3D.Math
 
 All of the `System.Math` routines, and additional math routines, are reimplemented in `Ara3D.MathOps` as 
 static extension functions for `float`, `double`, `Vector2`,`Vector3`, `Vector4`, `DVector2`,`DVector3`, 
-and `DVector4`. This provides a convenient fluent syntax on all variables. 
+and `DVector4`. This provides a convenient fluent syntax on all variables, making the Ara3D.Math3D API
+easily discoverable using auto-complete.
 
 ## What are .TT Files
 
-`Ara3D.Math` leverages the [T4 text template engine](https://docs.microsoft.com/en-us/visualstudio/modeling/code-generation-and-t4-text-templates?view=vs-2017) 
+`Ara3D.Math3D` leverages the [T4 text template engine](https://docs.microsoft.com/en-us/visualstudio/modeling/code-generation-and-t4-text-templates?view=vs-2017) 
 to auto-generate efficient boilerplate code for the different types of 
 structs. This is how Microsoft implemented the System.Numerics library and has proven for us to be an effective way to 
 create efficient generic code for numerical types. 
 
 ## Related Libraries 
 
+* [System.Numerics - Reference Source](https://referencesource.microsoft.com/#System.Numerics,namespaces)
+* [System.Numerics - CoreFX](https://github.com/dotnet/corefx/tree/master/src/System.Numerics.Vectors/src/System/Numerics)
+* [MonoGame](https://github.com/MonoGame/MonoGame)
 * [Math.NET Numerics](https://github.com/mathnet/mathnet-numerics)
 * [Geometry3Sharp](https://github.com/gradientspace/geometry3Sharp)
-* [MonoGame](https://github.com/MonoGame/MonoGame)
 * [FNA-XNA](https://github.com/FNA-XNA/FNA/tree/master/src)
 * [Xenko](https://github.com/xenko3d/xenko/blob/master/sources/core/Xenko.Core.Mathematics)
 * [Unity.Mathematics](https://github.com/Unity-Technologies/Unity.Mathematics)
-* [System.Numerics - Reference Source](https://referencesource.microsoft.com/#System.Numerics,namespaces)
-* [System.Numerics - CoreFX](https://github.com/dotnet/corefx/tree/master/src/System.Numerics.Vectors/src/System/Numerics)
 * [Unity Reference](https://github.com/Unity-Technologies/UnityCsReference/tree/master/Runtime/Export)
+* [SharpDX](https://github.com/sharpdx/SharpDX)
+* [A Vector Type for C# - R Potter via Code Project](https://www.codeproject.com/Articles/17425/A-Vector-Type-for-C)

@@ -54,6 +54,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MaxPlusDotNet, Version=21.0.0.845, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -64,13 +65,20 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MathHelper.cs" />
+    <Compile Include="Matrix4x4Tests.cs" />
+    <Compile Include="PlaneTests.cs" />
+    <Compile Include="QuaternionTests.cs" />
     <Compile Include="TestGeometries.cs" />
     <Compile Include="UnmanagedDataTests.cs" />
     <Compile Include="IOTests.cs" />
     <Compile Include="LinqArrayTests.cs" />
-    <Compile Include="Math3DTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tester.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="Vector2Tests.cs" />
+    <Compile Include="Vector3Tests.cs" />
+    <Compile Include="Vector4Tests.cs" />
     <Compile Include="WpfTests.cs" />
   </ItemGroup>
   <ItemGroup>
