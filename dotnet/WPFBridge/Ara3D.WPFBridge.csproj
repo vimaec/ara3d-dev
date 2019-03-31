@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Math3D\Ara3D.Math3D.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+      <Name>Ara3D.Math3D</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
       <Project>{E89008FA-6D3F-48DE-900A-BE5A9D79F4AE}</Project>
       <Name>Ara3D.Geometry</Name>
@@ -55,10 +59,6 @@
     <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
       <Name>Ara3D.LinqArray</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Math3D\Ara3D.Math3D.csproj">
-      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
-      <Name>Ara3D.Math3D</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -56,6 +56,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Math3D\Ara3D.Math3D.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+      <Name>Ara3D.Math3D</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BFast\Ara3D.BFast.csproj">
       <Project>{4ce35b4d-4fa8-491e-b195-77520c1e8683}</Project>
       <Name>Ara3D.BFast</Name>
@@ -63,10 +67,6 @@
     <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-F3E7-4D54-8552-2A65FBEBEE85}</Project>
       <Name>Ara3D.LinqArray</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Math3D\Ara3D.Math3D.csproj">
-      <Project>{F9430261-9426-4D6B-A1B8-9D3F2BFBB501}</Project>
-      <Name>Ara3D.Math3D</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
       <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>

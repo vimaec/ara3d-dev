@@ -56,6 +56,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Math3D\Ara3D.Math3D.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+      <Name>Ara3D.Math3D</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
       <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
       <Name>Ara3D.Geometry</Name>
