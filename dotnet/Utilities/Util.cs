@@ -51,7 +51,7 @@ namespace Ara3D
         public static string EscapeQuotes(this string self)
         {
             return self?.Replace("\"", "\"\"") ?? "";
-        }
+        }       
 
         public static string Surround(this string self, string before, string after)
         {
@@ -1162,6 +1162,12 @@ namespace Ara3D
         /// </summary>
         public static void AddToList<T>(ref IList<T> xs, T x)
             => (xs ?? (xs = new List<T>())).Add(x);
+
+        /// <summary>
+        /// Remove starting and ending quotes. 
+        /// </summary>
+        public static string StripQuotes(this string s)
+            => s.Length >= 2 && s[0] == '"' && s[s.Length - 1] == '"' ? s.Substring(1, s.Length - 2) : s;
     }
 }
 

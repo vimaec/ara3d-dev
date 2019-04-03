@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Ara3D;
 
 namespace devtool
 {
@@ -19,7 +20,7 @@ namespace devtool
         public static void CheckDirs()
         {
             if (Path.GetFileName(Cwd) != "ara3d-dev")
-                throw new Exception("Expected to be in the ara3d-dev root directory");
+                throw new Exception($"Expected to be in the ara3d-dev root directory not {Cwd}");
 
             foreach (var f in RepoPaths)
                 if (!Directory.Exists(f))
@@ -51,43 +52,59 @@ namespace devtool
 
         public static void Main(string[] args)
         {
-            // status check on everything             
-
-            // FOr each repo:
-            // Update the version string according 
-
+            CheckDirs();
 
             var vs = GetVersionString();
             var v = Version.Parse(vs);
 
-            switch (args[1])
+            var typeOfCommit = args[0].Substring(1).ToUpperInvariant();
+
+            switch (typeOfCommit)
             {
-                case "-major":
+                case "MAJOR":
                     v = new Version(v.Major + 1, 0, 0);
                     break;
-                case "-minor":
+                case "MINOR":
                     v = new Version(v.Major, v.Minor + 1, 0);
                     break;
-                case "-patch":
+                case "PATCH":
                     v = new Version(v.Major, v.Minor, v.Revision + 1);
                     break;
+                case "REV":
+                    break;
                 default:
-                    throw new Exception("Expected -major|-minor|-patch as first argument");
-            }
+                    throw new Exception("Expected -major|-minor|-patch|-rev as first argument");
+           }
 
-            var baseMsg = args.Length > 2 ? args[2] : "";
+            var baseMsg = args.Length > 1 ? args[1].StripQuotes() : "";
 
             // TODO: 
             // * write the version to each folder 
-            
+
             // * git add . 
             // * git commit -m {commitMsg}
             // * git tag -a v{v} -m {tagMsg} 
+            // http://gitready.com/beginner/2009/02/03/tagging.html
+            // https://stackoverflow.com/questions/5358336/how-to-list-all-tags-along-with-the-full-message-in-git
 
-            var commitMsg = $"";
-            var tagMsg = $"";
+            var nowStamp = Util.GetTimeStamp();
+            var commitMsg = $"[{typeOfCommit}] {v} {nowStamp} {baseMsg}";          
 
-            var command = $"git add . && git commit -m {commitMsg} && git tag -a v{v} -m {tagMsg} && git push";
+            // Revisions aren't tagged
+            var command = (typeOfCommit != "REV")
+                ? $"git add version.txt && git commit -m \"{commitMsg}\" && git tag -a {v} -m \"{commitMsg}\" && git push --tags"
+                : $"git add . && git commit -m \"{commitMsg}\" && git push";
+
+            foreach (var f in RepoPaths)
+            {
+                if (typeOfCommit != "REV")
+                {
+                    var fp = Path.Combine(f, "version.txt");
+                    File.WriteAllText(fp, v.ToString());
+                }
+
+                RunDosCommand(f, command);
+            }
         }
     }
 }

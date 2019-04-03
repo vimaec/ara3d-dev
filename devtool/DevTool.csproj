@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\dotnet\Utilities\Ara3D.DotNetUtilities.csproj">
+      <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
+      <Name>Ara3D.DotNetUtilities</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
