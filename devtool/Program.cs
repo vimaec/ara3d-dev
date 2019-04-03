@@ -68,7 +68,7 @@ namespace devtool
                     v = new Version(v.Major, v.Minor + 1, 0);
                     break;
                 case "PATCH":
-                    v = new Version(v.Major, v.Minor, v.Revision + 1);
+                    v = new Version(v.Major, v.Minor, v.Build + 1);
                     break;
                 case "REV":
                     break;
