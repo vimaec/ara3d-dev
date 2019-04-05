@@ -8,7 +8,7 @@ rem <Directory> <version> <message>
 :subroutine
 pushd %1 
 echo %2 > version.txt
-git add version.txt		
+git add .
 git commit -m %3
 git push
 git tag -a %2 -m %3 
