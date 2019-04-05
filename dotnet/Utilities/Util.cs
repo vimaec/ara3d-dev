@@ -1168,6 +1168,33 @@ namespace Ara3D
         /// </summary>
         public static string StripQuotes(this string s)
             => s.Length >= 2 && s[0] == '"' && s[s.Length - 1] == '"' ? s.Substring(1, s.Length - 2) : s;
+
+
+        /// <summary>
+        /// Given a sequence of elements, and a mapping function from element to parent, returns a dictionary of lists that maps elements to children.
+        /// </summary>
+        public static DictionaryOfLists<T, T> ComputeChildren<T>(this IEnumerable<T> elements, Func<T, T> parentSelector)
+        {
+            var r = new DictionaryOfLists<T, T>();
+            foreach (var e in elements)
+                r.Add(parentSelector(e), e);
+            return r;
+        }
+
+        /// <summary>
+        /// Treats a Dictionary of lists as a graph and visits all children.
+        /// </summary>
+        public static IEnumerable<T> EnumerateSubNodes<T>(this DictionaryOfLists<T, T> self, T target, HashSet<T> visited = null)
+        {
+            if (visited?.Contains(target) ?? false)
+                yield break;
+            yield return target;
+            visited = visited ?? new HashSet<T>();
+            visited.Add(target);
+            foreach (var x in self.GetOrDefault(target))
+                foreach (var c in self.EnumerateSubNodes(x, visited))
+                    yield return c;
+        }
     }
 }
 
