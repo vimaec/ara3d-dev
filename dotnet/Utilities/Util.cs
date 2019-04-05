@@ -1195,6 +1195,12 @@ namespace Ara3D
                 foreach (var c in self.EnumerateSubNodes(x, visited))
                     yield return c;
         }
+
+        /// <summary>
+        /// Returns the top of a stack, or the default T value if none is present.
+        /// </summary>
+        public static T PeekOrDefault<T>(this Stack<T> self)
+            => self.Count > 0 ? self.Peek() : default;
     }
 }
 
