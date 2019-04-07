@@ -1,19 +1,20 @@
-﻿using System;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Data;
-using System.IO;
 using System.Diagnostics;
-using System.Reflection.Emit;
+using System.IO;
+using System.IO.Compression;
+using System.IO.MemoryMappedFiles;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
-using System.IO.MemoryMappedFiles;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace Ara3D
 {
@@ -132,7 +133,7 @@ namespace Ara3D
         #region Reflection to create a DataTable from a Class?
 
         /// <summary>
-        /// Creates a data table from an array of classes, using the properties of the clases as column values
+        /// Creates a data table from an array of classes, using the properties of the class    es as column values
         /// https://stackoverflow.com/questions/18746064/using-reflection-to-create-a-datatable-from-a-class
         /// </summary>
         public static DataTable PropertiesToDataTable<T>(this IEnumerable<T> self)
@@ -438,7 +439,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Converts a struct instance to a series of bytes 
+        /// Converts a struct or formatted class to a series of bytes 
         /// </summary>
         public static byte[] StructToBytes(object self)
         {
@@ -448,7 +449,29 @@ namespace Ara3D
             using (var pin = r.Pin())
                 Marshal.StructureToPtr(self, pin.Ptr, false);
             return r;
-        }     
+        }
+
+        /// <summary>
+        /// Converts an array of bytes to a struct or formatted class
+        /// </summary>
+        public static void BytesToStruct(byte[] bytes, object self)
+        {
+            var n = Marshal.SizeOf(self.GetType());
+            if (bytes.Length != n)
+                throw new Exception($"Incorrect sized buffer, expected {n} was {bytes.Length}");
+            using (var pin = bytes.Pin())
+                Marshal.PtrToStructure(pin.Ptr, self);
+        }
+
+        /// <summary>
+        /// Converts an array of bytes to a struct or formatted class
+        /// </summary>
+        public static T BytesToStruct<T>(byte[] bytes)
+        {
+            var r = Activator.CreateInstance<T>();
+            BytesToStruct(bytes, r);
+            return r;
+        }
 
         // Make-ref routines 
         // http://benbowen.blog/post/fun_with_makeref/
@@ -701,9 +724,9 @@ namespace Ara3D
         }
 
         /// <summary>
-    /// Writes raw bytes to the stream by creating a memory stream around it. 
-    /// </summary>
-    public static void Write(this BinaryWriter self, IBytes bytes)
+        /// Writes raw bytes to the stream by creating a memory stream around it. 
+        /// </summary>
+        public static void Write(this BinaryWriter self, IBytes bytes)
         {
             self.Write(bytes.ToBytes());
         }
@@ -1177,12 +1200,17 @@ namespace Ara3D
         {
             var r = new DictionaryOfLists<T, T>();
             foreach (var e in elements)
-                r.Add(parentSelector(e), e);
+            {
+                var p = parentSelector(e);
+                if (p != null)
+                    r.Add(p, e);
+            }
             return r;
         }
 
         /// <summary>
-        /// Treats a Dictionary of lists as a graph and visits all children.
+        /// Treats a Dictionary of lists as a graph and visits the node,
+        /// and all its descendants, exactly once using a depth first traversal.
         /// </summary>
         public static IEnumerable<T> EnumerateSubNodes<T>(this DictionaryOfLists<T, T> self, T target, HashSet<T> visited = null)
         {
@@ -1201,6 +1229,48 @@ namespace Ara3D
         /// </summary>
         public static T PeekOrDefault<T>(this Stack<T> self)
             => self.Count > 0 ? self.Peek() : default;
+
+        /// <summary>
+        /// Zips a file and places the result into a newly created file in the temporary directory
+        /// </summary>
+        public static string ZipFile(string filePath)
+            => ZipFile(filePath, Path.GetTempFileName());        
+
+        /// <summary>
+        /// Zips a file and places the result into a newly created file in the temporary directory
+        /// </summary>
+        public static string ZipFile(string filePath, string outputFile)
+        {
+            using (var za = new ZipArchive(File.OpenWrite(outputFile), ZipArchiveMode.Create))
+            {
+                var zae = za.CreateEntry(Path.GetFileName(filePath) ?? "");
+                using (var outputStream = zae.Open())
+                using (var inputStream = File.OpenRead(filePath))
+                    inputStream.CopyTo(outputStream);
+            }
+            return outputFile;
+        }
+
+        /// <summary>
+        /// Unzips the first entry in an archive to a designated file, returning that file path.
+        /// </summary>
+        public static string UnzipFile(string zipFilePath, string outputFile)
+        {
+            using (var za = new ZipArchive(File.OpenRead(zipFilePath), ZipArchiveMode.Read))
+            {
+                var zae = za.Entries[0];
+                using (var inputStream = zae.Open())
+                using (var outputStream = File.OpenWrite(outputFile))
+                    inputStream.CopyTo(outputStream);
+            }
+            return outputFile;
+        }
+
+        /// <summary>
+        /// Unzips the first entry in an archive into a temp generated file, returning that file path
+        /// </summary>
+        public static string UnzipFile(string zipFilePath)
+            => UnzipFile(zipFilePath, Path.GetTempFileName());
     }
 }
 
