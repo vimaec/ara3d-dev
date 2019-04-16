@@ -83,6 +83,11 @@
         /// </summary>
         attr_group_size,
 
+        /// <summary>
+        /// Object ids 
+        /// </summary>
+        attr_object_id, 
+
         attr_custom,
         attr_invalid,
     };
