@@ -1104,6 +1104,30 @@ namespace Ara3D
             => TestWrite(di.FullName);
 
         /// <summary>
+        /// Deletes all contents in a folder
+        /// https://stackoverflow.com/questions/1288718/how-to-delete-all-files-and-folders-in-a-directory
+        /// </summary>
+        public static void DeleteFolderContents(string folderPath)
+        {
+            var di = new DirectoryInfo(folderPath);
+            foreach (var file in di.EnumerateFiles())
+                file.Delete();
+            foreach (var dir in di.EnumerateDirectories())
+                dir.Delete(true);
+        }
+
+        /// <summary>
+        /// Deletes everything in a folder and then the folder. 
+        /// </summary>
+        public static void DeleteFolderAndAllContents(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                return;
+            DeleteFolderContents(folderPath);
+            Directory.Delete(folderPath);
+        }
+
+        /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
         /// </summary>
         public static void TestWrite(string folder)
@@ -1271,6 +1295,71 @@ namespace Ara3D
         /// </summary>
         public static string UnzipFile(string zipFilePath)
             => UnzipFile(zipFilePath, Path.GetTempFileName());
+
+        /// <summary>
+        /// Returns a binary writer for the given file path 
+        /// </summary>
+        public static BinaryWriter CreateBinaryWriter(string filePath)
+            => new BinaryWriter(File.OpenWrite(filePath));
+
+        /// <summary>
+        /// Returns a binary reader for the given file path 
+        /// </summary>
+        public static BinaryReader CreateBinaryReader(string filePath)
+            => new BinaryReader(File.OpenRead(filePath));
+
+        /// <summary>
+        /// Given a binary reader, will attempt to load a class or struct with a fixed memory layout. 
+        /// </summary>
+        public static T ReadFixedLayoutClass<T>(this BinaryReader br)
+            => BytesToStruct<T>(br.ReadBytes(Marshal.SizeOf<T>()));
+
+        /// <summary>
+        /// Given a binary reader, will attempt to load a list of classes or structs with a fixed memory layout, assuming it is preceded by the size of the array
+        /// </summary>
+        public static List<T> ReadFixedLayoutClassList<T>(this BinaryReader br)
+        {
+            var count = br.ReadInt32();
+            var r = new List<T>();
+            for (var i = 0; i < count; ++i)
+                r.Add(ReadFixedLayoutClass<T>(br));
+            return r;
+        }
+
+        /// <summary>
+        /// Writes a class or struct instance with a fixed memory layout to a BinaryWriter
+        /// </summary>
+        public static void WriteFixedLayoutClass<T>(this BinaryWriter bw, T x)
+            => bw.Write(StructToBytes(x));
+        
+
+        /// <summary>
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a BinaryWriter 
+        /// </summary>
+        public static void WriteFixedLayoutClassList<T>(this BinaryWriter bw, IList<T> nodes)
+        {
+            bw.Write(nodes.Count);
+            foreach (var n in nodes)
+                WriteFixedLayoutClass(bw, n);
+        }
+
+        /// <summary>
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a file
+        /// </summary>
+        public static void WriteFixedLayoutClassList<T>(string filePath, IList<T> nodes)
+        {
+            using (var bw = CreateBinaryWriter(filePath))
+                bw.WriteFixedLayoutClassList<T>(nodes);
+        }
+
+        /// <summary>
+        /// Read a list of class or struct instances with a fixed memory layout preceded by the the count from a file
+        /// </summary>
+        public static List<T> ReadFixedLayoutClassList<T>(string filePath)
+        {
+            using (var br = CreateBinaryReader(filePath))
+                return ReadFixedLayoutClassList<T>(br);
+        }
     }
 }
 
