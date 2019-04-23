@@ -43,11 +43,14 @@ namespace UnityBridge
         public static UQuaternion RotationToUnity(Quaternion rot)
             => new UQuaternion(rot.X, -rot.Z, rot.Y, rot.W);
 
+        public static UVector3 SwizzleToUnity(Vector3 v)
+            => new UVector3(v.X, v.Z, v.Y);
+
         public static UVector3 ScaleToUnity(Vector3 scl)
-            => new UVector3(scl.X, scl.Z, scl.Y);
+            => SwizzleToUnity(scl);
 
         public static Bounds ToUnity(this Box box)
-            => new Bounds(PositionToUnity(box.Center), ScaleToUnity(box.Extent));
+            => new Bounds(PositionToUnity(box.Center), SwizzleToUnity(box.Extent) * FEET_TO_METERS);
 
         public static Mesh ToUnity(this IGeometry g)
         {
