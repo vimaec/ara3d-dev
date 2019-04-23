@@ -1,13 +1,22 @@
 ﻿using System;
-using Ara3D;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Ara3D;
+// Explicitly specify math types to make it clear what each function does
+using Vector3 = Ara3D.Vector3;
+using Quaternion = Ara3D.Quaternion;
+using Matrix4x4 = Ara3D.Matrix4x4;
+using UVector3 = UnityEngine.Vector3;
+using UQuaternion = UnityEngine.Quaternion;
+using UMatrix4x4 = UnityEngine.Matrix4x4;
 
 namespace UnityBridge
 {
     // TODO: add an IGeometry wrapper around "Unity"
     public static class UnityConverters
     {
+        public static float FEET_TO_METERS = 0.3048006096012f;
+
         // When translating G3D faces to unity we need
         // to reverse the triangle winding.
         public static int PolyFaceToUnity(int index, int faceSize)
@@ -24,13 +33,29 @@ namespace UnityBridge
         public static int QuadFaceToUnity(int index)
             => PolyFaceToUnity(index, 4);
 
+        // TODO: This should be pushed into the exporter.  The world deals in metric.
+        public static UVector3 PositionToUnity(float x, float y, float z)
+            => new UVector3(-x, z, -y) * FEET_TO_METERS;
+
+        public static UVector3 PositionToUnity(Vector3 pos)
+            => PositionToUnity(pos.X, pos.Y, pos.Z);
+
+        public static UQuaternion RotationToUnity(Quaternion rot)
+            => new UQuaternion(rot.X, -rot.Z, rot.Y, rot.W);
+
+        public static UVector3 ScaleToUnity(Vector3 scl)
+            => new UVector3(scl.X, scl.Z, scl.Y);
+
+        public static Bounds ToUnity(this Box box)
+            => new Bounds(PositionToUnity(box.Center), ScaleToUnity(box.Extent));
+
         public static Mesh ToUnity(this IGeometry g)
         {
             var r = new Mesh();
             
             var indices = g.IndexAttribute.ToInts();
             var vertexFloats = g.VertexAttribute.ToFloats();
-            var unityVertices = vertexFloats.SelectTriplets((x, y, z) => new UnityEngine.Vector3(-x, z, -y));
+            var unityVertices = vertexFloats.SelectTriplets(PositionToUnity);
             r.vertices = unityVertices.ToArray();
             r.indexFormat = unityVertices.Count > ushort.MaxValue
                 ? IndexFormat.UInt32
@@ -137,8 +162,9 @@ namespace UnityBridge
         public static void SetFromNode(this Transform transform, ISceneNode node)
             => transform.SetFromMatrix(node.Transform);
 
-        public static void SetFromMatrix(this Transform transform, Ara3D.Matrix4x4 matrix) { 
-            if (!matrix.UnityPRS(out var pos, out var rot, out var scl))
+        public static void SetFromMatrix(this Transform transform, Matrix4x4 matrix) {
+            var decomposed = Ara3D.Matrix4x4.Decompose(matrix, out var scl, out var rot, out var pos);
+            if (!decomposed)
                 throw new Exception("Can't decompose matrix");
 
             ToUnityCoords(pos, rot, scl, out var outPos, out var outRot, out var outScl);
@@ -152,50 +178,21 @@ namespace UnityBridge
         /// Converts the given Revit-based coordinates into Unity coordinates.
         /// </summary>
         public static void ToUnityCoords(
-            UnityEngine.Vector3 pos,
-            UnityEngine.Quaternion rot,
-            UnityEngine.Vector3 scale,
-            out UnityEngine.Vector3 outPos,
-            out UnityEngine.Quaternion outRot,
-            out UnityEngine.Vector3 outScale)
+            Vector3 pos,
+            Quaternion rot,
+            Vector3 scale,
+            out UVector3 outPos,
+            out UQuaternion outRot,
+            out UVector3 outScale)
         {
             // Transform space is mirrored on X, and then rotated 90 degrees around X
-            outPos = new UnityEngine.Vector3(-pos.x, pos.z, -pos.y);
+            outPos = PositionToUnity(pos);
 
             // Quaternion is mirrored the same way, but then negated via W = -W because that's just easier to read
-            outRot = new UnityEngine.Quaternion(rot.x, -rot.z, rot.y, rot.w);
+            outRot = RotationToUnity(rot);
 
             // TODO: test this, current scale is completely untested
-            outScale = new UnityEngine.Vector3(scale.x, scale.z, scale.y);
+            outScale = ScaleToUnity(scale);
         }
-
-        /// <summary>
-        /// Extracts the Unity-compatible types for position, rotation, and scale from the given matrix.
-        /// Returns false if the matrix cannot be decomposed.
-        /// </summary>
-        public static bool UnityPRS(
-            this Ara3D.Matrix4x4 matrix,
-            out UnityEngine.Vector3 position,
-            out UnityEngine.Quaternion rotation,
-            out UnityEngine.Vector3 scale)
-        {
-            position = new UnityEngine.Vector3();
-            rotation = new UnityEngine.Quaternion();
-            scale = new UnityEngine.Vector3(1, 1, 1);
-
-            if (matrix.IsIdentity)
-                return true;
-
-            var decomposed = Ara3D.Matrix4x4.Decompose(matrix, out var scl, out var rot, out var pos);
-            if (!decomposed)
-                return false;
-
-            position.Set(pos.X, pos.Y, pos.Z);
-            rotation.Set(rot.X, rot.Y, rot.Z, rot.W);
-            scale.Set(scl.X, scl.Y, scl.Z);
-
-            return true;
-        }
-
     }
 }
