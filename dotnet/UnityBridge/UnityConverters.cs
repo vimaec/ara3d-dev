@@ -43,8 +43,11 @@ namespace UnityBridge
         public static UQuaternion RotationToUnity(Quaternion rot)
             => new UQuaternion(rot.X, -rot.Z, rot.Y, rot.W);
 
+        public static UVector3 SwizzleToUnity(float x, float y, float z)
+            => new UVector3(x, z, y);
+
         public static UVector3 SwizzleToUnity(Vector3 v)
-            => new UVector3(v.X, v.Z, v.Y);
+            => SwizzleToUnity(v.X, v.Z, v.Y);
 
         public static UVector3 ScaleToUnity(Vector3 scl)
             => SwizzleToUnity(scl);
