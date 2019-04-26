@@ -12,8 +12,6 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.IO.MemoryMappedFiles;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Ara3D
 {
@@ -1047,32 +1045,6 @@ namespace Ara3D
             return Encoding.ASCII.GetBytes(s);
         }
 
-        public static JObject ToJObject(this object o)
-            => JObject.FromObject(o);
-
-        public static JArray ToJArray<T>(this IEnumerable<T> xs)
-            => xs.ToList().ToJArray();
-
-        public static JArray ToJArray<T>(this IList<T> xs)
-            => JArray.FromObject(xs);
-
-        public static string ToJson(this object o)
-            => o?.ToJObject()?.ToString() ?? "null";
-
-        public static void ToJsonFile(this object o, string filePath)
-        {
-            using (var tw = File.CreateText(filePath))
-                new JsonSerializer
-                {
-                    Formatting = Formatting.Indented,
-                    DefaultValueHandling = DefaultValueHandling.Ignore
-                }.Serialize(tw, o);
-        }
-
-        public static string PrettifyJson(this string s)
-        {
-            return JToken.Parse(s).ToString();
-        }
 
         /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
@@ -1089,27 +1061,6 @@ namespace Ara3D
             File.WriteAllText(fileName, "test");
             File.Delete(fileName);
         }
-
-        public static JObject LoadJson(string filePath) 
-            => JObject.Parse(File.ReadAllText(filePath));
-
-        public static JArray LoadJsonArray(string filePath) 
-            => JArray.Parse(File.ReadAllText(filePath));
-
-        public static T LoadJsonFromFile<T>(string filePath)
-        {
-            using (var file = File.OpenText(filePath))
-                return LoadJsonFromStream<T>(file);
-        }
-
-        public static T LoadJsonFromStream<T>(Stream stream)
-        {
-            using (var reader = new StreamReader(stream))
-                return LoadJsonFromStream<T>(reader);
-        }
-
-        public static T LoadJsonFromStream<T>(StreamReader streamReader)
-            => (T)(new JsonSerializer()).Deserialize(streamReader, typeof(T));       
 
         // File size reporting
 
