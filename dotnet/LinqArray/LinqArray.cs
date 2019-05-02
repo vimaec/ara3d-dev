@@ -853,5 +853,11 @@ namespace Ara3D
         {
             return xs.ToEnumerable().OrderBy(x => x).ToIArray();
         }
+
+        /// <summary>
+        /// Given an array of elements of type T casts them to a U 
+        /// </summary>
+        public static IArray<U> Cast<T, U>(this IArray<T> xs) where T: U
+            => xs.Select(x => (U)x);
     }
 }

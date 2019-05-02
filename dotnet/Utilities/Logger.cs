@@ -64,7 +64,7 @@ namespace Ara3D
         public List<LogEvent> Events = new List<LogEvent>();
         public readonly bool EchoToConsole;
 
-        public StdLogger(bool echoToConsole = false)
+        public StdLogger(bool echoToConsole = true)
         {
             EchoToConsole = echoToConsole;
         }

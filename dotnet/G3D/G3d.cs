@@ -95,6 +95,7 @@ namespace Ara3D
         {
             Buffer = buffer;
             Header = header;
+            Attributes = attributes;
 
             foreach (var attr in attributes)
             {

@@ -504,8 +504,7 @@ namespace Ara3D
         public static byte* ToBytePtr(this TypedReference self)
         {
             return self.ToIntPtr().ToBytePtr();
-        }
-        
+        }        
 
         /// <summary>
         /// Given a dictionary looks up the key, or uses the function to add to the dictionary, and returns that result.  
@@ -524,6 +523,17 @@ namespace Ara3D
         /// </summary>
         public static V GetOrDefault<K, V>(this IDictionary<K, V> self, K key)
             => self.ContainsKey(key) ? self[key] : default;
+
+        /// <summary>
+        /// Returns a value if found in the dictionary, or default if not present.
+        /// </summary>
+        public static void AddOrReplace<K, V>(this IDictionary<K, V> self, K key, V value)
+        {
+            if (self.ContainsKey(key))
+                self[key] = value;
+            else
+                self.Add(key, value);
+        }
 
         /// <summary>
         /// Computes the size of the given managed type. Slow, but reliable. Does not give the same result as Marshal.SizeOf
@@ -1088,7 +1098,8 @@ namespace Ara3D
                 new JsonSerializer
                 {
                     Formatting = Formatting.Indented,
-                    DefaultValueHandling = DefaultValueHandling.Ignore
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 }.Serialize(tw, o);
         }
 
@@ -1125,6 +1136,17 @@ namespace Ara3D
                 return;
             DeleteFolderContents(folderPath);
             Directory.Delete(folderPath);
+        }
+
+        /// <summary>
+        /// Creates a directory if needed, or clears all of its contents otherwise
+        /// </summary>
+        public static void CreateAndClearDirectory(string dirPath)
+        {
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+            else
+                DeleteFolderContents(dirPath);
         }
 
         /// <summary>
@@ -1360,6 +1382,87 @@ namespace Ara3D
             using (var br = CreateBinaryReader(filePath))
                 return ReadFixedLayoutClassList<T>(br);
         }
+
+        /// <summary>
+        /// Generic depth first traversal. Improved answer over: 
+        /// https://stackoverflow.com/questions/5804844/implementing-depth-first-search-into-c-sharp-using-list-and-stack
+        /// </summary>
+        public static IEnumerable<T> DepthFirstTraversal<T>(T root, Func<T, IEnumerable<T>> childGen, HashSet<T> visited = null)
+            => DepthFirstTraversal(Enumerable.Repeat(root, 1), childGen, visited);
+
+        /// <summary>
+        /// Generic depth first traversal. Improved answer over: 
+        /// https://stackoverflow.com/questions/5804844/implementing-depth-first-search-into-c-sharp-using-list-and-stack
+        /// </summary>
+        public static IEnumerable<T> DepthFirstTraversal<T>(IEnumerable<T> roots, Func<T, IEnumerable<T>> childGen, HashSet<T> visited = null)
+        {
+            var stk = new Stack<T>();
+            foreach (var root in roots)
+                stk.Push(root);
+            visited = visited ?? new HashSet<T>();
+            while (stk.Count > 0)
+            {
+                var current = stk.Pop();
+                if (!visited.Add(current))
+                    continue;
+                yield return current;
+                var children = childGen(current);
+                if (children != null)
+                    foreach (var x in children)
+                        if (!visited.Contains(x))
+                            stk.Push(x);
+            }
+        }
+
+        public static string MD5Hash(this byte[] bytes)
+        {
+            using (var md5 = MD5.Create())
+                return BitConverter.ToString(md5.ComputeHash(bytes)).Replace("-", string.Empty).ToLowerInvariant();
+        }
+            
+        public static string MD5Hash(this string s)
+            => MD5Hash(s.ToBytesUtf8());
+
+        /// <summary>
+        /// Given a full file path, collapses the full path into a checksum, and return a file name.
+        /// </summary>
+        public static string FilePathToUniqueFileName(string filePath)
+            => filePath.Replace('/', '\\').MD5Hash() + "_" + Path.GetFileName(filePath);
+
+        /// <summary>
+        /// A helper function for append one or more items to an IEnumerable. 
+        /// </summary>
+        public static IEnumerable<T> Append<T>(this IEnumerable<T> xs, params T[] x)
+            => xs.Concat(x);
+
+        /// <summary>
+        /// Generates a Regular Expression character set from an array of characters
+        /// </summary>
+        public static Regex CharSetToRegex(params char[] chars)
+            => new Regex($"[{Regex.Escape(new string(chars))}]");
+
+        /// <summary>
+        /// Creates a regular expression for finding illegal file name characters.
+        /// </summary>
+        public static Regex InvalidFileNameRegex => 
+            CharSetToRegex(Path.GetInvalidFileNameChars());
+
+        /// <summary>
+        /// Convert a string to a valid name
+        /// https://stackoverflow.com/questions/146134/how-to-remove-illegal-characters-from-path-and-filenames
+        /// https://stackoverflow.com/questions/2230826/remove-invalid-disallowed-bad-characters-from-filename-or-directory-folder?noredirect=1&lq=1
+        /// https://stackoverflow.com/questions/10898338/c-sharp-string-replace-to-remove-illegal-characters?noredirect=1&lq=1
+        /// </summary>
+        public static string ToValidFileName(this string s)
+            => InvalidFileNameRegex.Replace(s, m => "_");
+
+
+        /// <summary>
+        /// Returns the name of the outer most folder given a file path or a directory path
+        /// https://stackoverflow.com/questions/3736462/getting-the-folder-name-from-a-path
+        /// </summary>
+        public static string DirectoryName(string filePath)
+            => new DirectoryInfo(filePath).Name;
     }
 }
 

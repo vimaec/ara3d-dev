@@ -69,9 +69,8 @@ namespace Ara3D
 
             Count = Bytes.ByteCount / Descriptor.ItemSize;
         }
-
-
-        private int ResizeCount<T>()
+        
+        int ResizeCount<T>()
             => (Count * Descriptor.ItemSize) / Marshal.SizeOf(typeof(T));
 
         public IArray<int> ToInts() => ResizeCount<int>().Select(i => ((int*)Bytes.Ptr)[i]);

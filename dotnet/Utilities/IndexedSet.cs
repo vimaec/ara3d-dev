@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Ara3D
 {
@@ -10,5 +11,8 @@ namespace Ara3D
                 Add(k, Count);
             return this[k];
         }
+
+        public IEnumerable<K> OrderedKeys()
+            => this.OrderBy(kv => kv.Value).Select(kv => kv.Key);
     }
 }

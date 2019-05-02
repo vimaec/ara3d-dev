@@ -13,7 +13,8 @@ namespace Ara3D
         IArray<Vector3> Vertices { get; } 
         IArray<int> Indices { get; }  
         IArray<int> FaceSizes { get; }
-        IArray<int> FaceIndices { get; } 
+        IArray<int> FaceIndices { get; }
+        IArray<Vector2> UVs { get; }
     }
 
     public class GeometryDebugView
@@ -305,7 +306,7 @@ namespace Ara3D
         }
 
         public static IGeometry Deform(this IGeometry self, Func<Vector3, Vector3> f)
-            => self.ReplaceAttribute(self.Vertices.Select(f).ToVertexAttribute()).ToIGeometry();
+            => self?.ReplaceAttribute(self.Vertices.Select(f).ToVertexAttribute())?.ToIGeometry();
 
         public static IGeometry Transform(this IGeometry self, Matrix4x4 m)
             => self.Deform(v => v.Transform(m));
@@ -386,11 +387,11 @@ namespace Ara3D
         // TODO: optimize this function
         public static IGeometry Merge(this IArray<IGeometry> geometries)
         {
-            var triMeshes = geometries.Select(g => g.ToTriMesh());
+            var triMeshes = geometries.Where(g => g != null).Select(g => g.ToTriMesh()).ToArray();
             var verts = new Vector3[triMeshes.Sum(g => g.Vertices.Count)];
             var indices = new List<int>();
             var offset = 0;
-            foreach (var g in triMeshes.ToEnumerable())
+            foreach (var g in triMeshes)
             {
                 g.Vertices.CopyTo(verts, offset);
                 g.Indices.Add(offset).AddTo(indices);
@@ -476,11 +477,11 @@ namespace Ara3D
         public static IG3D ToG3D(this IGeometry g)
             => g.Attributes.ToG3D();
 
-        public static bool Planar(this IGeometry g)
+        public static bool Planar(this IGeometry g, float tolerance = Constants.Tolerance)
         {
             if (g.NumFaces <= 1) return true;
             var normal = g.GetFace(0).Normal();
-            return g.GetFaces().All(f => f.Normal().AlmostEquals(normal));
+            return g.GetFaces().All(f => f.Normal().AlmostEquals(normal, tolerance));
         }
 
         public static bool AreTrianglesRepeated(this IGeometry g)
@@ -576,5 +577,20 @@ namespace Ara3D
 
             return Mesh(g.PointsPerFace, newVertices.ToIArray(), newIndices.ToIArray());
         }
+
+        public static bool IsEqual(this IGeometry g1, IGeometry g2)
+            => g1.NumFaces == g2.NumFaces
+               && g1.PointsPerFace == g2.PointsPerFace
+               && g1.Indices.SequenceEquals(g2.Indices)
+               && g1.Vertices.SequenceEquals(g2.Vertices)
+               && g1.UVs.SequenceEquals(g2.UVs)
+               && g1.FaceIndices.SequenceEquals(g2.FaceIndices)
+               && g1.FaceSizes.SequenceEquals(g2.FaceSizes);
+
+        /// <summary>
+        /// Creates a TriMesh from four points. 
+        /// </summary>
+        public static IGeometry TriMeshFromQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+            => TriMesh(new[] {a, b, c, c, d, a}.ToIArray());        
     }
 }

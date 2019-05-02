@@ -6,7 +6,10 @@ using System.Linq;
 namespace Ara3D
 {
     public static class G3DExtensions
-    {          
+    {
+        public static int ElementCount(this IAttribute x)
+            => x.Count / x.Descriptor.DataArity;
+
         public static IAttribute ToAttribute<T>(this IArray<T> xs, AttributeDescriptor desc) where T: struct 
             => new AttributeArray<T>(xs, desc);
 
@@ -88,11 +91,14 @@ namespace Ara3D
         public static IAttribute ToInstanceGroupAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_instance, AttributeType.attr_instance_group, index);
 
-        public static IAttribute ToGroupIndexAttribute(this IArray<int> data, int index = 0)
-            => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_index, index);
+        public static IAttribute ToGroupIndexOffsetAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_index_offset, index);
 
         public static IAttribute ToGroupSizeAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_size, index);
+
+        public static IAttribute ToGroupVertexOffsetAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_vertex_offset, index);
 
         public static IEnumerable<AttributeDescriptor> Descriptors(this IG3D g3D)
             => g3D.Attributes.Select(attr => attr.Descriptor);
@@ -182,6 +188,7 @@ namespace Ara3D
                 _data_type = (int) dt,
             };        
 
+        // TODO: read this from 
         public static G3D ReadFromFile(string filePath) 
             => G3D.Create(File.ReadAllBytes(filePath));
 
@@ -329,6 +336,9 @@ namespace Ara3D
                    ? g3d.CornerVertexIndices().Indices().Stride(g3d.FirstFaceSize())
                    : g3d.FaceSizes().Accumulate((x, y) => x + y));
 
+        public static IArray<Vector2> UVs(this IG3D g3d)
+            => g3d.UVAttributes().FirstOrDefault().ToVector2s();
+                
         public static int VertexCount(this IG3D g3d)
             => g3d.VertexAttribute.Count;
 
@@ -500,7 +510,7 @@ namespace Ara3D
             g3d.Attributes(AttributeType.attr_uv).ToList()
                 .ValidateArity(2, 3)
                 .ValidateDataType(DataType.dt_float32)
-                .ValidateAssociation(Association.assoc_vertex, Association.assoc_corner);
+                .ValidateAssociation(Association.assoc_vertex);
 
             g3d.Attributes(AttributeType.attr_invalid).ToList()
                 .ValidateNone();
