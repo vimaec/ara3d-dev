@@ -61,6 +61,7 @@
     <Compile Include="Serializer.cs" />
     <Compile Include="SingletonRemotingObject.cs" />
     <Compile Include="Statistics.cs" />
+    <Compile Include="Tree.cs" />
     <Compile Include="UnmanagedBuffer.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Win32FileIO.cs" />
