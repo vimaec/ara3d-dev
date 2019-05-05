@@ -320,46 +320,25 @@ namespace Ara3D
             return $"{dirName}{sep}{baseName}";
         }
 
-        public static Action ToAction<R>(Func<R> f)
-        {
-            return () =>
-            {
-                f();
-                return;
-            };
-        }
+        public static Action ToAction<R>(this Func<R> f)
+            => () => { f(); };
+        
 
-        public static Action<A0> ToAction<A0, R>(Func<A0, R> f)
-        {
-            return (x) =>
-            {
-                f(x);
-                return;
-            };
-        }
+        public static Action<A0> ToAction<A0, R>(this Func<A0, R> f)
+            => x => { f(x); };
 
         public static Action<A0, A1> ToAction<A0, A1, R>(Func<A0, A1, R> f)
-        {
-            return (x0, x1) =>
-            {
-                f(x0, x1);
-                return;
-            };
-        }
+            => (x, y) => { f(x, y); };
 
         public static Func<bool> ToFunction(this Action action)
-        {
-            return () =>
+            => () =>
             {
                 action();
                 return true;
             };
-        }
 
         public static void TimeIt(this Action action, string label = "")
-        {
-            TimeIt(action.ToFunction(), label);
-        }
+            => TimeIt(action.ToFunction(), label);
 
         public static string PrettyPrintTimeElapsed(this Stopwatch sw)
             => $"{sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}";
@@ -736,10 +715,8 @@ namespace Ara3D
         /// <summary>
         /// Writes raw bytes to the stream by creating a memory stream around it. 
         /// </summary>
-        public static void Write(this BinaryWriter self, IBytes bytes)
-        {
-            self.Write(bytes.ToBytes());
-        }
+        public static void Write(this BinaryWriter self, IBytes bytes) 
+            => self.Write(bytes.ToBytes());
 
         /// <summary>
         /// Writes a struct to a stream without any size
@@ -821,30 +798,22 @@ namespace Ara3D
         /// Returns true if the value is in between two values.
         /// </summary>
         public static bool Between(this double value, double min, double max)
-        {
-            return value >= min && value <= max;
-        }
+            => value >= min && value <= max;
 
         /// <summary>
         /// Returns true if the source type can be cast to doubles.
         /// </summary>
         public static bool CanCastToDouble(this Type typeSrc)
-        {
-            return typeSrc.IsPrimitive
+            => typeSrc.IsPrimitive
                    && typeSrc != typeof(char)
                    && typeSrc != typeof(decimal)
                    && typeSrc != typeof(bool);
-        }
-
+    
         public static FileStream OpenFileStreamWriting(string filePath, int bufferSize)
-        {
-            return new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.None, bufferSize);
-        }
+            => new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.None, bufferSize);
 
         public static FileStream OpenFileStreamReading(string filePath, int bufferSize)
-        {
-            return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
-        }
+            => new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
 
         /// <summary>
         /// The official Stream.Read iis a PITA, because it could return anywhere from 0 to the number of bytes
@@ -1104,9 +1073,7 @@ namespace Ara3D
         }
 
         public static string PrettifyJson(this string s)
-        {
-            return JToken.Parse(s).ToString();
-        }
+            => JToken.Parse(s).ToString();
 
         /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
@@ -1121,10 +1088,10 @@ namespace Ara3D
         public static void DeleteFolderContents(string folderPath)
         {
             var di = new DirectoryInfo(folderPath);
-            foreach (var file in di.EnumerateFiles())
+            foreach (var dir in di.EnumerateDirectories().AsParallel())
+                DeleteFolderAndAllContents(dir.FullName);
+            foreach (var file in di.EnumerateFiles().AsParallel())
                 file.Delete();
-            foreach (var dir in di.EnumerateDirectories())
-                dir.Delete(true);
         }
 
         /// <summary>
@@ -1141,12 +1108,23 @@ namespace Ara3D
         /// <summary>
         /// Creates a directory if needed, or clears all of its contents otherwise
         /// </summary>
-        public static void CreateAndClearDirectory(string dirPath)
+        public static string CreateDirectory(string dirPath)
+        {
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+            return dirPath;
+        }
+
+        /// <summary>
+        /// Creates a directory if needed, or clears all of its contents otherwise
+        /// </summary>
+        public static string CreateAndClearDirectory(string dirPath)
         {
             if (!Directory.Exists(dirPath))
                 Directory.CreateDirectory(dirPath);
             else
                 DeleteFolderContents(dirPath);
+            return dirPath;
         }
 
         /// <summary>
@@ -1463,6 +1441,12 @@ namespace Ara3D
         /// </summary>
         public static string DirectoryName(string filePath)
             => new DirectoryInfo(filePath).Name;
+
+        /// <summary>
+        /// Changes the directory and the extension of a file
+        /// </summary>
+        public static string ChangeDirectoryAndExt(string filePath, string newFolder, string newExt)
+            => Path.Combine(newFolder, Path.ChangeExtension(Path.GetFileName(filePath), newExt));
     }
 }
 

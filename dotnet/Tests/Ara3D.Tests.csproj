@@ -53,7 +53,6 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MaxPlusDotNet, Version=21.0.0.845, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

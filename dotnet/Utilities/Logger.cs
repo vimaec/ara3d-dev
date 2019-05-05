@@ -133,9 +133,35 @@ namespace Ara3D
             }, level, exceptionLevel);
         }
 
+        public static string LogFileCreation(this ILogger logger, Func<string> function)
+        {
+            var start = DateTime.Now;
+            var filePath = "";
+            try
+            {
+                logger.Log("Creating file");
+                filePath = function();
+            }
+            catch (Exception e)
+            {
+                logger.Log($"Exception: {e.Message} at {e.StackTrace}");
+                logger.LogFrame(2); // Want to log the frame of the calling function.
+            }
+            finally
+            {
+                var elapsed = (DateTime.Now - start).TotalSeconds;
+                var success = File.Exists(filePath);
+                var message = success ? "Successfully" : "Failed";
+                var fileSize = success ? Util.FileSizeAsString(filePath) : "0";
+                logger.Log($"{message} creating file {filePath} | elapsed time (seconds): {elapsed} | size {fileSize}");
+            }
+
+            return filePath;
+        }
+
         public static T Log<T>(this ILogger logger, string message, Func<T> func,  LogLevel level = LogLevel.Debug, LogLevel exceptionLevel = LogLevel.Critical, bool rethrow = false)
         {
-            DateTime start = DateTime.Now;
+            var start = DateTime.Now;
             try
             {
                 logger.Log("begin: " + message, level);
@@ -158,7 +184,7 @@ namespace Ara3D
 
         public static Action LogDuration(this ILogger logger, string message, LogLevel level = LogLevel.Debug)
         {
-            DateTime start = DateTime.Now;
+            var start = DateTime.Now;
             logger.Log($"begin: {message}", level);
             return () => logger.Log($"end: {message} | elapsed time (seconds): {(DateTime.Now - start).TotalSeconds}");
         }  
