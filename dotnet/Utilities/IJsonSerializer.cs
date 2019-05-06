@@ -80,7 +80,13 @@ namespace Ara3D.DotNetUtilities
         /// Loads the object from the given zip archive.
         /// </summary>
         public static T LoadJson<T>(this IJsonSerializer serializer, ZipArchive archive, string entryName, ILogger logger) where T : class
-            => serializer.LoadJson<T>(archive.GetEntry(entryName).Open(), logger);
+        {
+            using (var stream = archive.GetEntry(entryName)?.Open())
+            {
+                if (stream == null) { throw new Exception($"Null stream encountered. Expected valid stream at: {entryName}"); }
+                return serializer.LoadJson<T>(stream, logger);
+            }
+        }
 
         /// <summary>
         /// Loads the object from the given zip archive. The first parameter acts as a type inference helper for code ergonomics.

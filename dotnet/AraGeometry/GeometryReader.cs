@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +30,8 @@ namespace Ara3D
             return geometries.ToList();
         }
 
+        public static List<IGeometry> LoadGeometries(this Stream stream)
+            => stream.ReadAllBytes().AsBFast().LoadGeometries();
 
         /*
         public static IList<ManifestSceneNode> ReadManifest(string filePath) 

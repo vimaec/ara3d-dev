@@ -1286,7 +1286,7 @@ namespace Ara3D
         
 
         /// <summary>
-        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a BinaryWriter 
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the count to a BinaryWriter 
         /// </summary>
         public static void WriteFixedLayoutClassList<T>(this BinaryWriter bw, IList<T> nodes)
         {
@@ -1296,7 +1296,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a file
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the count to a file
         /// </summary>
         public static void WriteFixedLayoutClassList<T>(string filePath, IList<T> nodes)
         {
@@ -1305,12 +1305,27 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Read a list of class or struct instances with a fixed memory layout preceded by the the count from a file
+        /// Read a list of class or struct instances with a fixed memory layout preceded by the count from a file
         /// </summary>
         public static List<T> ReadFixedLayoutClassList<T>(string filePath)
         {
             using (var br = CreateBinaryReader(filePath))
                 return ReadFixedLayoutClassList<T>(br);
+        }
+
+        /// <summary>
+        /// Read a list of class or struct instances with a fixed memory layout preceded by the count from a ZipArchive.
+        /// </summary>
+        public static List<T> ReadFixedLayoutClassList<T>(this ZipArchive archive, string entryName)
+        {
+            using (var stream = archive.GetEntry(entryName)?.Open())
+            {
+                if (stream == null) { throw new Exception($"Null stream encountered. Expected valid stream at: {entryName}"); }
+                using (var br = new BinaryReader(stream))
+                {
+                    return br.ReadFixedLayoutClassList<T>();
+                }
+            }
         }
 
         /// <summary>
