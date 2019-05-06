@@ -21,7 +21,6 @@ namespace Ara3D
             Vertices = g3D.VertexAttribute.ToVector3s();
             Indices = g3D.CornerVertexIndices();
             NumFaces = g3D.FaceCount();
-            FaceIndices = g3D.FaceIndices();
             MaterialIds = g3D.MaterialIds();
 
             var uvAttr = g3D.UVAttributes().FirstOrDefault();
@@ -53,7 +52,6 @@ namespace Ara3D
         public IArray<Vector2> UVs { get; }
         public IArray<int> Indices { get; }
         public IArray<int> FaceSizes { get; }
-        public IArray<int> FaceIndices { get; }
         public IArray<int> MaterialIds { get; }
 
         public IAttribute VertexAttribute => G3D.VertexAttribute;
@@ -63,5 +61,8 @@ namespace Ara3D
         public IAttribute MaterialIdAttribute => G3D.MaterialIdAttribute;
         public IAttribute UVAttribute => G3D.UVAttributes().FirstOrDefault();
         public IEnumerable<IAttribute> Attributes => G3D.Attributes;
+
+        private Topology _topology;
+        public Topology Topology => _topology ?? (_topology = new Topology(this));
     }
 }

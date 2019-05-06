@@ -330,12 +330,6 @@ namespace Ara3D
             => g3d.MaterialIdAttribute?.ToInts()
                ?? (-1).Repeat(g3d.FaceCount());
 
-        public static IArray<int> FaceIndices(this IG3D g3d)
-            => g3d.FaceIndexAttribute?.ToInts()
-               ?? (g3d.HasFixedFaceSize()
-                   ? g3d.CornerVertexIndices().Indices().Stride(g3d.FirstFaceSize())
-                   : g3d.FaceSizes().Accumulate((x, y) => x + y));
-
         public static IArray<Vector2> UVs(this IG3D g3d)
             => g3d.UVAttributes().FirstOrDefault().ToVector2s();
                 

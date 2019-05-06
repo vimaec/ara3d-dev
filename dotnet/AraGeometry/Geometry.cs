@@ -13,28 +13,71 @@ namespace Ara3D
         IArray<Vector3> Vertices { get; } 
         IArray<int> Indices { get; }  
         IArray<int> FaceSizes { get; }
-        IArray<int> FaceIndices { get; }
         IArray<Vector2> UVs { get; }
+        Topology Topology { get; }
+    }
+
+    /// <summary>
+    /// This class is used to make efficient topological queries for an IGeometry.
+    /// Construction is an O(N) operation, so it is not always created automatically. 
+    /// </summary>
+    public class Topology
+    {
+        public Topology(IGeometry g)
+        {
+            Geometry = g;
+            IndexBufferToFaces = new int[g.Indices.Count];
+            FaceIndices = new int[g.NumFaces];
+            var cur = 0;
+            for (var i = 0; i < g.NumFaces; ++i)
+            {
+                FaceIndices[i] = cur;
+                var faceSize = g.FaceSizes[i];
+                for (var j = 0; j < faceSize; ++j)
+                    IndexBufferToFaces[cur++] = i;
+            }
+
+            VertexBufferToIndexBuffer = new List<int>[g.Vertices.Count];
+            for (var i = 0; i < g.Indices.Count; ++i)
+            {
+                var index = g.Indices[i];
+                if (VertexBufferToIndexBuffer[index] == null)
+                    VertexBufferToIndexBuffer[index] = new List<int> {i};
+                else
+                    VertexBufferToIndexBuffer[index].Add(i);
+            }
+        }
+
+        public IGeometry Geometry { get; }
+        public List<int>[] VertexBufferToIndexBuffer { get; } 
+        public int[] IndexBufferToFaces { get; }
+        public int[] FaceIndices { get; }
+
+        public int FaceFromIndexBufferIndex(int i)
+            => FaceIndices[i];
+
+        public IEnumerable<int> FacesFromVertexIndex(int v)
+            => VertexBufferToIndexBuffer[v]?.Select(FaceFromIndexBufferIndex).Distinct() ?? Enumerable.Empty<int>();
+
+        public IArray<int> IndexIndicesFromFace(int f)
+            => Geometry.FaceSizes[f].Range().Add(FaceIndices[f]);
+
+        public IArray<int> VertexIndicesFromFace(int f)
+            => Geometry.Indices.SelectByIndex(IndexIndicesFromFace(f));
+
+        public IEnumerable<int> NeighbourFaces(int f)
+            => VertexIndicesFromFace(f).ToEnumerable().SelectMany(FacesFromVertexIndex).Where(f2 => f2 != f).Distinct();
     }
 
     public class GeometryDebugView
     {
         IGeometry Interface { get; }
 
-        /*
-        public IEnumerable<IAttribute> Attributes => Interface.Attributes;
-        public IAttribute VertexAttribute => Interface.VertexAttribute;
-        public IAttribute IndexAttribute => Interface.IndexAttribute;
-        public IAttribute FaceSizeAttribute => Interface.FaceSizeAttribute;
-        public IAttribute FaceIndexAttribute => Interface.FaceIndexAttribute;
-        */
-
         public int PointsPerFace => Interface.PointsPerFace;
         public int NumFaces => Interface.NumFaces;
         public Vector3[] Vertices => Interface.Vertices.ToArray();
         public int[] Indices => Interface.Indices.ToArray();
         public int[] FaceSizes => Interface.FaceSizes.ToArray();
-        public int[] FaceIndices => Interface.FaceIndices.ToArray();
 
         public GeometryDebugView(IGeometry g)
         {
@@ -93,7 +136,7 @@ namespace Ara3D
         public IGeometry Geometry { get; }
         public int Index { get; }
         public int Count => Geometry.FaceSizes[Index];
-        public int this[int n] => Geometry.Indices[Geometry.FaceIndices[Index] + n];
+        public int this[int n] => Geometry.Indices[Geometry.Topology.FaceIndices[Index] + n];
 
         public bool HasDegenerateIndices()
         {
@@ -121,6 +164,12 @@ namespace Ara3D
 
         public override int GetHashCode()
             => Hash.Combine(this.Sort().ToArray());
+
+        public IEnumerable<Face> NeighbourFaces()
+        {
+            var g = Geometry;
+            return Geometry.Topology.NeighbourFaces(Index).Select(i => new Face(g, i));
+        }
     }
 
     public static class Geometry
@@ -419,11 +468,12 @@ namespace Ara3D
             if (g3d.PointsPerFace > 0)
                 return faceIndices.GroupIndicesToIndices(g3d.PointsPerFace);
             var r = new List<int>();
+            var topo = g3d.Topology;
             for (var i = 0; i < faceIndices.Count; ++i)
             {
                 var index = faceIndices[i];
                 var faceSize = g3d.FaceSizes[index];
-                var faceIndex = g3d.FaceIndices[index];
+                var faceIndex = topo.FaceIndices[index];
                 for (var j=0; j < faceSize; ++j)
                     r.Add(g3d.Indices[faceIndex + j]);
             }
@@ -494,17 +544,20 @@ namespace Ara3D
         {
             (g3d as IG3D).Validate();
 
-            if (g3d.FaceIndices.Count != g3d.NumFaces)
-                throw new Exception("Expected the face indices to be equal to the number of faces");
             if (g3d.FaceSizes.Count != g3d.NumFaces)
                 throw new Exception("Expected the face sizes array to be equal to the number of faces");
             if (!g3d.AreAllIndicesValid())
                 throw new Exception("Not all indices are valid");
+
+            var topo = g3d.Topology;
+            var faceIndex = 0;
             for (var i = 0; i < g3d.NumFaces; ++i)
             {
+                if (faceIndex != topo.FaceIndices[i])
+                    throw new Exception("Topology face indices is incorrect");
                 var faceSize = g3d.FaceSizes[i];
-                var faceIndex = g3d.FaceIndices[i];
-
+                faceIndex += faceSize;
+                
                 var face = g3d.GetFace(i);
                 if (face.Count != faceSize)
                     throw new Exception("Face does not have correct size");
@@ -584,13 +637,14 @@ namespace Ara3D
                && g1.Indices.SequenceEquals(g2.Indices)
                && g1.Vertices.SequenceEquals(g2.Vertices)
                && g1.UVs.SequenceEquals(g2.UVs)
-               && g1.FaceIndices.SequenceEquals(g2.FaceIndices)
                && g1.FaceSizes.SequenceEquals(g2.FaceSizes);
 
         /// <summary>
         /// Creates a TriMesh from four points. 
         /// </summary>
         public static IGeometry TriMeshFromQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
-            => TriMesh(new[] {a, b, c, c, d, a}.ToIArray());        
+            => TriMesh(new[] {a, b, c, c, d, a}.ToIArray());
+
+
     }
 }
