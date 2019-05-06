@@ -1,17 +1,18 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Data;
-using System.IO;
 using System.Diagnostics;
-using System.Reflection.Emit;
+using System.IO;
+using System.IO.Compression;
+using System.IO.MemoryMappedFiles;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
-using System.IO.MemoryMappedFiles;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Ara3D
 {
@@ -49,7 +50,7 @@ namespace Ara3D
         public static string EscapeQuotes(this string self)
         {
             return self?.Replace("\"", "\"\"") ?? "";
-        }
+        }       
 
         public static string Surround(this string self, string before, string after)
         {
@@ -130,7 +131,7 @@ namespace Ara3D
         #region Reflection to create a DataTable from a Class?
 
         /// <summary>
-        /// Creates a data table from an array of classes, using the properties of the clases as column values
+        /// Creates a data table from an array of classes, using the properties of the class    es as column values
         /// https://stackoverflow.com/questions/18746064/using-reflection-to-create-a-datatable-from-a-class
         /// </summary>
         public static DataTable PropertiesToDataTable<T>(this IEnumerable<T> self)
@@ -317,46 +318,25 @@ namespace Ara3D
             return $"{dirName}{sep}{baseName}";
         }
 
-        public static Action ToAction<R>(Func<R> f)
-        {
-            return () =>
-            {
-                f();
-                return;
-            };
-        }
+        public static Action ToAction<R>(this Func<R> f)
+            => () => { f(); };
+        
 
-        public static Action<A0> ToAction<A0, R>(Func<A0, R> f)
-        {
-            return (x) =>
-            {
-                f(x);
-                return;
-            };
-        }
+        public static Action<A0> ToAction<A0, R>(this Func<A0, R> f)
+            => x => { f(x); };
 
         public static Action<A0, A1> ToAction<A0, A1, R>(Func<A0, A1, R> f)
-        {
-            return (x0, x1) =>
-            {
-                f(x0, x1);
-                return;
-            };
-        }
+            => (x, y) => { f(x, y); };
 
         public static Func<bool> ToFunction(this Action action)
-        {
-            return () =>
+            => () =>
             {
                 action();
                 return true;
             };
-        }
 
         public static void TimeIt(this Action action, string label = "")
-        {
-            TimeIt(action.ToFunction(), label);
-        }
+            => TimeIt(action.ToFunction(), label);
 
         public static string PrettyPrintTimeElapsed(this Stopwatch sw)
             => $"{sw.Elapsed.Minutes}:{sw.Elapsed.Seconds}.{sw.Elapsed.Milliseconds}";
@@ -436,7 +416,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Converts a struct instance to a series of bytes 
+        /// Converts a struct or formatted class to a series of bytes 
         /// </summary>
         public static byte[] StructToBytes(object self)
         {
@@ -446,7 +426,29 @@ namespace Ara3D
             using (var pin = r.Pin())
                 Marshal.StructureToPtr(self, pin.Ptr, false);
             return r;
-        }     
+        }
+
+        /// <summary>
+        /// Converts an array of bytes to a struct or formatted class
+        /// </summary>
+        public static void BytesToStruct(byte[] bytes, object self)
+        {
+            var n = Marshal.SizeOf(self.GetType());
+            if (bytes.Length != n)
+                throw new Exception($"Incorrect sized buffer, expected {n} was {bytes.Length}");
+            using (var pin = bytes.Pin())
+                Marshal.PtrToStructure(pin.Ptr, self);
+        }
+
+        /// <summary>
+        /// Converts an array of bytes to a struct or formatted class
+        /// </summary>
+        public static T BytesToStruct<T>(byte[] bytes)
+        {
+            var r = Activator.CreateInstance<T>();
+            BytesToStruct(bytes, r);
+            return r;
+        }
 
         // Make-ref routines 
         // http://benbowen.blog/post/fun_with_makeref/
@@ -479,8 +481,7 @@ namespace Ara3D
         public static byte* ToBytePtr(this TypedReference self)
         {
             return self.ToIntPtr().ToBytePtr();
-        }
-        
+        }        
 
         /// <summary>
         /// Given a dictionary looks up the key, or uses the function to add to the dictionary, and returns that result.  
@@ -499,6 +500,17 @@ namespace Ara3D
         /// </summary>
         public static V GetOrDefault<K, V>(this IDictionary<K, V> self, K key)
             => self.ContainsKey(key) ? self[key] : default;
+
+        /// <summary>
+        /// Returns a value if found in the dictionary, or default if not present.
+        /// </summary>
+        public static void AddOrReplace<K, V>(this IDictionary<K, V> self, K key, V value)
+        {
+            if (self.ContainsKey(key))
+                self[key] = value;
+            else
+                self.Add(key, value);
+        }
 
         /// <summary>
         /// Computes the size of the given managed type. Slow, but reliable. Does not give the same result as Marshal.SizeOf
@@ -699,12 +711,10 @@ namespace Ara3D
         }
 
         /// <summary>
-    /// Writes raw bytes to the stream by creating a memory stream around it. 
-    /// </summary>
-    public static void Write(this BinaryWriter self, IBytes bytes)
-        {
-            self.Write(bytes.ToBytes());
-        }
+        /// Writes raw bytes to the stream by creating a memory stream around it. 
+        /// </summary>
+        public static void Write(this BinaryWriter self, IBytes bytes) 
+            => self.Write(bytes.ToBytes());
 
         /// <summary>
         /// Writes a struct to a stream without any size
@@ -786,30 +796,22 @@ namespace Ara3D
         /// Returns true if the value is in between two values.
         /// </summary>
         public static bool Between(this double value, double min, double max)
-        {
-            return value >= min && value <= max;
-        }
+            => value >= min && value <= max;
 
         /// <summary>
         /// Returns true if the source type can be cast to doubles.
         /// </summary>
         public static bool CanCastToDouble(this Type typeSrc)
-        {
-            return typeSrc.IsPrimitive
+            => typeSrc.IsPrimitive
                    && typeSrc != typeof(char)
                    && typeSrc != typeof(decimal)
                    && typeSrc != typeof(bool);
-        }
-
+    
         public static FileStream OpenFileStreamWriting(string filePath, int bufferSize)
-        {
-            return new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.None, bufferSize);
-        }
+            => new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.None, bufferSize);
 
         public static FileStream OpenFileStreamReading(string filePath, int bufferSize)
-        {
-            return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
-        }
+            => new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
 
         /// <summary>
         /// The official Stream.Read iis a PITA, because it could return anywhere from 0 to the number of bytes
@@ -1053,6 +1055,52 @@ namespace Ara3D
             => TestWrite(di.FullName);
 
         /// <summary>
+        /// Deletes all contents in a folder
+        /// https://stackoverflow.com/questions/1288718/how-to-delete-all-files-and-folders-in-a-directory
+        /// </summary>
+        public static void DeleteFolderContents(string folderPath)
+        {
+            var di = new DirectoryInfo(folderPath);
+            foreach (var dir in di.EnumerateDirectories().AsParallel())
+                DeleteFolderAndAllContents(dir.FullName);
+            foreach (var file in di.EnumerateFiles().AsParallel())
+                file.Delete();
+        }
+
+        /// <summary>
+        /// Deletes everything in a folder and then the folder. 
+        /// </summary>
+        public static void DeleteFolderAndAllContents(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                return;
+            DeleteFolderContents(folderPath);
+            Directory.Delete(folderPath);
+        }
+
+        /// <summary>
+        /// Creates a directory if needed, or clears all of its contents otherwise
+        /// </summary>
+        public static string CreateDirectory(string dirPath)
+        {
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+            return dirPath;
+        }
+
+        /// <summary>
+        /// Creates a directory if needed, or clears all of its contents otherwise
+        /// </summary>
+        public static string CreateAndClearDirectory(string dirPath)
+        {
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+            else
+                DeleteFolderContents(dirPath);
+            return dirPath;
+        }
+
+        /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
         /// </summary>
         public static void TestWrite(string folder)
@@ -1113,6 +1161,250 @@ namespace Ara3D
         /// </summary>
         public static void AddToList<T>(ref IList<T> xs, T x)
             => (xs ?? (xs = new List<T>())).Add(x);
+
+        /// <summary>
+        /// Remove starting and ending quotes. 
+        /// </summary>
+        public static string StripQuotes(this string s)
+            => s.Length >= 2 && s[0] == '"' && s[s.Length - 1] == '"' ? s.Substring(1, s.Length - 2) : s;
+
+
+        /// <summary>
+        /// Given a sequence of elements, and a mapping function from element to parent, returns a dictionary of lists that maps elements to children.
+        /// </summary>
+        public static DictionaryOfLists<T, T> ComputeChildren<T>(this IEnumerable<T> elements, Func<T, T> parentSelector)
+        {
+            var r = new DictionaryOfLists<T, T>();
+            foreach (var e in elements)
+            {
+                var p = parentSelector(e);
+                if (p != null)
+                    r.Add(p, e);
+            }
+            return r;
+        }
+
+        /// <summary>
+        /// Treats a Dictionary of lists as a graph and visits the node,
+        /// and all its descendants, exactly once using a depth first traversal.
+        /// </summary>
+        public static IEnumerable<T> EnumerateSubNodes<T>(this DictionaryOfLists<T, T> self, T target, HashSet<T> visited = null)
+        {
+            if (visited?.Contains(target) ?? false)
+                yield break;
+            yield return target;
+            visited = visited ?? new HashSet<T>();
+            visited.Add(target);
+            foreach (var x in self.GetOrDefault(target))
+                foreach (var c in self.EnumerateSubNodes(x, visited))
+                    yield return c;
+        }
+
+        /// <summary>
+        /// Returns the top of a stack, or the default T value if none is present.
+        /// </summary>
+        public static T PeekOrDefault<T>(this Stack<T> self)
+            => self.Count > 0 ? self.Peek() : default;
+
+        /// <summary>
+        /// Zips a file and places the result into a newly created file in the temporary directory
+        /// </summary>
+        public static string ZipFile(string filePath)
+            => ZipFile(filePath, Path.GetTempFileName());        
+
+        /// <summary>
+        /// Zips a file and places the result into a newly created file in the temporary directory
+        /// </summary>
+        public static string ZipFile(string filePath, string outputFile)
+        {
+            using (var za = new ZipArchive(File.OpenWrite(outputFile), ZipArchiveMode.Create))
+            {
+                var zae = za.CreateEntry(Path.GetFileName(filePath) ?? "");
+                using (var outputStream = zae.Open())
+                using (var inputStream = File.OpenRead(filePath))
+                    inputStream.CopyTo(outputStream);
+            }
+            return outputFile;
+        }
+
+        /// <summary>
+        /// Unzips the first entry in an archive to a designated file, returning that file path.
+        /// </summary>
+        public static string UnzipFile(string zipFilePath, string outputFile)
+        {
+            using (var za = new ZipArchive(File.OpenRead(zipFilePath), ZipArchiveMode.Read))
+            {
+                var zae = za.Entries[0];
+                using (var inputStream = zae.Open())
+                using (var outputStream = File.OpenWrite(outputFile))
+                    inputStream.CopyTo(outputStream);
+            }
+            return outputFile;
+        }
+
+        /// <summary>
+        /// Unzips the first entry in an archive into a temp generated file, returning that file path
+        /// </summary>
+        public static string UnzipFile(string zipFilePath)
+            => UnzipFile(zipFilePath, Path.GetTempFileName());
+
+        /// <summary>
+        /// Returns a binary writer for the given file path 
+        /// </summary>
+        public static BinaryWriter CreateBinaryWriter(string filePath)
+            => new BinaryWriter(File.OpenWrite(filePath));
+
+        /// <summary>
+        /// Returns a binary reader for the given file path 
+        /// </summary>
+        public static BinaryReader CreateBinaryReader(string filePath)
+            => new BinaryReader(File.OpenRead(filePath));
+
+        /// <summary>
+        /// Given a binary reader, will attempt to load a class or struct with a fixed memory layout. 
+        /// </summary>
+        public static T ReadFixedLayoutClass<T>(this BinaryReader br)
+            => BytesToStruct<T>(br.ReadBytes(Marshal.SizeOf<T>()));
+
+        /// <summary>
+        /// Given a binary reader, will attempt to load a list of classes or structs with a fixed memory layout, assuming it is preceded by the size of the array
+        /// </summary>
+        public static List<T> ReadFixedLayoutClassList<T>(this BinaryReader br)
+        {
+            var count = br.ReadInt32();
+            var r = new List<T>();
+            for (var i = 0; i < count; ++i)
+                r.Add(ReadFixedLayoutClass<T>(br));
+            return r;
+        }
+
+        /// <summary>
+        /// Writes a class or struct instance with a fixed memory layout to a BinaryWriter
+        /// </summary>
+        public static void WriteFixedLayoutClass<T>(this BinaryWriter bw, T x)
+            => bw.Write(StructToBytes(x));
+        
+
+        /// <summary>
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a BinaryWriter 
+        /// </summary>
+        public static void WriteFixedLayoutClassList<T>(this BinaryWriter bw, IList<T> nodes)
+        {
+            bw.Write(nodes.Count);
+            foreach (var n in nodes)
+                WriteFixedLayoutClass(bw, n);
+        }
+
+        /// <summary>
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a file
+        /// </summary>
+        public static void WriteFixedLayoutClassList<T>(string filePath, IList<T> nodes)
+        {
+            using (var bw = CreateBinaryWriter(filePath))
+                bw.WriteFixedLayoutClassList<T>(nodes);
+        }
+
+        /// <summary>
+        /// Read a list of class or struct instances with a fixed memory layout preceded by the the count from a file
+        /// </summary>
+        public static List<T> ReadFixedLayoutClassList<T>(string filePath)
+        {
+            using (var br = CreateBinaryReader(filePath))
+                return ReadFixedLayoutClassList<T>(br);
+        }
+
+        /// <summary>
+        /// Generic depth first traversal. Improved answer over: 
+        /// https://stackoverflow.com/questions/5804844/implementing-depth-first-search-into-c-sharp-using-list-and-stack
+        /// </summary>
+        public static IEnumerable<T> DepthFirstTraversal<T>(T root, Func<T, IEnumerable<T>> childGen, HashSet<T> visited = null)
+            => DepthFirstTraversal(Enumerable.Repeat(root, 1), childGen, visited);
+
+        /// <summary>
+        /// Generic depth first traversal. Improved answer over: 
+        /// https://stackoverflow.com/questions/5804844/implementing-depth-first-search-into-c-sharp-using-list-and-stack
+        /// </summary>
+        public static IEnumerable<T> DepthFirstTraversal<T>(IEnumerable<T> roots, Func<T, IEnumerable<T>> childGen, HashSet<T> visited = null)
+        {
+            var stk = new Stack<T>();
+            foreach (var root in roots)
+                stk.Push(root);
+            visited = visited ?? new HashSet<T>();
+            while (stk.Count > 0)
+            {
+                var current = stk.Pop();
+                if (!visited.Add(current))
+                    continue;
+                yield return current;
+                var children = childGen(current);
+                if (children != null)
+                    foreach (var x in children)
+                        if (!visited.Contains(x))
+                            stk.Push(x);
+            }
+        }
+
+        public static string MD5Hash(this byte[] bytes)
+        {
+            using (var md5 = MD5.Create())
+                return BitConverter.ToString(md5.ComputeHash(bytes)).Replace("-", string.Empty).ToLowerInvariant();
+        }
+            
+        public static string MD5Hash(this string s)
+            => MD5Hash(s.ToBytesUtf8());
+
+        /// <summary>
+        /// Given a full file path, collapses the full path into a checksum, and return a file name.
+        /// </summary>
+        public static string FilePathToUniqueFileName(string filePath)
+            => filePath.Replace('/', '\\').MD5Hash() + "_" + Path.GetFileName(filePath);
+
+        /// <summary>
+        /// A helper function for append one or more items to an IEnumerable. 
+        /// </summary>
+        public static IEnumerable<T> Append<T>(this IEnumerable<T> xs, params T[] x)
+            => xs.Concat(x);
+
+        /// <summary>
+        /// Generates a Regular Expression character set from an array of characters
+        /// </summary>
+        public static Regex CharSetToRegex(params char[] chars)
+            => new Regex($"[{Regex.Escape(new string(chars))}]");
+
+        /// <summary>
+        /// Creates a regular expression for finding illegal file name characters.
+        /// </summary>
+        public static Regex InvalidFileNameRegex => 
+            CharSetToRegex(Path.GetInvalidFileNameChars());
+
+        /// <summary>
+        /// Convert a string to a valid name
+        /// https://stackoverflow.com/questions/146134/how-to-remove-illegal-characters-from-path-and-filenames
+        /// https://stackoverflow.com/questions/2230826/remove-invalid-disallowed-bad-characters-from-filename-or-directory-folder?noredirect=1&lq=1
+        /// https://stackoverflow.com/questions/10898338/c-sharp-string-replace-to-remove-illegal-characters?noredirect=1&lq=1
+        /// </summary>
+        public static string ToValidFileName(this string s)
+            => InvalidFileNameRegex.Replace(s, m => "_");
+
+
+        /// <summary>
+        /// Returns the name of the outer most folder given a file path or a directory path
+        /// https://stackoverflow.com/questions/3736462/getting-the-folder-name-from-a-path
+        /// </summary>
+        public static string DirectoryName(string filePath)
+            => new DirectoryInfo(filePath).Name;
+
+        /// <summary>
+        /// Changes the directory and the extension of a file
+        /// </summary>
+        public static string ChangeDirectoryAndExt(string filePath, string newFolder, string newExt)
+            => Path.Combine(newFolder, Path.ChangeExtension(Path.GetFileName(filePath), newExt));
+
+        /// <summary>
+        /// Counts groups of a given key
+        /// </summary>
+        public static Dictionary<T, int> CountGroups<T>(this IEnumerable<T> self)
+            => self.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
     }
 }
 

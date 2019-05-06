@@ -83,6 +83,23 @@
         /// </summary>
         attr_group_size,
 
+        /// <summary>
+        /// Object ids 
+        /// </summary>
+        attr_object_id, 
+
+        /// <summary>
+        /// This is where each groups vertices start at.
+        /// We assume no overlap, so the next group vertex offset delinerates the slice of vertices
+        /// </summary>
+        attr_group_vertex_offset,
+
+        /// <summary>
+        /// This is where each groups indices come from 
+        /// We assume no overlap, so the next group index offset delineates the slice of indices
+        /// </summary>
+        attr_group_index_offset,
+
         attr_custom,
         attr_invalid,
     };
