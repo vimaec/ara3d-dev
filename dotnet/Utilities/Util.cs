@@ -1447,6 +1447,12 @@ namespace Ara3D
         /// </summary>
         public static string ChangeDirectoryAndExt(string filePath, string newFolder, string newExt)
             => Path.Combine(newFolder, Path.ChangeExtension(Path.GetFileName(filePath), newExt));
+
+        /// <summary>
+        /// Counts groups of a given key
+        /// </summary>
+        public static Dictionary<T, int> CountGroups<T>(this IEnumerable<T> self)
+            => self.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
     }
 }
 
