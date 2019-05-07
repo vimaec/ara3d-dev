@@ -127,7 +127,6 @@ namespace Ara3D
         }
     }
 
-
     public static class SceneExtensions
     {
         public static IGeometry TransformedGeometry(this ISceneNode node)
@@ -161,11 +160,42 @@ namespace Ara3D
             return false;
         }
 
+
         public static IScene ToScene(this ISceneNode[] nodes)
             => new SceneBuilder(nodes).ToScene();
 
         public static IScene ToScene(this IEnumerable<ISceneNode> nodes)
             => nodes.ToArray().ToScene();
+
+        // TODO: this is all an issue: generalized merging obliterates instancing. 
+        // I need a solution that will allow me to figure out if I am merging things that I have already merged, and keep those things. 
+        // If this can work as a post-facto operation it would be best. 
+
+        // OR: I merge instanced geoemtry ... every node that referred to this geometry, will now refer to that geometry. 
+        // problem is that merging is a "node" solution, not an instancing solution is it. 
+        // Really the solution seem to be for nodes that are instances, to somehow know it, so that when you do something to them, it affects 
+        // all of the instances. Which implies a kind of rebuilding of the node graph or something. 
+
+        public static ISceneNode Merge(this IEnumerable<ISceneNode> nodes)
+        {
+            var list = nodes.ToList();
+            if (list.Count == 0) return null;
+            if (list.Count == 1) return list[0];
+            return list[0].Merge(list.Skip(1));
+        }
+
+        public static ISceneNode Merge(this ISceneNode node, IEnumerable<ISceneNode> rest)
+        {
+            var inv = node.Transform.Inverse();
+            var geos = rest.Select(n => n.Geometry.Transform(inv)).Prepend(node.Geometry);
+            return new SceneNode(geos.Merge(), node.Transform);
+        }
+
+        public static ISceneNode MergeWorldSpace(this IEnumerable<ISceneNode> nodes)
+            => new SceneNode(nodes.Select(n => n.TransformedGeometry()).Merge());
+
+        public static IScene ToScene(this IEnumerable<IEnumerable<ISceneNode>> groups)
+            => groups.Select(Merge).ToScene();
 
         public static Matrix4x4 LocalTransform(this ISceneNode node) 
             => node.Parent != null 
