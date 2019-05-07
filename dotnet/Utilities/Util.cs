@@ -224,6 +224,35 @@ namespace Ara3D
             return dc.DataType.CanCastToDouble();
         }
 
+        /// <summary>
+        /// Generates a DataTable from all of the dictionaries provided 
+        /// </summary>
+        public static DataTable ParametersToDataTable(this IEnumerable<Dictionary<string, string>> parameters)
+        {
+            var parameterNames = new IndexedSet<string>();
+
+            // create a new data table if needed. Otherwise we are adding to the passed dataTable
+            var dataTable = new DataTable();
+
+            foreach (var d in parameters)
+                foreach (var kv in d)
+                    parameterNames.Add(kv.Key);
+
+            var orderedKeys = parameterNames.OrderedKeys();
+            foreach (var key in orderedKeys)
+                dataTable.Columns.Add(key);
+
+            foreach (var d in parameters)
+                dataTable.Rows.Add(orderedKeys.Select(d.GetOrDefault).ToArray());
+
+            return dataTable;
+        }
+
+        /// <summary>
+        /// Generates a CSV from all of the dictionaries provided
+        /// </summary>
+        public static void ParametersToCsvFile(this IEnumerable<Dictionary<string, string>> parameters, string filePath)
+            => parameters.ParametersToDataTable().ToCsvFile(filePath);
         #endregion
 
         /// <summary>
@@ -1339,7 +1368,7 @@ namespace Ara3D
         /// Generic depth first traversal. Improved answer over: 
         /// https://stackoverflow.com/questions/5804844/implementing-depth-first-search-into-c-sharp-using-list-and-stack
         /// </summary>
-        public static IEnumerable<T> DepthFirstTraversal<T>(IEnumerable<T> roots, Func<T, IEnumerable<T>> childGen, HashSet<T> visited = null)
+        public static IEnumerable<T> DepthFirstTraversal<T>(this IEnumerable<T> roots, Func<T, IEnumerable<T>> childGen, HashSet<T> visited = null)
         {
             var stk = new Stack<T>();
             foreach (var root in roots)
@@ -1356,6 +1385,37 @@ namespace Ara3D
                     foreach (var x in children)
                         if (!visited.Contains(x))
                             stk.Push(x);
+            }
+        }
+
+        /// <summary>
+        /// Generic breadth first traversal. 
+        /// </summary>
+        public static IEnumerable<T> BreadthFirstTraversal<T>(this T root, Func<T, IEnumerable<T>> childGen,
+            HashSet<T> visited = null)
+            => BreadthFirstTraversal(new[] {root}, childGen, visited);
+
+        /// <summary>
+        /// Generic breadth first traversal. 
+        /// </summary>
+        public static IEnumerable<T> BreadthFirstTraversal<T>(this IEnumerable<T> roots,
+            Func<T, IEnumerable<T>> childGen, HashSet<T> visited = null)
+        {
+            var q = new Queue<T>();
+            foreach (var root in roots)
+                q.Enqueue(root);
+            visited = visited ?? new HashSet<T>();
+            while (q.Count > 0)
+            {
+                var current = q.Dequeue();
+                if (!visited.Add(current))
+                    continue;
+                yield return current;
+                var children = childGen(current);
+                if (children != null)
+                    foreach (var x in children)
+                        if (!visited.Contains(x))
+                            q.Enqueue(x);
             }
         }
 
