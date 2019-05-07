@@ -187,7 +187,7 @@ namespace Ara3D
         public static ISceneNode Merge(this ISceneNode node, IEnumerable<ISceneNode> rest)
         {
             var inv = node.Transform.Inverse();
-            var geos = rest.Select(n => n.Geometry.Transform(inv)).Prepend(node.Geometry);
+            var geos = rest.Select(n => n.Geometry.Transform(n.Transform * inv)).Prepend(node.Geometry);
             return new SceneNode(geos.Merge(), node.Transform);
         }
 
