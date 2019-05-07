@@ -262,14 +262,14 @@ namespace Ara3D
         public static Vector3 Normal(this Face self)
             => self.Binormal().Cross(self.Tangent()).Normalize();
         
-        public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
-            => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs, materialIds).ToIGeometry();
+        public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null, IArray<int> objectIds = null)
+            => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs, materialIds, objectIds).ToIGeometry();
 
-        public static IGeometry QuadMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
-            => Mesh(4, vertices, indices, uvs, materialIds);
+        public static IGeometry QuadMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null, IArray<int> objectIds = null)
+            => Mesh(4, vertices, indices, uvs, materialIds, objectIds);
 
-        public static IGeometry TriMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
-            => Mesh(3, vertices, indices, uvs, materialIds);
+        public static IGeometry TriMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null, IArray<int> objectIds = null)
+            => Mesh(3, vertices, indices, uvs, materialIds, objectIds);
 
         /* TODO: finish
         public static IGeometry PolyMesh(this IArray<Vector3> vertices, IArray<Face> faces)
@@ -433,20 +433,34 @@ namespace Ara3D
         public static IGeometry Merge(this IEnumerable<IGeometry> geometries) 
             => geometries.ToIArray().Merge();
 
-        // TODO: optimize this function
+        // TODO: this function need to be generalized to handle all attributes correctly. In fact I think it should proably happen at the IG3D level.
         public static IGeometry Merge(this IArray<IGeometry> geometries)
         {
             var triMeshes = geometries.Where(g => g != null).Select(g => g.ToTriMesh()).ToArray();
-            var verts = new Vector3[triMeshes.Sum(g => g.Vertices.Count)];
+            var newVertCount = triMeshes.Sum(g => g.Vertices.Count);
+            var newFaceCount = triMeshes.Sum(g => g.NumFaces);
+            var verts = new Vector3[newVertCount];
+            var uvs = new Vector2[newVertCount];
+            var objectIds = new int[newFaceCount];
+            var materialIds = new int[newFaceCount];
             var indices = new List<int>();
-            var offset = 0;
+            var vtxOffset = 0;
+            var faceOffset = 0;
+
+            // TODO: this assumes the presence of object ids and material ids
             foreach (var g in triMeshes)
             {
-                g.Vertices.CopyTo(verts, offset);
-                g.Indices.Add(offset).AddTo(indices);
-                offset += g.Vertices.Count;
+                g.Vertices.CopyTo(verts, vtxOffset);
+                g.UVs.CopyTo(uvs, vtxOffset);
+                g.Indices.Add(vtxOffset).AddTo(indices);
+                g.MaterialIds()?.CopyTo(materialIds, faceOffset);
+                g.ObjectIds()?.CopyTo(objectIds, faceOffset);
+                vtxOffset += g.Vertices.Count;
+                faceOffset += g.NumFaces;
             }
-            return TriMesh(verts.ToIArray(), indices.ToIArray());
+
+            // TODO: maybe this could all be done using real arrays, probably be faster to serialize, etc.  But that is for later.
+            return TriMesh(verts.ToIArray(), indices.ToIArray(), uvs.ToIArray(), materialIds.ToIArray(), objectIds.ToIArray());
         }
 
         public static bool AreAllIndicesValid(this IGeometry self)
@@ -645,6 +659,16 @@ namespace Ara3D
         public static IGeometry TriMeshFromQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
             => TriMesh(new[] {a, b, c, c, d, a}.ToIArray());
 
+        public static IGeometry SetMaterialIds(this IGeometry g, int id)
+            => g.SetMaterialIds(id.Repeat(g.NumFaces));
 
+        public static IGeometry SetMaterialIds(this IGeometry g, IArray<int> ids)
+            => g.ReplaceAttribute(ids.ToMaterialIdsAttribute()).ToIGeometry();
+
+        public static IGeometry SetObjectIds(this IGeometry g, int id)
+            => g.SetObjectIds(id.Repeat(g.NumFaces));
+
+        public static IGeometry SetObjectIds(this IGeometry g, IArray<int> ids)
+            => g.ReplaceAttribute(ids.ToObjectIdsAttribute()).ToIGeometry();
     }
 }
