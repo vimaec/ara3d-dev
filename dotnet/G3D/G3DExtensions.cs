@@ -201,6 +201,9 @@ namespace Ara3D
         public static G3D ReadFromFile(string filePath) 
             => G3D.Create(File.ReadAllBytes(filePath));
 
+        public static G3D ReadFromStream(Stream stream)
+            => G3D.Create(stream.ReadAllBytes());
+
         public static G3D ToG3D(this BFast bfast)
             => G3D.Create(bfast);
         

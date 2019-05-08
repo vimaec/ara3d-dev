@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -1078,31 +1076,6 @@ namespace Ara3D
             return Encoding.ASCII.GetBytes(s);
         }
 
-        public static JObject ToJObject(this object o)
-            => JObject.FromObject(o);
-
-        public static JArray ToJArray<T>(this IEnumerable<T> xs)
-            => xs.ToList().ToJArray();
-
-        public static JArray ToJArray<T>(this IList<T> xs)
-            => JArray.FromObject(xs);
-
-        public static string ToJson(this object o)
-            => o?.ToJObject()?.ToString() ?? "null";
-
-        public static void ToJsonFile(this object o, string filePath)
-        {
-            using (var tw = File.CreateText(filePath))
-                new JsonSerializer
-                {
-                    Formatting = Formatting.Indented,
-                    DefaultValueHandling = DefaultValueHandling.Ignore,
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                }.Serialize(tw, o);
-        }
-
-        public static string PrettifyJson(this string s)
-            => JToken.Parse(s).ToString();
 
         /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
@@ -1165,27 +1138,6 @@ namespace Ara3D
             File.WriteAllText(fileName, "test");
             File.Delete(fileName);
         }
-
-        public static JObject LoadJson(string filePath) 
-            => JObject.Parse(File.ReadAllText(filePath));
-
-        public static JArray LoadJsonArray(string filePath) 
-            => JArray.Parse(File.ReadAllText(filePath));
-
-        public static T LoadJsonFromFile<T>(string filePath)
-        {
-            using (var file = File.OpenText(filePath))
-                return LoadJsonFromStream<T>(file);
-        }
-
-        public static T LoadJsonFromStream<T>(Stream stream)
-        {
-            using (var reader = new StreamReader(stream))
-                return LoadJsonFromStream<T>(reader);
-        }
-
-        public static T LoadJsonFromStream<T>(StreamReader streamReader)
-            => (T)(new JsonSerializer()).Deserialize(streamReader, typeof(T));       
 
         // File size reporting
 
@@ -1363,7 +1315,7 @@ namespace Ara3D
         
 
         /// <summary>
-        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a BinaryWriter 
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the count to a BinaryWriter 
         /// </summary>
         public static void WriteFixedLayoutClassList<T>(this BinaryWriter bw, IList<T> nodes)
         {
@@ -1373,7 +1325,7 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Writes a list of class or struct instances with a fixed memory layout preceded by the the count to a file
+        /// Writes a list of class or struct instances with a fixed memory layout preceded by the count to a file
         /// </summary>
         public static void WriteFixedLayoutClassList<T>(string filePath, IList<T> nodes)
         {
@@ -1382,12 +1334,27 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Read a list of class or struct instances with a fixed memory layout preceded by the the count from a file
+        /// Read a list of class or struct instances with a fixed memory layout preceded by the count from a file
         /// </summary>
         public static List<T> ReadFixedLayoutClassList<T>(string filePath)
         {
             using (var br = CreateBinaryReader(filePath))
                 return ReadFixedLayoutClassList<T>(br);
+        }
+
+        /// <summary>
+        /// Read a list of class or struct instances with a fixed memory layout preceded by the count from a ZipArchive.
+        /// </summary>
+        public static List<T> ReadFixedLayoutClassList<T>(this ZipArchive archive, string entryName)
+        {
+            using (var stream = archive.GetEntry(entryName)?.Open())
+            {
+                if (stream == null) { throw new Exception($"Null stream encountered. Expected valid stream at: {entryName}"); }
+                using (var br = new BinaryReader(stream))
+                {
+                    return br.ReadFixedLayoutClassList<T>();
+                }
+            }
         }
 
         /// <summary>

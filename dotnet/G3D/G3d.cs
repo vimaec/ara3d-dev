@@ -61,10 +61,23 @@ namespace Ara3D
     /// </summary>
     public class G3D : IG3D
     {
-        public static string DefaultHeader = new {
-            file = "g3d",
-            g3dversion = new G3DVersion(),
-        }.ToJson();
+        public static string DefaultHeader = new Func<string>(() =>
+        {
+            // A tailored string to avoid a JSON serialization dependency.
+            var file = "g3d";
+            var g3dversion = new G3DVersion();
+            return (
+$@"{{
+  ""file"": ""{file}"",
+  ""g3dversion"": {{
+    ""Major"": ""{g3dversion.Major}"",
+    ""Minor"": ""{g3dversion.Minor}"",
+    ""Revision"": ""{g3dversion.Revision}"",
+    ""Date"": ""{g3dversion.Date}""
+  }}
+}}"
+            );
+        })();
 
         public IEnumerable<IAttribute> Attributes { get; }
 

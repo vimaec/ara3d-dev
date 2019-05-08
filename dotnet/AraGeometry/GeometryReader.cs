@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ara3D
 {
@@ -13,10 +16,22 @@ namespace Ara3D
             => BFastExtensions.ReadBFast(filePath).LoadGeometries();
 
         public static List<IGeometry> LoadGeometries(this BFast bfast)
-            => bfast.Buffers
-                .AsParallel().AsOrdered()
-                .Select(b => G3D.Create(b).ToIGeometry())
-                .ToList();
+        {
+            // Need to remove Parallel Linq to work in il2cpp
+            //=> bfast.Buffers
+            //    .AsParallel().AsOrdered()
+            //    .Select(b => G3D.Create(b).ToIGeometry())
+            //    .ToList();
+            var geometries = new IGeometry[bfast.Buffers.Count];
+            Parallel.For(0, bfast.Buffers.Count, i =>
+                {
+                    geometries[i] = G3D.Create(bfast.Buffers[i]).ToIGeometry();
+                });
+            return geometries.ToList();
+        }
+
+        public static List<IGeometry> LoadGeometries(this Stream stream)
+            => stream.ReadAllBytes().AsBFast().LoadGeometries();
 
         /*
         public static IList<ManifestSceneNode> ReadManifest(string filePath) 
