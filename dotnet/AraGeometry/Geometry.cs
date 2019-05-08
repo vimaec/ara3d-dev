@@ -13,27 +13,71 @@ namespace Ara3D
         IArray<Vector3> Vertices { get; } 
         IArray<int> Indices { get; }  
         IArray<int> FaceSizes { get; }
-        IArray<int> FaceIndices { get; } 
+        IArray<Vector2> UVs { get; }
+        Topology Topology { get; }
+    }
+
+    /// <summary>
+    /// This class is used to make efficient topological queries for an IGeometry.
+    /// Construction is an O(N) operation, so it is not always created automatically. 
+    /// </summary>
+    public class Topology
+    {
+        public Topology(IGeometry g)
+        {
+            Geometry = g;
+            IndexBufferToFaces = new int[g.Indices.Count];
+            FaceIndices = new int[g.NumFaces];
+            var cur = 0;
+            for (var i = 0; i < g.NumFaces; ++i)
+            {
+                FaceIndices[i] = cur;
+                var faceSize = g.FaceSizes[i];
+                for (var j = 0; j < faceSize; ++j)
+                    IndexBufferToFaces[cur++] = i;
+            }
+
+            VertexBufferToIndexBuffer = new List<int>[g.Vertices.Count];
+            for (var i = 0; i < g.Indices.Count; ++i)
+            {
+                var index = g.Indices[i];
+                if (VertexBufferToIndexBuffer[index] == null)
+                    VertexBufferToIndexBuffer[index] = new List<int> {i};
+                else
+                    VertexBufferToIndexBuffer[index].Add(i);
+            }
+        }
+
+        public IGeometry Geometry { get; }
+        public List<int>[] VertexBufferToIndexBuffer { get; } 
+        public int[] IndexBufferToFaces { get; }
+        public int[] FaceIndices { get; }
+
+        public int FaceFromIndexBufferIndex(int i)
+            => FaceIndices[i];
+
+        public IEnumerable<int> FacesFromVertexIndex(int v)
+            => VertexBufferToIndexBuffer[v]?.Select(FaceFromIndexBufferIndex).Distinct() ?? Enumerable.Empty<int>();
+
+        public IArray<int> IndexIndicesFromFace(int f)
+            => Geometry.FaceSizes[f].Range().Add(FaceIndices[f]);
+
+        public IArray<int> VertexIndicesFromFace(int f)
+            => Geometry.Indices.SelectByIndex(IndexIndicesFromFace(f));
+
+        public IEnumerable<int> NeighbourFaces(int f)
+            => VertexIndicesFromFace(f).ToEnumerable().SelectMany(FacesFromVertexIndex).Where(f2 => f2 != f).Distinct();
     }
 
     public class GeometryDebugView
     {
         IGeometry Interface { get; }
 
-        /*
-        public IEnumerable<IAttribute> Attributes => Interface.Attributes;
-        public IAttribute VertexAttribute => Interface.VertexAttribute;
-        public IAttribute IndexAttribute => Interface.IndexAttribute;
-        public IAttribute FaceSizeAttribute => Interface.FaceSizeAttribute;
-        public IAttribute FaceIndexAttribute => Interface.FaceIndexAttribute;
-        */
-
         public int PointsPerFace => Interface.PointsPerFace;
         public int NumFaces => Interface.NumFaces;
         public Vector3[] Vertices => Interface.Vertices.ToArray();
         public int[] Indices => Interface.Indices.ToArray();
         public int[] FaceSizes => Interface.FaceSizes.ToArray();
-        public int[] FaceIndices => Interface.FaceIndices.ToArray();
 
         public GeometryDebugView(IGeometry g)
         {
@@ -92,7 +136,7 @@ namespace Ara3D
         public IGeometry Geometry { get; }
         public int Index { get; }
         public int Count => Geometry.FaceSizes[Index];
-        public int this[int n] => Geometry.Indices[Geometry.FaceIndices[Index] + n];
+        public int this[int n] => Geometry.Indices[Geometry.Topology.FaceIndices[Index] + n];
 
         public bool HasDegenerateIndices()
         {
@@ -120,6 +164,12 @@ namespace Ara3D
 
         public override int GetHashCode()
             => Hash.Combine(this.Sort().ToArray());
+
+        public IEnumerable<Face> NeighbourFaces()
+        {
+            var g = Geometry;
+            return Geometry.Topology.NeighbourFaces(Index).Select(i => new Face(g, i));
+        }
     }
 
     public static class Geometry
@@ -212,14 +262,14 @@ namespace Ara3D
         public static Vector3 Normal(this Face self)
             => self.Binormal().Cross(self.Tangent()).Normalize();
         
-        public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
-            => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs, materialIds).ToIGeometry();
+        public static IGeometry Mesh(int sidesPerFace, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null, IArray<int> objectIds = null)
+            => G3DExtensions.ToG3D(sidesPerFace, vertices, indices, uvs, materialIds, objectIds).ToIGeometry();
 
-        public static IGeometry QuadMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
-            => Mesh(4, vertices, indices, uvs, materialIds);
+        public static IGeometry QuadMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null, IArray<int> objectIds = null)
+            => Mesh(4, vertices, indices, uvs, materialIds, objectIds);
 
-        public static IGeometry TriMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
-            => Mesh(3, vertices, indices, uvs, materialIds);
+        public static IGeometry TriMesh(this IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null, IArray<int> objectIds = null)
+            => Mesh(3, vertices, indices, uvs, materialIds, objectIds);
 
         /* TODO: finish
         public static IGeometry PolyMesh(this IArray<Vector3> vertices, IArray<Face> faces)
@@ -305,7 +355,7 @@ namespace Ara3D
         }
 
         public static IGeometry Deform(this IGeometry self, Func<Vector3, Vector3> f)
-            => self.ReplaceAttribute(self.Vertices.Select(f).ToVertexAttribute()).ToIGeometry();
+            => self?.ReplaceAttribute(self.Vertices.Select(f).ToVertexAttribute())?.ToIGeometry();
 
         public static IGeometry Transform(this IGeometry self, Matrix4x4 m)
             => self.Deform(v => v.Transform(m));
@@ -383,20 +433,34 @@ namespace Ara3D
         public static IGeometry Merge(this IEnumerable<IGeometry> geometries) 
             => geometries.ToIArray().Merge();
 
-        // TODO: optimize this function
+        // TODO: this function need to be generalized to handle all attributes correctly. In fact I think it should proably happen at the IG3D level.
         public static IGeometry Merge(this IArray<IGeometry> geometries)
         {
-            var triMeshes = geometries.Select(g => g.ToTriMesh());
-            var verts = new Vector3[triMeshes.Sum(g => g.Vertices.Count)];
+            var triMeshes = geometries.Where(g => g != null).Select(g => g.ToTriMesh()).ToArray();
+            var newVertCount = triMeshes.Sum(g => g.Vertices.Count);
+            var newFaceCount = triMeshes.Sum(g => g.NumFaces);
+            var verts = new Vector3[newVertCount];
+            var uvs = new Vector2[newVertCount];
+            var objectIds = new int[newFaceCount];
+            var materialIds = new int[newFaceCount];
             var indices = new List<int>();
-            var offset = 0;
-            foreach (var g in triMeshes.ToEnumerable())
+            var vtxOffset = 0;
+            var faceOffset = 0;
+
+            // TODO: this assumes the presence of object ids and material ids
+            foreach (var g in triMeshes)
             {
-                g.Vertices.CopyTo(verts, offset);
-                g.Indices.Add(offset).AddTo(indices);
-                offset += g.Vertices.Count;
+                g.Vertices.CopyTo(verts, vtxOffset);
+                g.UVs.CopyTo(uvs, vtxOffset);
+                g.Indices.Add(vtxOffset).AddTo(indices);
+                g.MaterialIds()?.CopyTo(materialIds, faceOffset);
+                g.ObjectIds()?.CopyTo(objectIds, faceOffset);
+                vtxOffset += g.Vertices.Count;
+                faceOffset += g.NumFaces;
             }
-            return TriMesh(verts.ToIArray(), indices.ToIArray());
+
+            // TODO: maybe this could all be done using real arrays, probably be faster to serialize, etc.  But that is for later.
+            return TriMesh(verts.ToIArray(), indices.ToIArray(), uvs.ToIArray(), materialIds.ToIArray(), objectIds.ToIArray());
         }
 
         public static bool AreAllIndicesValid(this IGeometry self)
@@ -418,11 +482,12 @@ namespace Ara3D
             if (g3d.PointsPerFace > 0)
                 return faceIndices.GroupIndicesToIndices(g3d.PointsPerFace);
             var r = new List<int>();
+            var topo = g3d.Topology;
             for (var i = 0; i < faceIndices.Count; ++i)
             {
                 var index = faceIndices[i];
                 var faceSize = g3d.FaceSizes[index];
-                var faceIndex = g3d.FaceIndices[index];
+                var faceIndex = topo.FaceIndices[index];
                 for (var j=0; j < faceSize; ++j)
                     r.Add(g3d.Indices[faceIndex + j]);
             }
@@ -476,11 +541,11 @@ namespace Ara3D
         public static IG3D ToG3D(this IGeometry g)
             => g.Attributes.ToG3D();
 
-        public static bool Planar(this IGeometry g)
+        public static bool Planar(this IGeometry g, float tolerance = Constants.Tolerance)
         {
             if (g.NumFaces <= 1) return true;
             var normal = g.GetFace(0).Normal();
-            return g.GetFaces().All(f => f.Normal().AlmostEquals(normal));
+            return g.GetFaces().All(f => f.Normal().AlmostEquals(normal, tolerance));
         }
 
         public static bool AreTrianglesRepeated(this IGeometry g)
@@ -493,17 +558,20 @@ namespace Ara3D
         {
             (g3d as IG3D).Validate();
 
-            if (g3d.FaceIndices.Count != g3d.NumFaces)
-                throw new Exception("Expected the face indices to be equal to the number of faces");
             if (g3d.FaceSizes.Count != g3d.NumFaces)
                 throw new Exception("Expected the face sizes array to be equal to the number of faces");
             if (!g3d.AreAllIndicesValid())
                 throw new Exception("Not all indices are valid");
+
+            var topo = g3d.Topology;
+            var faceIndex = 0;
             for (var i = 0; i < g3d.NumFaces; ++i)
             {
+                if (faceIndex != topo.FaceIndices[i])
+                    throw new Exception("Topology face indices is incorrect");
                 var faceSize = g3d.FaceSizes[i];
-                var faceIndex = g3d.FaceIndices[i];
-
+                faceIndex += faceSize;
+                
                 var face = g3d.GetFace(i);
                 if (face.Count != faceSize)
                     throw new Exception("Face does not have correct size");
@@ -576,5 +644,31 @@ namespace Ara3D
 
             return Mesh(g.PointsPerFace, newVertices.ToIArray(), newIndices.ToIArray());
         }
+
+        public static bool IsEqual(this IGeometry g1, IGeometry g2)
+            => g1.NumFaces == g2.NumFaces
+               && g1.PointsPerFace == g2.PointsPerFace
+               && g1.Indices.SequenceEquals(g2.Indices)
+               && g1.Vertices.SequenceEquals(g2.Vertices)
+               && g1.UVs.SequenceEquals(g2.UVs)
+               && g1.FaceSizes.SequenceEquals(g2.FaceSizes);
+
+        /// <summary>
+        /// Creates a TriMesh from four points. 
+        /// </summary>
+        public static IGeometry TriMeshFromQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+            => TriMesh(new[] {a, b, c, c, d, a}.ToIArray());
+
+        public static IGeometry SetMaterialIds(this IGeometry g, int id)
+            => g.SetMaterialIds(id.Repeat(g.NumFaces));
+
+        public static IGeometry SetMaterialIds(this IGeometry g, IArray<int> ids)
+            => g.ReplaceAttribute(ids.ToMaterialIdsAttribute()).ToIGeometry();
+
+        public static IGeometry SetObjectIds(this IGeometry g, int id)
+            => g.SetObjectIds(id.Repeat(g.NumFaces));
+
+        public static IGeometry SetObjectIds(this IGeometry g, IArray<int> ids)
+            => g.ReplaceAttribute(ids.ToObjectIdsAttribute()).ToIGeometry();
     }
 }

@@ -6,7 +6,10 @@ using System.Linq;
 namespace Ara3D
 {
     public static class G3DExtensions
-    {          
+    {
+        public static int ElementCount(this IAttribute x)
+            => x.Count / x.Descriptor.DataArity;
+
         public static IAttribute ToAttribute<T>(this IArray<T> xs, AttributeDescriptor desc) where T: struct 
             => new AttributeArray<T>(xs, desc);
 
@@ -79,6 +82,15 @@ namespace Ara3D
         public static IAttribute ToMaterialIdsAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_face, AttributeType.attr_materialid, index);
 
+        public static IAttribute ToObjectIdsAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_face, AttributeType.attr_object_id, index);
+
+        public static IAttribute ToGroupMaterialIdsAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_group, AttributeType.attr_materialid, index);
+
+        public static IAttribute ToGroupObjectIdsAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_group, AttributeType.attr_object_id, index);
+
         public static IAttribute ToVertexNormalAttribute(this IArray<Vector3> data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
 
@@ -88,11 +100,14 @@ namespace Ara3D
         public static IAttribute ToInstanceGroupAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_instance, AttributeType.attr_instance_group, index);
 
-        public static IAttribute ToGroupIndexAttribute(this IArray<int> data, int index = 0)
-            => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_index, index);
+        public static IAttribute ToGroupIndexOffsetAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_index_offset, index);
 
         public static IAttribute ToGroupSizeAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_size, index);
+
+        public static IAttribute ToGroupVertexOffsetAttribute(this IArray<int> data, int index = 0)
+            => data.ToAttribute(Association.assoc_group, AttributeType.attr_group_vertex_offset, index);
 
         public static IEnumerable<AttributeDescriptor> Descriptors(this IG3D g3D)
             => g3D.Attributes.Select(attr => attr.Descriptor);
@@ -182,8 +197,12 @@ namespace Ara3D
                 _data_type = (int) dt,
             };        
 
+        // TODO: read this from 
         public static G3D ReadFromFile(string filePath) 
             => G3D.Create(File.ReadAllBytes(filePath));
+
+        public static G3D ReadFromStream(Stream stream)
+            => G3D.Create(stream.ReadAllBytes());
 
         public static G3D ToG3D(this BFast bfast)
             => G3D.Create(bfast);
@@ -214,10 +233,10 @@ namespace Ara3D
         public static IG3D ToG3D(params IAttribute[] attributes)
             => attributes.ToG3D();
 
-        public static IG3D ToG3D(int sidesPerFaces, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null)
-            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute(), materialIds?.ToMaterialIdsAttribute());
+        public static IG3D ToG3D(int sidesPerFaces, IArray<Vector3> vertices, IArray<int> indices = null, IArray<Vector2> uvs = null, IArray<int> materialIds = null, IArray<int> objectIds = null)
+            => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute(), materialIds?.ToMaterialIdsAttribute(), objectIds?.ToObjectIdsAttribute());
 
-        public static IG3D ToG3D(int sidesPerFaces, Vector3[] vertices, int[] indices = null, IArray<Vector2> uvs = null)
+        public static IG3D ToG3D(int sidesPerFaces, Vector3[] vertices, int[] indices = null, Vector2[] uvs = null)
             => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute());
 
         public static BFast ToBFast(this IEnumerable<IAttribute> attributes)
@@ -320,15 +339,14 @@ namespace Ara3D
                 : g3d.FaceSizeAttribute.ToInts().Count;
 
         public static IArray<int> MaterialIds(this IG3D g3d)
-            => g3d.MaterialIdAttribute?.ToInts()
-               ?? (-1).Repeat(g3d.FaceCount());
+            => g3d.MaterialIdAttribute?.ToInts();
 
-        public static IArray<int> FaceIndices(this IG3D g3d)
-            => g3d.FaceIndexAttribute?.ToInts()
-               ?? (g3d.HasFixedFaceSize()
-                   ? g3d.CornerVertexIndices().Indices().Stride(g3d.FirstFaceSize())
-                   : g3d.FaceSizes().Accumulate((x, y) => x + y));
+        public static IArray<int> ObjectIds(this IG3D g3d)
+            => g3d.MaterialIdAttribute?.ToInts();
 
+        public static IArray<Vector2> UVs(this IG3D g3d)
+            => g3d.UVAttributes().FirstOrDefault().ToVector2s();
+                
         public static int VertexCount(this IG3D g3d)
             => g3d.VertexAttribute.Count;
 
@@ -500,7 +518,7 @@ namespace Ara3D
             g3d.Attributes(AttributeType.attr_uv).ToList()
                 .ValidateArity(2, 3)
                 .ValidateDataType(DataType.dt_float32)
-                .ValidateAssociation(Association.assoc_vertex, Association.assoc_corner);
+                .ValidateAssociation(Association.assoc_vertex);
 
             g3d.Attributes(AttributeType.attr_invalid).ToList()
                 .ValidateNone();

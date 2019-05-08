@@ -61,18 +61,35 @@ namespace Ara3D
     /// </summary>
     public class G3D : IG3D
     {
-        public static string DefaultHeader = new {
-            file = "g3d",
-            g3dversion = new G3DVersion(),
-        }.ToJson();
+        public static string DefaultHeader = new Func<string>(() =>
+        {
+            // A tailored string to avoid a JSON serialization dependency.
+            var file = "g3d";
+            var g3dversion = new G3DVersion();
+            return (
+$@"{{
+  ""file"": ""{file}"",
+  ""g3dversion"": {{
+    ""Major"": ""{g3dversion.Major}"",
+    ""Minor"": ""{g3dversion.Minor}"",
+    ""Revision"": ""{g3dversion.Revision}"",
+    ""Date"": ""{g3dversion.Date}""
+  }}
+}}"
+            );
+        })();
 
         public IEnumerable<IAttribute> Attributes { get; }
 
-        public IAttribute VertexAttribute { get; }
-        public IAttribute IndexAttribute { get; }
-        public IAttribute FaceSizeAttribute { get; }
-        public IAttribute FaceIndexAttribute { get; }
-        public IAttribute MaterialIdAttribute { get; }
+        public IAttribute VertexAttribute => m_vertexAttribute;
+
+        public IAttribute IndexAttribute => m_indexAttribute;
+
+        public IAttribute FaceSizeAttribute => m_faceSizeAttribute;
+
+        public IAttribute FaceIndexAttribute => m_faceIndexAttribute;
+
+        public IAttribute MaterialIdAttribute => m_materialIdAttribute;
 
         public string Header { get; }
 
@@ -81,21 +98,43 @@ namespace Ara3D
         /// </summary>
         public readonly BFast Buffer;
 
+        private readonly IAttribute m_vertexAttribute;
+        private readonly IAttribute m_indexAttribute;
+        private readonly IAttribute m_faceSizeAttribute;
+        private readonly IAttribute m_faceIndexAttribute;
+        private readonly IAttribute m_materialIdAttribute;
+
         public G3D(IEnumerable<IAttribute> attributes, BFast buffer = null, string header = null)
         {
             Buffer = buffer;
             Header = header;
-            Attributes = attributes.WhereNotNull();
-            
-            VertexAttribute = this.FindAttribute(AttributeType.attr_vertex);
-            IndexAttribute = this.FindAttribute(AttributeType.attr_index, false);
-            FaceSizeAttribute = this.FindAttribute(AttributeType.attr_facesize, false);
-            FaceIndexAttribute = this.FindAttribute(AttributeType.attr_faceindex, false);
-            MaterialIdAttribute = this.FindAttribute(AttributeType.attr_materialid, false);
+            Attributes = attributes;
+
+            foreach (var attr in attributes)
+            {
+                _AssignIfPossible(attr, ref m_vertexAttribute, AttributeType.attr_vertex);
+                _AssignIfPossible(attr, ref m_indexAttribute, AttributeType.attr_index);
+                _AssignIfPossible(attr, ref m_faceSizeAttribute, AttributeType.attr_facesize);
+                _AssignIfPossible(attr, ref m_faceIndexAttribute, AttributeType.attr_faceindex);
+                _AssignIfPossible(attr, ref m_materialIdAttribute, AttributeType.attr_materialid);
+            }
+
+            if (m_vertexAttribute == null)
+                throw new Exception("Vertex attribute is not present");
 
             // Check that everything is kosher
             // TODO: this is a long process, only do it in specific circumstances.
             //this.Validate();
+        }
+
+        private static void _AssignIfPossible(IAttribute attr, ref IAttribute target, AttributeType at)
+        {
+            if (attr == null) return;
+            if (attr.Descriptor.AttributeType == at)
+            {
+                if (target != null) throw new Exception("Attribute is already assigned");
+                target = attr;
+            }
         }
 
         public static G3D Create(BFast bfast)
