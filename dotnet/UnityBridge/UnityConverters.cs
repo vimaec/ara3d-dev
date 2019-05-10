@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Ara3D;
 // Explicitly specify math types to make it clear what each function does
+using Vector2 = Ara3D.Vector2;
 using Vector3 = Ara3D.Vector3;
 using Quaternion = Ara3D.Quaternion;
 using Matrix4x4 = Ara3D.Matrix4x4;
 using UVector3 = UnityEngine.Vector3;
+using UVector2 = UnityEngine.Vector2;
 using UQuaternion = UnityEngine.Quaternion;
 using UMatrix4x4 = UnityEngine.Matrix4x4;
 
@@ -34,6 +37,12 @@ namespace UnityBridge
             => PolyFaceToUnity(index, 4);
 
         // TODO: This should be pushed into the exporter.  The world deals in metric.
+        public static UVector3 ToUnity(this Vector3 v)
+            => new UVector3(v.X, v.Y, v.Z);
+
+        public static UVector2 ToUnity(this Vector2 v)
+            => new UVector2(v.X, v.Y);
+
         public static UVector3 PositionToUnity(float x, float y, float z)
             => new UVector3(-x, z, -y) * FEET_TO_METERS;
 
@@ -57,13 +66,14 @@ namespace UnityBridge
 
         public static Mesh ToUnity(this IGeometry g)
         {
-            var r = new Mesh();
+            var mesh = new Mesh();
             
             var indices = g.IndexAttribute.ToInts();
             var vertexFloats = g.VertexAttribute.ToFloats();
             var unityVertices = vertexFloats.SelectTriplets(PositionToUnity);
-            r.vertices = unityVertices.ToArray();
-            r.indexFormat = unityVertices.Count > ushort.MaxValue
+            mesh.vertices = unityVertices.ToArray();
+            mesh.uv = g.UVs.ToArray().Select(v => v.ToUnity()).ToArray();
+            mesh.indexFormat = unityVertices.Count > ushort.MaxValue
                 ? IndexFormat.UInt32
                 : IndexFormat.UInt16;
 
@@ -72,32 +82,32 @@ namespace UnityBridge
                 case 3:
                     {
                         var unityIndices = indices.MapIndices(TriFaceToUnity);
-                        r.SetIndices(unityIndices.ToArray(), MeshTopology.Triangles, 0);
+                        mesh.SetIndices(unityIndices.ToArray(), MeshTopology.Triangles, 0);
                         break;
                     }
                 case 4:
                     {
                         var unityIndices = indices.MapIndices(QuadFaceToUnity);
-                        r.SetIndices(unityIndices.ToArray(), MeshTopology.Quads, 0);
+                        mesh.SetIndices(unityIndices.ToArray(), MeshTopology.Quads, 0);
                         break;
                     }
                 case 2:
-                    r.SetIndices(g.Indices.ToArray(), MeshTopology.Lines, 0);
+                    mesh.SetIndices(g.Indices.ToArray(), MeshTopology.Lines, 0);
                     break;
                 case 1:
-                    r.SetIndices(g.Indices.ToArray(), MeshTopology.Points, 0);
+                    mesh.SetIndices(g.Indices.ToArray(), MeshTopology.Points, 0);
                     break;
                 default:
                     {
                         var triMesh = g.ToTriMesh();
                         var unityIndices = triMesh.Indices.MapIndices(TriFaceToUnity);
-                        r.SetIndices(unityIndices.ToArray(), MeshTopology.Triangles, 0);
+                        mesh.SetIndices(unityIndices.ToArray(), MeshTopology.Triangles, 0);
                         break;
                     }
             }
 
-            r.RecalculateNormals();
-            return r;
+            mesh.RecalculateNormals();
+            return mesh;
 
             // TODO: copy colors, normals, uvs1 through 8, tangents, and boneWeights
             //r.colors = g.VertexColors.Select();
