@@ -289,10 +289,7 @@ namespace Ara3D
 
         public static IEnumerable<IAttribute> NormalAttributes(this IG3D g3D)
             => g3D.Attributes(AttributeType.attr_normal);
-
-        public static IEnumerable<IAttribute> GroupIndexAttributes(this IG3D g3D)
-            => g3D.Attributes(AttributeType.attr_group_index);
-
+        
         public static IEnumerable<IAttribute> InstanceTransforms(this IG3D g3D)
             => g3D.Attributes(AttributeType.attr_instance_transform);
 
@@ -428,7 +425,7 @@ namespace Ara3D
             var cornerCount = g3d.CornerVertexIndices().Count;
 
             // Compute the number of groups. Groups requires the precense of a GroupIndex attribute
-            var groupCount = g3d.GroupIndexAttributes().FirstOrDefault()?.Count ?? -1;
+            var groupCount = g3d.Attributes(Association.assoc_group).FirstOrDefault()?.Count ?? -1;
 
             // Compute the number of instance. The first instance channel determines the number of instances
             var instanceCount = g3d.Attributes(Association.assoc_instance).FirstOrDefault()?.Count ?? -1;
@@ -545,7 +542,7 @@ namespace Ara3D
             g3d.Attributes(AttributeType.attr_materialid).ToList()
                 .ValidateArity(1)
                 .ValidateDataType(DataType.dt_int32)
-                .ValidateAssociation(Association.assoc_face);
+                .ValidateAssociation(Association.assoc_face, Association.assoc_group);
 
             g3d.Attributes(AttributeType.attr_pervertex).ToList()
                 .ValidateArity(1)

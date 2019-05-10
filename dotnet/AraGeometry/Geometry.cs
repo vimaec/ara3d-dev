@@ -570,7 +570,6 @@ namespace Ara3D
                 if (faceIndex != topo.FaceIndices[i])
                     throw new Exception("Topology face indices is incorrect");
                 var faceSize = g3d.FaceSizes[i];
-                faceIndex += faceSize;
                 
                 var face = g3d.GetFace(i);
                 if (face.Count != faceSize)
@@ -585,6 +584,8 @@ namespace Ara3D
                     if (index != face[j])
                         throw new Exception("Face does not have valid index");
                 }
+
+                faceIndex += faceSize;
             }
         }
 
