@@ -527,8 +527,14 @@ namespace Ara3D
         /// <summary>
         /// Returns a value if found in the dictionary, or default if not present.
         /// </summary>
+        public static V GetOrDefault<K, V>(this IDictionary<K, V> self, K key, V defaultValue)
+            => self.ContainsKey(key) ? self[key] : defaultValue;
+
+        /// <summary>
+        /// Returns a value if found in the dictionary, or default if not present.
+        /// </summary>
         public static V GetOrDefault<K, V>(this IDictionary<K, V> self, K key)
-            => self.ContainsKey(key) ? self[key] : default;
+            => self.GetOrDefault(key, default);
 
         /// <summary>
         /// Returns a value if found in the dictionary, or default if not present.

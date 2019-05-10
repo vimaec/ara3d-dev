@@ -8,6 +8,6 @@ rem <Directory> <message>
 pushd %1 
 git add .
 git commit -m %2
-git push
+rem git push
 popd
 exit /b

@@ -15,7 +15,7 @@ namespace Ara3D
 { 
     /// <summary>
     /// The interface of an IG3D structure which is just a collection of Attributes.
-    /// Strictly speaking an IG3D could be just a collection of Attributes,
+    /// Strictly speaking an IG3D could be nothing else but a collection of Attributes,
     /// but there are a couple of basic attribute accessors that we require to be present
     /// to simplify coding.
     /// </summary>
@@ -82,13 +82,9 @@ $@"{{
         public IEnumerable<IAttribute> Attributes { get; }
 
         public IAttribute VertexAttribute => m_vertexAttribute;
-
         public IAttribute IndexAttribute => m_indexAttribute;
-
         public IAttribute FaceSizeAttribute => m_faceSizeAttribute;
-
         public IAttribute FaceIndexAttribute => m_faceIndexAttribute;
-
         public IAttribute MaterialIdAttribute => m_materialIdAttribute;
 
         public string Header { get; }
