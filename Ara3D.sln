@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		commit.bat = commit.bat
+		push.bat = push.bat
 		README.md = README.md
 		status.bat = status.bat
 		tag.bat = tag.bat
