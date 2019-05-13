@@ -268,10 +268,11 @@ namespace Ara3D
             return bw;
         }
 
-        public static void WriteToFile(this IBFast bf, string path)
+        public static string WriteToFile(this IBFast bf, string path)
         {
             using (var f = File.OpenWrite(path))
                 bf.Write(f);
+            return path;
         }
 
         public static byte[] ToBytes(this IBFast bf)

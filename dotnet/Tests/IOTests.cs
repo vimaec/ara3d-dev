@@ -186,7 +186,7 @@ namespace Ara3D.Tests
             TestWritingFile(outputFileName + ".ara.obj", f => g.WriteObj(f, false));
 
             var g3dFileName = outputFileName + ".ara.g3d";
-            TestWritingFile(g3dFileName, g.WriteG3D);
+            TestWritingFile(g3dFileName, (f) => g.WriteG3D(f));
 
             Console.WriteLine("Testing G3 Sharp writer");
             TestWritingFile(outputFileName + ".g3.obj", f => g.ToG3Sharp().WriteFile(f));

@@ -437,7 +437,7 @@ namespace Ara3D
         // TODO: this function need to be generalized to handle all attributes correctly. In fact I think it should proably happen at the IG3D level.
         public static IGeometry Merge(this IArray<IGeometry> geometries)
         {
-            var triMeshes = geometries.Where(g => g != null).Select(g => g.ToTriMesh()).ToArray();
+            var triMeshes = geometries.Where(g => g != null && g.NumFaces > 0).Select(g => g.ToTriMesh()).ToArray();
             var newVertCount = triMeshes.Sum(g => g.Vertices.Count);
             var newFaceCount = triMeshes.Sum(g => g.NumFaces);
             var verts = new Vector3[newVertCount];
