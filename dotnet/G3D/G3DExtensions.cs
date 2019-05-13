@@ -121,7 +121,7 @@ namespace Ara3D
         public static string AttributeTypeString(this AttributeType at)
             => AttributeDescriptor.AttributeTypeToString((int)at);        
 
-        public static IAttribute FindAttribute(this IG3D g3D, AttributeType attributeType, bool throwIfMissing = true)
+        public static IAttribute FindAttribute(this IG3D g3D, AttributeType attributeType, bool throwIfMissing = false)
         {
             var candidates = g3D.FindAttributes(attributeType).ToList();
             if (candidates.Count > 1)

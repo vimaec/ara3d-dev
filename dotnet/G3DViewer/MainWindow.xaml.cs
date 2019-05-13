@@ -116,7 +116,8 @@ namespace G3DViewer
             }
 
             var groups = Ara3D.Revit.DataModel.RevitDataModelExtensions.SplitByGroup(g3d);
-
+                
+            /*
             if (false) // instancing
             {
                 foreach (var group in groups)
@@ -146,7 +147,7 @@ namespace G3DViewer
 
                 mainViewModel.EndBakingModel();
             }
-
+            */
   //          mainViewModel.AddInstance(0, Matrix4x4.Identity);
 
             mainViewModel.Title = folderName;

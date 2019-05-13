@@ -176,6 +176,7 @@ namespace Ara3D.Tests
             // Time the different writing 
             // Try conversions back from the different forms. and the reading. 
             // 
+            TestGeometries.OutputTriangleStatsSummary(g);
             TestGeometries.OutputIGeometryStats(g);
 
             var baseFileName = Path.GetFileName(fileName);
