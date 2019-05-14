@@ -8,22 +8,32 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:ie="http://schemas.microsoft.com/expression/2010/interactions"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:DVC="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+    xmlns:DV="clr-namespace:System.Windows.Controls.DataVisualization;assembly=System.Windows.Controls.DataVisualization.Toolkit"
     Title="MainWindow"
     Width="1920"
     Height="1080"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    KeyDown="Grid_KeyDown"
+        AllowDrop="True"
+        DragOver="Window_DragOver"
+        DragEnter="Window_DragEnter"
+        DragLeave="Window_DragLeave"
+        Drop="Window_Drop"
+        >
     <Window.Resources>
         <hx:RenderTechniqueConverter x:Key="RenderTechniqueConverter" />
     </Window.Resources>
-    <Grid KeyDown="Grid_KeyDown">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="800" />
         </Grid.ColumnDefinitions>
         <hx:Viewport3DX
+            BackgroundColor="DarkGray"
             x:Name="view1"
             Title="{Binding Title}"
             Grid.Row="0"
@@ -38,7 +48,7 @@
 
             <hx:DirectionalLight3D Direction="{Binding Camera.LookDirection}" Color="{Binding DirectionalLightColor}" />
 
-            <hx:EnvironmentMap3D x:Name="envMap" Texture="{Binding Texture}" />
+            <!--hx:EnvironmentMap3D x:Name="envMap" Texture="{Binding Texture}" /-->
 
             <hx:ItemsModel3D ItemsSource="{Binding Models}"
                 Transform="{Binding ModelsTransform}">
@@ -60,15 +70,54 @@
         </hx:Viewport3DX>
 
         <ScrollViewer Grid.Row="0" Grid.Column="1"  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="5,5,5,5">
+            <StackPanel Margin="5,5,5,5" x:Name="panel">
                 <TextBlock Text="{Binding displayStats.NumFaces, StringFormat=Num Faces: \{0\}}"/>
+                <TextBlock Text="{Binding displayStats.NumTriangles, StringFormat=Num Triangles: \{0\}}"/>
+                <TextBlock Text="{Binding displayStats.NumDegenerateTriangles, StringFormat=Num Degenerate Triangles: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.NumVertices, StringFormat=Num Vertices: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.NumMaterialIds, StringFormat=Num Material Ids: \{0\}}"/>
+                <TextBlock Text="{Binding displayStats.NumObjectIds, StringFormat=Num Object Ids: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.LoadTime, StringFormat=Load Time: \{0:0.00\}s}"/>
+                <TextBlock Text="{Binding displayStats.VertexBufferGenerationTime, StringFormat=Vertex Buffer Generation Time: \{0:0.00\}s}"/>
+                <TextBlock Text="{Binding displayStats.AABB.Center, StringFormat=AABB Center: \{0:0.0\}}"/>
+                <TextBlock Text="{Binding displayStats.AABB.Extent, StringFormat=AABB Extent: \{0:0.0\}}"/>
                 <TextBlock Text="{Binding displayStats.FileSize, StringFormat=File Size: \{0\}}"/>
 
                 <DataGrid ItemsSource="{Binding displayStats.AttributeStats}" AutoGenerateColumns="True"/>
 
+                <TabControl>
+                    <TabItem Header="Histogram">
+                        <DVC:Chart Canvas.Top="10" Canvas.Left="10" Width="Auto" Height="600" Background="Transparent" Title="Triangle Area Histogram">
+                            <DVC:Chart.Series>
+                                <DVC:BarSeries ItemsSource="{Binding displayStats.AreaHistogramLog}" IndependentValueBinding="{Binding Path=Key}" DependentValueBinding="{Binding Path=Value}">
+                                </DVC:BarSeries>
+                            </DVC:Chart.Series>
+                            <DVC:Chart.Axes>
+                                <DVC:LinearAxis Orientation="X" ShowGridLines="True" Title="Log Num Triangles"/>
+                            </DVC:Chart.Axes>
+                        </DVC:Chart>
+                    </TabItem>
+                    <TabItem Header="Raw Numbers">
+                        <DataGrid ItemsSource="{Binding displayStats.AreaHistogram}" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Triangle Area" Width="Auto" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Key, Mode=OneWay}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="# of Triangles" Width="Auto" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Value, Mode=OneWay}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
             </StackPanel>
         </ScrollViewer>
         <StatusBar Grid.Row="0" VerticalAlignment="Bottom">

@@ -1,6 +1,7 @@
 ﻿using Ara3D;
 using Ara3D.DotNetUtilities.Extra;
 using Ara3D.Revit.DataModel;
+using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -50,11 +51,23 @@ namespace G3DViewer
     public class DisplayStats : ObservableObject
     {
         public int NumFaces { get; set; }
+        public int NumTriangles { get; set; }
         public int NumVertices { get; set; }
         public int NumMaterialIds { get; set; }
+        public int NumObjectIds { get; set; }
         public float LoadTime { get; set; }
+        public float VertexBufferGenerationTime { get; set; }
         public int FileSize { get; set; }
+        public int NumDegenerateTriangles { get; set; }
+        public Box AABB { get; set; } = new Box();
         public ObservableCollection<AttributeStat> AttributeStats { get; } = new ObservableCollection<AttributeStat>();
+
+        public const int NumHistogramDivisions = 16;
+        public float MinTriangleArea = float.MaxValue;
+        public float MaxTriangleArea = 0.0f;
+        public int[] AreaHistogramArray = new int[NumHistogramDivisions];
+        public Dictionary<string, float> AreaHistogramLog { get; set; } = new Dictionary<string, float>();
+        public Dictionary<string, int> AreaHistogram { get; set; } = new Dictionary<string, int>();
     };
 
     /// <summary>
@@ -63,18 +76,13 @@ namespace G3DViewer
     public partial class MainWindow : Window
     {
         MainViewModel mainViewModel;
+        G3D mG3D = null;
 
         public static DisplayStats mDisplayStats = new DisplayStats();
-
-
-        //        string folderName = "E:/VimAecDev/vims/Mechanical_Room-2019";
-        string folderName = "E:/VimAecDev/vims/Mountain_House-2019";
-//        string folderName = "E:/VimAecDev/vims/Vision_House_Vimaec_2019";
 
         public MainWindow()
         {
             InitializeComponent();
-            mainViewModel = new MainViewModel();
             Closed += (s, e) => {
                 if (DataContext is IDisposable)
                 {
@@ -82,6 +90,13 @@ namespace G3DViewer
                 }
             };
 
+//            OpenG3D("E:/VimAecDev/vims/Models/Houston_Courthouse.g3d");
+ //           OpenG3D("E:/VimAecDev/vims/Models/main.g3d");
+        }
+
+        public void OpenG3D(string FileName)
+        {
+            mainViewModel = new MainViewModel();
             this.DataContext = mainViewModel;
 
             mDisplayStats = new DisplayStats();
@@ -92,15 +107,15 @@ namespace G3DViewer
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            var documentModel = Ara3D.Revit.DataModel.RevitDataModelExtensions.LoadDocumentModelFromFolder(new WrappedJsonSerializer(), folderName, logger);
-  //          var sceneNodeList = Ara3D.Revit.DataModel.RevitDataModelExtensions.LoadSceneGraph(folderName, logger);
-
-            var mainGeometryFilePath = System.IO.Path.Combine(folderName, "main.g3d");
-            var g3d = G3DExtensions.ReadFromFile(mainGeometryFilePath);
+            mG3D = G3DExtensions.ReadFromFile(FileName);
 
             mDisplayStats.LoadTime = stopwatch.ElapsedMilliseconds / 1000.0f;
 
-            foreach (var attribute in g3d.Attributes)
+            int index = mainViewModel.AddG3DData(mG3D);
+
+            mDisplayStats.VertexBufferGenerationTime = stopwatch.ElapsedMilliseconds / 1000.0f - mDisplayStats.LoadTime;
+
+            foreach (var attribute in mG3D.Attributes)
             {
                 var attributeStat = new AttributeStat();
 
@@ -111,45 +126,39 @@ namespace G3DViewer
                 attributeStat.DataArity = attribute.Descriptor._data_arity;
                 attributeStat.DataType = ((DataType)attribute.Descriptor._data_type).ToString();
 
-
                 mDisplayStats.AttributeStats.Add(attributeStat);
             }
 
-            var groups = Ara3D.Revit.DataModel.RevitDataModelExtensions.SplitByGroup(g3d);
+            IArray<int> materialIds = G3DExtensions.MaterialIds(mG3D);
 
-            if (false) // instancing
+            Dictionary<int, int> materialIdMap = new Dictionary<int, int>();
+            for (int materialIdIndex = 0; materialIdIndex < materialIds.Count; materialIdIndex++)
             {
-                foreach (var group in groups)
+                int materialId = materialIds[materialIdIndex];
+                if (!materialIdMap.ContainsKey(materialId))
                 {
-                    mainViewModel.AddG3DData(group);
-                }
-
-                foreach (var node in documentModel.UniqueNodes)
-                {
-                    if (node.GeometryIndex >= 0)
-                    {
-                        mainViewModel.AddInstance(node.GeometryIndex, node.Transform);
-                    }
+                    materialIdMap[materialId] = materialId;
                 }
             }
-            else
+
+            mDisplayStats.NumMaterialIds = materialIdMap.Count;
+
+
+            IArray<int> objectIds = G3DExtensions.ObjectIds(mG3D);
+
+            Dictionary<int, int> objectIdMap = new Dictionary<int, int>();
+            for (int objectIdIndex = 0; objectIdIndex < objectIds.Count; objectIdIndex++)
             {
-                mainViewModel.StartBakingModel();
-
-                foreach (var node in documentModel.UniqueNodes)
+                int objectId = objectIds[objectIdIndex];
+                if (!objectIdMap.ContainsKey(objectId))
                 {
-                    if (node.GeometryIndex >= 0)
-                    {
-                        mainViewModel.BakeInstance(groups[node.GeometryIndex], node.Transform);
-                    }
+                    objectIdMap[objectId] = objectId;
                 }
-
-                mainViewModel.EndBakingModel();
             }
 
-  //          mainViewModel.AddInstance(0, Matrix4x4.Identity);
+            mDisplayStats.NumObjectIds = objectIdMap.Count;
 
-            mainViewModel.Title = folderName;
+            mainViewModel.Title = "";
             mainViewModel.UpdateSubTitle();
         }
         public void FileExit_Click(object sender, RoutedEventArgs e)
@@ -164,28 +173,48 @@ namespace G3DViewer
 
         private void Grid_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.S)
+            if (e.Key == Key.S && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
             {
                 var dialog = new Microsoft.Win32.SaveFileDialog();
                 dialog.Filter = "Obj File|*.obj|G3D File|*.g3d|PNG Image|*.png|JPG Image|*.jpg";
                 if (dialog.ShowDialog() == true)
                 {
-                    string fileName = dialog.FileName;
-                    string extension = System.IO.Path.GetExtension(fileName).ToLower();
+                    string extension = System.IO.Path.GetExtension(dialog.FileName).ToLower();
                     if (extension == ".jpg" || extension == ".png")
                     {
-
+                        HelixToolkit.Wpf.SharpDX.Direct2DImageFormat format = (extension == ".jpg" ? HelixToolkit.Wpf.SharpDX.Direct2DImageFormat.Jpeg : HelixToolkit.Wpf.SharpDX.Direct2DImageFormat.Png);
+                        HelixToolkit.Wpf.SharpDX.ViewportExtensions.SaveScreen(view1, dialog.FileName, format);
                     }
                     else if (extension == ".obj")
                     {
-
+                        Ara3D.Geometry.ToIGeometry(mG3D).WriteObj(dialog.FileName);
                     }
                     else if (extension == ".g3d")
                     {
-
+                        mG3D.WriteG3D(dialog.FileName);
                     }
                 }
             }
+        }
+
+        private void Window_DragOver(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void Window_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Move;
+        }
+
+        private void Window_DragLeave(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void Window_Drop(object sender, DragEventArgs e)
+        {
+
         }
     }
 }
