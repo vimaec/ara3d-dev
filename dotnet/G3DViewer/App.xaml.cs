@@ -28,6 +28,10 @@ namespace G3DViewer
                 window.OpenG3D(e.Args[0]);
                 window.Show();
             }
+            else
+            {
+                System.Windows.Application.Current.Shutdown();
+            }
         }
     }
 }

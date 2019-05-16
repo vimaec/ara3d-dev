@@ -54,13 +54,19 @@
         public Vector3D DirectionalLightDirection { get; private set; }
         public Color DirectionalLightColor { get; private set; }
         public Color AmbientLightColor { get; private set; }
-  //      public Stream Texture { private set; get; }
+        //      public Stream Texture { private set; get; }
 
+        public DisplayStats _displayStats;
         public DisplayStats displayStats
         {
             get
             {
-                return MainWindow.mDisplayStats;
+                return _displayStats;
+            }
+            set
+            {
+                _displayStats = value;
+                OnPropertyChanged(nameof(displayStats));
             }
         }
 
@@ -302,6 +308,7 @@
                 {
                     int faceSize = faceSizes[currentFace];
 
+                    float faceArea = 0.0f;
                     for (int i = 0; i < faceSize - 2; i++)
                     {
                         int i0 = indexData[globalVectorIndex];
@@ -312,9 +319,17 @@
                         var v1 = sharpDxVectos[i1];
                         var v2 = sharpDxVectos[i2];
                         float triangleArea = Vector3.Cross(v0 - v1, v0 - v2).Length() * 0.5f;
+                        faceArea += triangleArea;
+
+                        displayStats.NumTriangles++;
 
                         if (triangleArea > 0.0f)
                         {
+                            if (triangleArea < DisplayStats.SmallTriangleSize)
+                            {
+                                displayStats.NumSmallTriangles++;
+                            }
+
                             // Ignore small triangles
                             float diagonalArea = displayStats.AABB.Diagonal * 0.0002f;
                             if (triangleArea > diagonalArea * diagonalArea)
@@ -330,7 +345,6 @@
                                 triangleIndices.Add(i2);
                             }
 
-                            displayStats.NumTriangles++;
 
                             displayStats.MinTriangleArea = Math.Min(triangleArea, displayStats.MinTriangleArea);
                             displayStats.MaxTriangleArea = Math.Max(triangleArea, displayStats.MaxTriangleArea);
@@ -339,6 +353,16 @@
                         {
                             displayStats.NumDegenerateTriangles++;
                         }
+                    }
+
+                    if (faceArea == 0.0f)
+                    {
+                        displayStats.NumDegenerateFaces++;
+                    }
+
+                    if (faceArea < DisplayStats.SmallTriangleSize)
+                    {
+                        displayStats.NumSmallFaces++;
                     }
 
                     globalVectorIndex += faceSize;
@@ -352,10 +376,10 @@
                 {
                     geometry3d.Positions = new Vector3Collection(sharpDxVectos.GetRange(minIndex, maxIndex - minIndex + 1));
                     geometry3d.Indices = triangleIndices;
-                    geometry3d.TextureCoordinates = new Vector2Collection(sharpDxUVs.GetRange(minIndex, maxIndex - minIndex + 1));
+            //        geometry3d.TextureCoordinates = new Vector2Collection(sharpDxUVs.GetRange(minIndex, maxIndex - minIndex + 1));
                     geometry3d.Normals = geometry3d.CalculateNormals();
 
-                    MeshBuilder.ComputeTangents(geometry3d);
+             //       MeshBuilder.ComputeTangents(geometry3d);
 
                     int modelIndex = AddModel(geometry3d);
                     AddInstance(modelIndex, Ara3D.Matrix4x4.CreateTranslation(-displayStats.AABB.Center));
@@ -398,8 +422,8 @@
 
             for (int i = 0; i < DisplayStats.NumHistogramDivisions; i++)
             {
-                float area0 = i * (displayStats.MaxTriangleArea - displayStats.MinTriangleArea) + displayStats.MinTriangleArea;
-                float area1 = (i + 1) * (displayStats.MaxTriangleArea - displayStats.MinTriangleArea) + displayStats.MinTriangleArea;
+                float area0 = i / (float)(DisplayStats.NumHistogramDivisions - 1) * (displayStats.MaxTriangleArea - displayStats.MinTriangleArea) + displayStats.MinTriangleArea;
+                float area1 = (i + 1) / (float)(DisplayStats.NumHistogramDivisions - 1) * (displayStats.MaxTriangleArea - displayStats.MinTriangleArea) + displayStats.MinTriangleArea;
 
                 string key = string.Format("{0:0.00} - {1:0.00}", area0, area1);
 

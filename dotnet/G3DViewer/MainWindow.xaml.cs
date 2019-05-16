@@ -52,17 +52,21 @@ namespace G3DViewer
     {
         public int NumFaces { get; set; }
         public int NumTriangles { get; set; }
+        public int NumDegenerateFaces { get; set; }
+        public int NumDegenerateTriangles { get; set; }
+        public int NumSmallFaces { get; set; }
+        public int NumSmallTriangles { get; set; }
         public int NumVertices { get; set; }
         public int NumMaterialIds { get; set; }
         public int NumObjectIds { get; set; }
         public float LoadTime { get; set; }
         public float VertexBufferGenerationTime { get; set; }
         public int FileSize { get; set; }
-        public int NumDegenerateTriangles { get; set; }
         public Box AABB { get; set; } = new Box();
         public ObservableCollection<AttributeStat> AttributeStats { get; } = new ObservableCollection<AttributeStat>();
 
         public const int NumHistogramDivisions = 16;
+        public const float SmallTriangleSize = 0.000001f;
         public float MinTriangleArea = float.MaxValue;
         public float MaxTriangleArea = 0.0f;
         public int[] AreaHistogramArray = new int[NumHistogramDivisions];
@@ -100,8 +104,9 @@ namespace G3DViewer
             this.DataContext = mainViewModel;
 
             mDisplayStats = new DisplayStats();
+            mainViewModel.displayStats = mDisplayStats;
 
-            
+
             var logger = new MyLogger();
 
 
@@ -160,6 +165,8 @@ namespace G3DViewer
 
             mainViewModel.Title = "";
             mainViewModel.UpdateSubTitle();
+            mainViewModel.displayStats = mDisplayStats;
+            Chart.ItemsSource = mDisplayStats.AreaHistogramLog;
         }
         public void FileExit_Click(object sender, RoutedEventArgs e)
         {
@@ -214,7 +221,17 @@ namespace G3DViewer
 
         private void Window_Drop(object sender, DragEventArgs e)
         {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                // Note that you can have more than one file.
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
+                string fileName = files[0];
+                if (System.IO.Path.GetExtension(fileName).ToLower() == ".g3d")
+                {
+                    OpenG3D(fileName);
+                }
+            }
         }
     }
 }

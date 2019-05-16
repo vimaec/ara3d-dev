@@ -33,7 +33,7 @@
             <ColumnDefinition Width="800" />
         </Grid.ColumnDefinitions>
         <hx:Viewport3DX
-            BackgroundColor="DarkGray"
+            BackgroundColor="#101010"
             x:Name="view1"
             Title="{Binding Title}"
             Grid.Row="0"
@@ -44,10 +44,18 @@
             ShowCoordinateSystem="False"
             SubTitle="{Binding SubTitle}"
             TextBrush="Black"
-            UseDefaultGestures="True">
+            UseDefaultGestures="True"
+            EnableSSAO="True"
+            FXAALevel="Ultra"
+            ShowFrameDetails="True"
+            SSAOSamplingRadius="1.5"
+            SSAOIntensity="2.0"
+            SSAOQuality="High"
+            >
 
-            <hx:DirectionalLight3D Direction="{Binding Camera.LookDirection}" Color="{Binding DirectionalLightColor}" />
 
+            <hx:DirectionalLight3D Direction="-1, -1, 0" Color="#9A9A9A" />
+            <hx:AmbientLight3D Color="#B0B0B0" />
             <!--hx:EnvironmentMap3D x:Name="envMap" Texture="{Binding Texture}" /-->
 
             <hx:ItemsModel3D ItemsSource="{Binding Models}"
@@ -72,8 +80,11 @@
         <ScrollViewer Grid.Row="0" Grid.Column="1"  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="5,5,5,5" x:Name="panel">
                 <TextBlock Text="{Binding displayStats.NumFaces, StringFormat=Num Faces: \{0\}}"/>
+                <TextBlock Text="{Binding displayStats.NumDegenerateFaces, StringFormat=Num Degenerate Faces: \{0\}}"/>
+                <TextBlock Text="{Binding displayStats.NumSmallFaces, StringFormat=Num Small Faces: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.NumTriangles, StringFormat=Num Triangles: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.NumDegenerateTriangles, StringFormat=Num Degenerate Triangles: \{0\}}"/>
+                <TextBlock Text="{Binding displayStats.NumSmallTriangles, StringFormat=Num Small Triangles: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.NumVertices, StringFormat=Num Vertices: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.NumMaterialIds, StringFormat=Num Material Ids: \{0\}}"/>
                 <TextBlock Text="{Binding displayStats.NumObjectIds, StringFormat=Num Object Ids: \{0\}}"/>
@@ -89,7 +100,7 @@
                     <TabItem Header="Histogram">
                         <DVC:Chart Canvas.Top="10" Canvas.Left="10" Width="Auto" Height="600" Background="Transparent" Title="Triangle Area Histogram">
                             <DVC:Chart.Series>
-                                <DVC:BarSeries ItemsSource="{Binding displayStats.AreaHistogramLog}" IndependentValueBinding="{Binding Path=Key}" DependentValueBinding="{Binding Path=Value}">
+                                <DVC:BarSeries  x:Name="Chart" ItemsSource="{Binding displayStats.AreaHistogramLog}" IndependentValueBinding="{Binding Path=Key}" DependentValueBinding="{Binding Path=Value}">
                                 </DVC:BarSeries>
                             </DVC:Chart.Series>
                             <DVC:Chart.Axes>
