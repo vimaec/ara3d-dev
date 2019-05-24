@@ -19,8 +19,8 @@ namespace Ara3D
         public static IAttribute ToAttribute<T>(this T[] data, AttributeDescriptor desc) where T : struct
             => data.Pin().ToAttribute(desc);
                
-        public static IAttribute ToAttribute<T>(this T[] data, Association assoc, AttributeType at, int index = 0) where T : struct
-            => data.ToAttribute(Descriptor<T>(assoc, at, index));
+        public static IAttribute ToAttribute<T>(this T[] data, Association assoc, AttributeType at, int index = 0, int data_arity = 1) where T : struct
+            => data.ToAttribute(Descriptor<T>(assoc, at, index, data_arity));
 
         public static IAttribute ToAttribute<T>(this IArray<T> data, Association assoc, AttributeType at, int index = 0) where T : struct
             => data.ToAttribute(Descriptor<T>(assoc, at, index));
@@ -36,6 +36,9 @@ namespace Ara3D
 
         public static IAttribute ToVertexAttribute(this Vector3[] data)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex);
+
+        public static IAttribute ToVertexAttribute(this float[] data)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex, 0, 3);
 
         public static IAttribute ToVertexAttribute(this IArray<Vector3> data)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex);
@@ -158,34 +161,34 @@ namespace Ara3D
             }
         }
 
-        public static AttributeDescriptor Descriptor<T>(Association assoc, AttributeType at, int index = 0) where T : struct
+        public static AttributeDescriptor Descriptor<T>(Association assoc, AttributeType at, int index = 0, int arity = 1) where T : struct
         {
             if (typeof(T) == typeof(float))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 1);
+                return Descriptor(assoc, at, index, DataType.dt_float32, arity);
             if (typeof(T) == typeof(double))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 1);
+                return Descriptor(assoc, at, index, DataType.dt_float64, arity);
             if (typeof(T) == typeof(short))
-                return Descriptor(assoc, at, index, DataType.dt_int16, 1);
+                return Descriptor(assoc, at, index, DataType.dt_int16, arity);
             if (typeof(T) == typeof(byte))
-                return Descriptor(assoc, at, index, DataType.dt_int8, 1);
+                return Descriptor(assoc, at, index, DataType.dt_int8, arity);
             if (typeof(T) == typeof(int))
-                return Descriptor(assoc, at, index, DataType.dt_int32, 1);
+                return Descriptor(assoc, at, index, DataType.dt_int32, arity);
             if (typeof(T) == typeof(long))
-                return Descriptor(assoc, at, index, DataType.dt_int64, 1);
+                return Descriptor(assoc, at, index, DataType.dt_int64, arity);
             if (typeof(T) == typeof(Vector2))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 2);
+                return Descriptor(assoc, at, index, DataType.dt_float32, 2 * arity);
             if (typeof(T) == typeof(Vector3))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 3);
+                return Descriptor(assoc, at, index, DataType.dt_float32, 3 * arity);
             if (typeof(T) == typeof(Vector4))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 4);
+                return Descriptor(assoc, at, index, DataType.dt_float32, 4 * arity);
             if (typeof(T) == typeof(DVector2))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 2);
+                return Descriptor(assoc, at, index, DataType.dt_float64, 2 * arity);
             if (typeof(T) == typeof(DVector3))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 3);
+                return Descriptor(assoc, at, index, DataType.dt_float64, 3 * arity);
             if (typeof(T) == typeof(DVector4))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 4);
+                return Descriptor(assoc, at, index, DataType.dt_float64, 4 * arity);
             if (typeof(T) == typeof(Matrix4x4))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 16);
+                return Descriptor(assoc, at, index, DataType.dt_float32, 16 * arity);
             throw new Exception($"Unhandled type {typeof(T)}");
         }
 
