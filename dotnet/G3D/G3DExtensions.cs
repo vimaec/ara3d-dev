@@ -193,6 +193,7 @@ namespace Ara3D
             => new AttributeDescriptor {
                 _association = (int) assoc,
                 _attribute_type = (int) at,
+                _attribute_type_index = index,
                 _data_arity = arity,
                 _data_type = (int) dt,
             };        

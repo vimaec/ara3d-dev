@@ -1467,7 +1467,6 @@ namespace Ara3D
         public static string ToValidFileName(this string s)
             => InvalidFileNameRegex.Replace(s, m => "_");
 
-
         /// <summary>
         /// Returns the name of the outer most folder given a file path or a directory path
         /// https://stackoverflow.com/questions/3736462/getting-the-folder-name-from-a-path
@@ -1486,6 +1485,12 @@ namespace Ara3D
         /// </summary>
         public static Dictionary<T, int> CountGroups<T>(this IEnumerable<T> self)
             => self.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
+
+        /// <summary>
+        /// Returns distinct values each one assigned a new incremented index.
+        /// </summary>
+        public static IndexedSet<T> ToIndexedSet<T>(this IEnumerable<T> self)
+            => new IndexedSet<T>(self);
     }
 }
 

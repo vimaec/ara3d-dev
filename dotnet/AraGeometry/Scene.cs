@@ -13,6 +13,7 @@ namespace Ara3D
 
     public interface ISceneNode
     {
+        string Name { get; }
         Matrix4x4 Transform { get; }
         IGeometry Geometry { get; }
         ISceneNode Parent { get; }
@@ -21,12 +22,14 @@ namespace Ara3D
 
     public class SceneNode : ISceneNode
     {
-        public SceneNode(IGeometry g = null, Matrix4x4? m = null)
+        public SceneNode(IGeometry g = null, string name = "", Matrix4x4? m = null)
         {
             Transform = m ?? Matrix4x4.Identity;
             Geometry = g;
+            Name = name;
         }
 
+        public string Name { get; }
         public Matrix4x4 Transform { get; } 
         public IGeometry Geometry { get; }
         public ISceneNode Parent => _Parent;
@@ -83,7 +86,7 @@ namespace Ara3D
                     continue;
 
                 var g = n.Geometry;
-                var r = new SceneNode(g, n.Transform);
+                var r = new SceneNode(g, n.Name, n.Transform);
                 _Geometries.Add(g);
                 _Nodes.Add(r);
                 tmp.Add(n, r);
@@ -188,7 +191,7 @@ namespace Ara3D
         {
             var inv = node.Transform.Inverse();
             var geos = rest.Select(n => n.Geometry.Transform(n.Transform * inv)).Prepend(node.Geometry);
-            return new SceneNode(geos.Merge(), node.Transform);
+            return new SceneNode(geos.Merge(), node.Name, node.Transform);
         }
 
         public static ISceneNode MergeWorldSpace(this IEnumerable<ISceneNode> nodes)

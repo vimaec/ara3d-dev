@@ -374,7 +374,7 @@ namespace Ara3D
 
         public static bool IsPolyMesh(this IGeometry self)
             => !self.HasFixedFaceSize();
-        
+
         public static string GetStats(this IGeometry self)
         {
             var sb = new StringBuilder();
@@ -385,7 +385,7 @@ namespace Ara3D
             sb.AppendLine($"Number of indices {self.Indices.Count}");
             sb.AppendLine($"Number of faces  {self.GetFaces().Count}");
             sb.AppendLine($"Bounding box {self.BoundingBox()}");
-            sb.AppendLine($"Averge vertex {self.Vertices.Average()}");
+            sb.AppendLine($"Average vertex {self.Vertices.Average()}");
             // TODO: distance from ground plane (box extent)
             // TODO: closest distance to origin (from box extent)
             // TODO: standard deviation 
