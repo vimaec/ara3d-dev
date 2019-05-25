@@ -1,97 +1,84 @@
-﻿using System;
+﻿using Ara3D;
+using FbxClrWrapper;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FbxImporter
 {
-    class Program
+    public static class Program
     {
-        static Ara3D.IArray<Ara3D.IGeometry> CreateIGeometyArray(FbxClrWrapper.FBXMeshData_ []MeshData)
+        public static G3D ToG3D(this FBXMeshData_ mesh)
+            => new G3D(mesh.mFaceSize.ToFaceSizeAttribute(), mesh.mVertices.ToVertexAttribute(), mesh.mIndices.ToIndexAttribute());
+
+        public static IGeometry ToIGeometry(this FBXMeshData_ mesh)
+            => mesh.ToG3D().ToIGeometry();
+
+        public static IArray<IGeometry> CreateIGeometyArray(this IEnumerable<FBXMeshData_> meshes)
+            => meshes.ToIArray().Select(ToIGeometry);
+
+        public static IArray<ISceneNode> CreateISceneNodeArray(FBXSceneData_ sceneData, IArray<IGeometry> geometries)
         {
-            Ara3D.IGeometry[] geometryArray = new Ara3D.IGeometry[MeshData.Length];
+            var nodeArray = new ISceneNode[sceneData.mNodeNameList.Length];
 
-            for (int i = 0; i < MeshData.Length; i++)
+            for (var i = 0; i < sceneData.mNodeNameList.Length; i++)
             {
-                FbxClrWrapper.FBXMeshData_ mesh = MeshData[i];
+                var id = sceneData.mNodeMeshIndexList[i];
+                var geometry = id >= 0 ? geometries[id] : null;
+                
+                var translation = new Vector3(
+                    sceneData.mNodeTranslationList[i * 3 + 0],
+                    sceneData.mNodeTranslationList[i * 3 + 1],
+                    sceneData.mNodeTranslationList[i * 3 + 2]);
 
-                Ara3D.IAttribute faceSizeAttribute = Ara3D.G3DExtensions.ToFaceSizeAttribute(mesh.mFaceSize);
-                Ara3D.IAttribute vertexAttribute = Ara3D.G3DExtensions.ToVertexAttribute(mesh.mVertices);
-                Ara3D.IAttribute indexAttribute = Ara3D.G3DExtensions.ToIndexAttribute(mesh.mIndices);
+                var scale = new Vector3(
+                    sceneData.mNodeScaleList[i * 3 + 0],
+                    sceneData.mNodeScaleList[i * 3 + 1],
+                    sceneData.mNodeScaleList[i * 3 + 2]);
 
-                IEnumerable<Ara3D.IAttribute> attributeList = new List<Ara3D.IAttribute>{ faceSizeAttribute, vertexAttribute, indexAttribute };
-                Ara3D.G3D g3d = new Ara3D.G3D(attributeList);
+                var rotation = new Vector3(
+                    sceneData.mNodeRotationList[i * 3 + 0],
+                    sceneData.mNodeRotationList[i * 3 + 1],
+                    sceneData.mNodeRotationList[i * 3 + 2]);
 
-                geometryArray[i] = Ara3D.Geometry.ToIGeometry(g3d);
+                var translationMatrix = Matrix4x4.CreateTranslation(translation);
+                var scaleMatrix = Matrix4x4.CreateScale(scale);
+
+                // TODO: this is different from the description of argument of the CreateFromYawPitchRoll function (which could be wrong)
+                var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
+
+                nodeArray[i] = new SceneNode(geometry, Matrix4x4.Multiply(Matrix4x4.Multiply(translationMatrix, rotationMatrix), scaleMatrix));
             }
 
-            return new Ara3D.FunctionalArray<Ara3D.IGeometry>(geometryArray.Length, n => geometryArray[n]);
-        }
-
-        static Ara3D.IArray<Ara3D.ISceneNode> CreateISceneNodeArray(FbxClrWrapper.FBXSceneData_ SceneData, Ara3D.IArray<Ara3D.IGeometry> GeometryArray)
-        {
-            Ara3D.ISceneNode[] nodeArray = new Ara3D.ISceneNode[SceneData.mNodeNameList.Length];
-
-            for (int i = 0; i < SceneData.mNodeNameList.Length; i++)
+            for (var i = 0; i < sceneData.mNodeNameList.Length; i++)
             {
-                Ara3D.IGeometry geomtry = null;
-                if (SceneData.mNodeMeshIndexList[i] != -1)
-                {
-                    geomtry = GeometryArray[SceneData.mNodeMeshIndexList[i]];
-                }
-
-                Ara3D.Vector3 translation = new Ara3D.Vector3(
-                    SceneData.mNodeTranslationList[i * 3 + 0],
-                    SceneData.mNodeTranslationList[i * 3 + 1],
-                    SceneData.mNodeTranslationList[i * 3 + 2]);
-
-                Ara3D.Vector3 scale = new Ara3D.Vector3(
-                    SceneData.mNodeScaleList[i * 3 + 0],
-                    SceneData.mNodeScaleList[i * 3 + 1],
-                    SceneData.mNodeScaleList[i * 3 + 2]);
-
-                Ara3D.Vector3 rotation = new Ara3D.Vector3(
-                    SceneData.mNodeRotationList[i * 3 + 0],
-                    SceneData.mNodeRotationList[i * 3 + 1],
-                    SceneData.mNodeRotationList[i * 3 + 2]);
-
-                Ara3D.Matrix4x4 translationMatrix = Ara3D.Matrix4x4.CreateTranslation(translation);
-                Ara3D.Matrix4x4 scaleMatrix = Ara3D.Matrix4x4.CreateScale(scale);
-                Ara3D.Matrix4x4 rotationMatrix = Ara3D.Matrix4x4.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
-
-                nodeArray[i] = new Ara3D.SceneNode(geomtry, Ara3D.Matrix4x4.Multiply(Ara3D.Matrix4x4.Multiply(translationMatrix, rotationMatrix), scaleMatrix));
-            }
-
-            for (int i = 0; i < SceneData.mNodeNameList.Length; i++)
-            {
-                int parentIndex = SceneData.mNodeParentList[i];
+                var parentIndex = sceneData.mNodeParentList[i];
 
                 if (parentIndex != -1)
                 {
-                    Ara3D.SceneNode parentNode = nodeArray[parentIndex] as Ara3D.SceneNode;
-                    Ara3D.SceneNode node = nodeArray[i] as Ara3D.SceneNode;
+                    var parentNode = nodeArray[parentIndex] as SceneNode;
+                    var node = nodeArray[i] as SceneNode;
                     parentNode._AddChild(node);
                 }
             }
 
-            return new Ara3D.FunctionalArray<Ara3D.ISceneNode>(nodeArray.Length, n => nodeArray[n]);
+            return nodeArray.ToIArray();
         }
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            FbxClrWrapper.FBXLoader.Initialize();
-            FbxClrWrapper.FBXLoader.LoadFBX("E:/VimAecDev/vims/Models/MobilityPavilion_mdl.fbx");
+            FBXLoader.Initialize();
+            FBXLoader.LoadFBX("E:/VimAecDev/vims/Models/MobilityPavilion_mdl.fbx");
             //FbxClrWrapper.FBXLoader.LoadFBX("E:/VimAecDev/vims/Models/CDiggins_313401_S_v19.fbx");
 
-            FbxClrWrapper.FBXSceneData_ sceneData = FbxClrWrapper.FBXLoader.GetSceneData();
+            var sceneData = FBXLoader.GetSceneData();
 
-            Ara3D.IArray<Ara3D.IGeometry> geometryArray = CreateIGeometyArray(sceneData.mMeshList);
-            Ara3D.IArray<Ara3D.ISceneNode> sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
+            var geometryArray = CreateIGeometyArray(sceneData.mMeshList);
+            var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
 
-            Ara3D.IScene scene = new Ara3D.Scene(sceneNodeArray[0], geometryArray, sceneNodeArray);
+            var scene = new Scene(sceneNodeArray[0], geometryArray, sceneNodeArray);
 
-            FbxClrWrapper.FBXLoader.ShutDown();
+            // TODO: do something with the scene.
+
+            FBXLoader.ShutDown();
         }
     }
 }
