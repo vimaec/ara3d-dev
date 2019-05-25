@@ -45,7 +45,7 @@ namespace FbxImporter
                 // TODO: this is different from the description of argument of the CreateFromYawPitchRoll function (which could be wrong)
                 var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
 
-                nodeArray[i] = new SceneNode(geometry, Matrix4x4.Multiply(Matrix4x4.Multiply(translationMatrix, rotationMatrix), scaleMatrix));
+                nodeArray[i] = new SceneNode(geometry, translationMatrix * rotationMatrix * scaleMatrix);
             }
 
             for (var i = 0; i < sceneData.mNodeNameList.Length; i++)
