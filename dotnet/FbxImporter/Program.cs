@@ -2,7 +2,7 @@
 using FbxClrWrapper;
 using System.Collections.Generic;
 
-namespace FbxImporter
+namespace Ara3D.FbxImporter
 {
     public static class Program
     {
@@ -66,7 +66,9 @@ namespace FbxImporter
         public static void Main(string[] args)
         {
             FBXLoader.Initialize();
-            FBXLoader.LoadFBX("E:/VimAecDev/vims/Models/MobilityPavilion_mdl.fbx");
+            //var filePath = @"E:/VimAecDev/vims/Models/MobilityPavilion_mdl.fbx";
+            var filePath = @"C:\Users\ASUS\AppData\Local\Temp\ara3d\output\JobFbxExport\10042-MDL-C134003-BM-000001\10042-MDL-C134003-BM-000001.fbx";
+            FBXLoader.LoadFBX(filePath);
             //FbxClrWrapper.FBXLoader.LoadFBX("E:/VimAecDev/vims/Models/CDiggins_313401_S_v19.fbx");
 
             var sceneData = FBXLoader.GetSceneData();
@@ -75,9 +77,11 @@ namespace FbxImporter
             var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
 
             var scene = new Scene(sceneNodeArray[0], geometryArray, sceneNodeArray);
+            var outputFilePath = @"C:\Users\ASUS\AppData\Local\Temp\ara3d\output\test.obj";
+            scene.ToIGeometry().WriteObj(outputFilePath);
 
-            // TODO: do something with the scene.
-
+            // TODO: Does this need to happen after everything, if not perhaps it should happen as soon as the load happens. 
+            // maybe the whole thing could be done using the IDisposable pattern. 
             FBXLoader.ShutDown();
         }
     }
