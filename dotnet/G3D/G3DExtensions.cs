@@ -345,7 +345,7 @@ namespace Ara3D
             => g3d.MaterialIdAttribute?.ToInts();
 
         public static IArray<int> ObjectIds(this IG3D g3d)
-            => g3d.FindAttribute(AttributeType.attr_object_id)?.ToInts();
+            => g3d.FindAttribute(AttributeType.attr_object_id, false)?.ToInts();
 
         public static IArray<int> ObjectIds(this IG3D g3d, int index)
             => g3d.FindAttributes(AttributeType.attr_object_id).ElementAt(index).ToInts();

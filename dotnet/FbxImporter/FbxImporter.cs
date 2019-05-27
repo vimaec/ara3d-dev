@@ -1,21 +1,20 @@
-﻿using Ara3D;
-using FbxClrWrapper;
+﻿using FbxClrWrapper;
 using System.Collections.Generic;
 
-namespace Ara3D.FbxImporter
+namespace Ara3D
 {
-    public static class Program
+    public static class FbxImporter
     {
-        public static G3D ToG3D(this FBXMeshData_ mesh)
+        public static G3D ToG3D(this FBXMeshData mesh)
             => new G3D(mesh.mFaceSize.ToFaceSizeAttribute(), mesh.mVertices.ToVertexAttribute(), mesh.mIndices.ToIndexAttribute());
 
-        public static IGeometry ToIGeometry(this FBXMeshData_ mesh)
+        public static IGeometry ToIGeometry(this FBXMeshData mesh)
             => mesh.ToG3D().ToIGeometry();
 
-        public static IArray<IGeometry> CreateIGeometyArray(this IEnumerable<FBXMeshData_> meshes)
+        public static IArray<IGeometry> CreateIGeometyArray(this IEnumerable<FBXMeshData> meshes)
             => meshes.ToIArray().Select(ToIGeometry);
 
-        public static IArray<ISceneNode> CreateISceneNodeArray(FBXSceneData_ sceneData, IArray<IGeometry> geometries)
+        public static IArray<ISceneNode> CreateISceneNodeArray(FBXSceneData sceneData, IArray<IGeometry> geometries)
         {
             var nodeArray = new ISceneNode[sceneData.mNodeNameList.Length];
 
@@ -23,7 +22,7 @@ namespace Ara3D.FbxImporter
             {
                 var id = sceneData.mNodeMeshIndexList[i];
                 var geometry = id >= 0 ? geometries[id] : null;
-                
+
                 var translation = new Vector3(
                     sceneData.mNodeTranslationList[i * 3 + 0],
                     sceneData.mNodeTranslationList[i * 3 + 1],
@@ -63,26 +62,26 @@ namespace Ara3D.FbxImporter
             return nodeArray.ToIArray();
         }
 
-        public static void Main(string[] args)
+        public static IScene CreateScene(string FBXFileName)
         {
             FBXLoader.Initialize();
-            //var filePath = @"E:/VimAecDev/vims/Models/MobilityPavilion_mdl.fbx";
-            var filePath = @"C:\Users\ASUS\AppData\Local\Temp\ara3d\output\JobFbxExport\10042-MDL-C134003-BM-000001\10042-MDL-C134003-BM-000001.fbx";
-            FBXLoader.LoadFBX(filePath);
-            //FbxClrWrapper.FBXLoader.LoadFBX("E:/VimAecDev/vims/Models/CDiggins_313401_S_v19.fbx");
+            if (FBXLoader.LoadFBX(FBXFileName) >= 0)
+            {
+                // TODO: Does this need to happen after everything, if not perhaps it should happen as soon as the load happens. 
+                // maybe the whole thing could be done using the IDisposable pattern. 
+                FBXLoader.ShutDown();
 
-            var sceneData = FBXLoader.GetSceneData();
+                var sceneData = FBXLoader.GetSceneData();
 
-            var geometryArray = CreateIGeometyArray(sceneData.mMeshList);
-            var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
+                var geometryArray = CreateIGeometyArray(sceneData.mMeshList);
+                var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
 
-            var scene = new Scene(sceneNodeArray[0], geometryArray, sceneNodeArray);
-            var outputFilePath = @"C:\Users\ASUS\AppData\Local\Temp\ara3d\output\test.obj";
-            scene.ToIGeometry().WriteObj(outputFilePath);
+                var scene = new Scene(sceneNodeArray[0], geometryArray, sceneNodeArray);
+                return scene;
+            }
 
-            // TODO: Does this need to happen after everything, if not perhaps it should happen as soon as the load happens. 
-            // maybe the whole thing could be done using the IDisposable pattern. 
             FBXLoader.ShutDown();
+            return null;
         }
     }
 }

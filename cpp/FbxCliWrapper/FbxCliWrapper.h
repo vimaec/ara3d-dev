@@ -11,7 +11,7 @@
 using namespace System;
 namespace FbxClrWrapper
 {
-	class FBXMeshData
+	class FBXMeshDataInternal
 	{
 	public:
 		std::vector<int32_t> mIndices;
@@ -19,7 +19,7 @@ namespace FbxClrWrapper
 		std::vector<int> mFaceSize;
 	};	
 	
-	public ref class FBXMeshData_
+	public ref class FBXMeshData
 	{
 	public:
 		array<int32_t>^ mIndices;
@@ -27,7 +27,7 @@ namespace FbxClrWrapper
 		array<int>^ mFaceSize;
 
 	public:
-		FBXMeshData_(FBXMeshData & Src)
+		FBXMeshData(FBXMeshDataInternal & Src)
 		{
 			mIndices = gcnew array<int32_t>(Src.mIndices.size());
 			mVertices = gcnew array<float>(Src.mVertices.size());
@@ -47,7 +47,7 @@ namespace FbxClrWrapper
 		}
 	};
 
-	class FBXSceneData
+	class FBXSceneDataInternal
 	{
 	public:
 		std::vector<std::string> mNodeNameList;
@@ -57,10 +57,11 @@ namespace FbxClrWrapper
 		std::vector<FbxDouble3> mNodeScaleList;
 		std::vector<int> mNodeMeshIndexList;
 
-		std::vector<FBXMeshData> mMeshList;
+		std::vector<FBXMeshDataInternal> mMeshList;
+		std::vector<std::string> mMeshIdList;
 	};
 
-	public ref class FBXSceneData_
+	public ref class FBXSceneData
 	{
 	public:
 		array<String^>^ mNodeNameList;
@@ -70,10 +71,11 @@ namespace FbxClrWrapper
 		array<float>^ mNodeScaleList;
 		array<int>^ mNodeMeshIndexList;
 
-		array<FBXMeshData_^>^ mMeshList;
+		array<FBXMeshData^>^ mMeshList;
+		array<String^>^ mMeshIdList;
 
 	public:
-		FBXSceneData_(FBXSceneData &SrcData)
+		FBXSceneData(FBXSceneDataInternal &SrcData)
 		{
 			mNodeNameList = gcnew array<String ^>(SrcData.mNodeNameList.size());
 			mNodeParentList = gcnew array<int32_t>(SrcData.mNodeParentList.size());
@@ -81,7 +83,8 @@ namespace FbxClrWrapper
 			mNodeRotationList = gcnew array<float>(SrcData.mNodeRotationList.size() * 3);
 			mNodeScaleList = gcnew array<float>(SrcData.mNodeScaleList.size() * 3);
 			mNodeMeshIndexList = gcnew array<int>(SrcData.mNodeMeshIndexList.size());
-			mMeshList = gcnew array<FBXMeshData_ ^>(SrcData.mMeshList.size());
+			mMeshList = gcnew array<FBXMeshData ^>(SrcData.mMeshList.size());
+			mMeshIdList = gcnew array<String ^>(SrcData.mMeshIdList.size());
 
 			for (size_t i = 0; i < SrcData.mNodeNameList.size(); i++)
 			{
@@ -115,7 +118,11 @@ namespace FbxClrWrapper
 			}
 			for (size_t i = 0; i < SrcData.mMeshList.size(); i++)
 			{
-				mMeshList[i] = gcnew FBXMeshData_(SrcData.mMeshList[i]);
+				mMeshList[i] = gcnew FBXMeshData(SrcData.mMeshList[i]);
+			}
+			for (size_t i = 0; i < SrcData.mMeshIdList.size(); i++)
+			{
+				mMeshIdList[i] = gcnew String(SrcData.mMeshIdList[i].c_str());
 			}
 		}
 	};
@@ -125,19 +132,19 @@ namespace FbxClrWrapper
 	private:
 		static FbxManager* mSdkManager = nullptr;
 		static FbxScene* mScene = nullptr;
-		static FBXSceneData *mSceneData = nullptr;
-		static FBXSceneData_ ^mSceneData_ = nullptr;
+		static FBXSceneDataInternal *mSceneData = nullptr;
+		static FBXSceneData ^mSceneData_ = nullptr;
 
 	public:
 		static void Initialize();
 		static void ShutDown();
 		static int LoadFBX(String^ FileName);
-		static FBXSceneData_ ^ GetSceneData() { return mSceneData_; }
+		static FBXSceneData ^ GetSceneData() { return mSceneData_; }
 
 	private:
 		static void TransformData()
 		{
-			mSceneData_ = gcnew FBXSceneData_(*mSceneData);
+			mSceneData_ = gcnew FBXSceneData(*mSceneData);
 		}
 
 		static void InitializeSdkObjects();

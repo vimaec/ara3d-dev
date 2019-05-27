@@ -27,7 +27,7 @@ namespace FbxClrWrapper
 		// Prepare the FBX SDK.
 		InitializeSdkObjects();
 
-		mSceneData = new FBXSceneData();
+		mSceneData = new FBXSceneDataInternal();
 	}
 
 	void FBXLoader::ShutDown()
@@ -41,9 +41,13 @@ namespace FbxClrWrapper
 	{
 		const char* fileName = (const char*)(void*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(FileName);
 		bool lResult = LoadScene(fileName);
+		if (lResult)
+		{
+			TransformData();
+			return 0;
+		}
 
-		TransformData();
-		return 0;
+		return -1;
 	}
 
 	void FBXLoader::InitializeSdkObjects()
@@ -246,7 +250,7 @@ namespace FbxClrWrapper
 				PrintTabs();
 				printf("Mesh Node, PolyCount: %d\n", pMesh->GetPolygonCount());
 
-				FBXMeshData mesh;
+				FBXMeshDataInternal mesh;
 
 				for (int j = 0; j < pMesh->GetPolygonCount(); j++)
 				{
@@ -272,6 +276,7 @@ namespace FbxClrWrapper
 
 				meshIndex = mSceneData->mMeshList.size();
 				mSceneData->mMeshList.push_back(mesh);
+				mSceneData->mMeshIdList.push_back(pNode->GetName());
 			}
 		}
 
