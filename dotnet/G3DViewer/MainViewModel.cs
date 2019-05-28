@@ -86,8 +86,8 @@
             this.DirectionalLightColor = Colors.White;
             this.DirectionalLightDirection = new Vector3D(-2, -5, -2);
 
+            
         //    Texture = LoadFileToMemory("E:/VimAecDev/Cubemap_Grandcanyon.dds");
-
         }
 
         public void UpdateSubTitle()

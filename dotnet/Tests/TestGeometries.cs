@@ -99,14 +99,8 @@ namespace Ara3D
             Console.WriteLine($"Lengths: {t.LengthA} {t.LengthB} {t.LengthC}");
         }
 
-        public static void OutputIGeometryStats(IGeometry g)
+        public static void OutputTriangleStatsSummary(IGeometry g)
         {
-            var stats = g.GetStats();
-            Console.WriteLine(stats);
-            Assert.IsTrue(g.AreAllIndicesValid());
-            foreach (var attr in g.SortedAttributes())
-                Console.WriteLine($"{attr.Descriptor} #bytes={attr.Bytes.ByteCount} count={attr.Count}");
-
             var triangles = g.Triangles();
             for (var i = 0; i < Math.Min(3, triangles.Count); ++i)
             {
@@ -120,6 +114,15 @@ namespace Ara3D
                 Console.WriteLine($"Triangle {triangles.Count - 1}");
                 OutputTriangleStats(triangles.Last());
             }
+        }
+
+        public static void OutputIGeometryStats(IGeometry g)
+        {
+            var stats = g.GetStats();
+            Console.WriteLine(stats);
+            Assert.IsTrue(g.AreAllIndicesValid());
+            foreach (var attr in g.SortedAttributes())
+                Console.WriteLine($"{attr.Descriptor} #bytes={attr.Bytes.ByteCount} count={attr.Count}");
         }
 
         public static void GeometryNullOps(IGeometry g)
@@ -160,7 +163,7 @@ namespace Ara3D
             Assert.AreEqual(0.5, XYTriangle.Area(), SmallTolerance);
             Assert.IsTrue(XYTriangle.Planar());
             Assert.AreEqual(new[] { 3 }, XYTriangle.FaceSizes.ToArray());
-            Assert.AreEqual(new[] { 0 }, XYTriangle.Topology.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0 }, XYTriangle.Topology.FaceToIndexBuffer.ToArray());
             Assert.AreEqual(new[] { 0, 1, 2 }, XYTriangle.Indices.ToArray());
 
             Assert.AreEqual(4, XYQuad.PointsPerFace);
@@ -171,7 +174,7 @@ namespace Ara3D
             Assert.AreEqual(1, XYQuad.Area(), SmallTolerance);
             Assert.IsTrue(XYQuad.Planar());
             Assert.AreEqual(new[] { 4 }, XYQuad.FaceSizes.ToArray());
-            Assert.AreEqual(new[] { 0 }, XYQuad.Topology.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0 }, XYQuad.Topology.FaceToIndexBuffer.ToArray());
             Assert.AreEqual(new[] { 0, 1, 2, 3 }, XYQuad.Indices.ToArray());
 
             Assert.AreEqual(4, XYQuadFromFunc.PointsPerFace);
@@ -182,7 +185,7 @@ namespace Ara3D
             Assert.AreEqual(1, XYQuadFromFunc.Area(), SmallTolerance);
             Assert.IsTrue(XYQuadFromFunc.Planar());
             Assert.AreEqual(new[] { 4 }, XYQuadFromFunc.FaceSizes.ToArray());
-            Assert.AreEqual(new[] { 0 }, XYQuadFromFunc.Topology.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0 }, XYQuadFromFunc.Topology.FaceToIndexBuffer.ToArray());
             //Assert.AreEqual(new[] { 0, 1, 2, 3 }, XYQuadFromFunc.Indices.ToArray());
 
             Assert.AreEqual(4, XYQuad2x2.PointsPerFace);
@@ -193,7 +196,7 @@ namespace Ara3D
             Assert.AreEqual(1, XYQuad2x2.Area(), SmallTolerance);
             Assert.IsTrue(XYQuad2x2.Planar());
             Assert.AreEqual(new[] { 4, 4, 4, 4 }, XYQuad2x2.FaceSizes.ToArray());
-            Assert.AreEqual(new[] { 0, 4, 8, 12 }, XYQuad2x2.Topology.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0, 4, 8, 12 }, XYQuad2x2.Topology.FaceToIndexBuffer.ToArray());
             //Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, XYQuad2x2.Indices.ToArray());
 
             Assert.AreEqual(3, Tetrahedron.PointsPerFace);
@@ -201,7 +204,7 @@ namespace Ara3D
             Assert.AreEqual(4, Tetrahedron.Vertices.Count);
             Assert.AreEqual(12, Tetrahedron.Indices.Count);
             Assert.AreEqual(new[] { 3, 3, 3, 3 }, Tetrahedron.FaceSizes.ToArray());
-            Assert.AreEqual(new[] { 0, 3, 6, 9 }, Tetrahedron.Topology.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0, 3, 6, 9 }, Tetrahedron.Topology.FaceToIndexBuffer.ToArray());
             Assert.AreEqual(TestTetrahedronIndices, Tetrahedron.Indices.ToArray());
 
             Assert.AreEqual(3, XYTriangleTwice.PointsPerFace);
@@ -212,7 +215,7 @@ namespace Ara3D
             Assert.AreEqual(1.0, XYTriangleTwice.Area(), SmallTolerance);
             Assert.IsTrue(XYTriangleTwice.Planar());
             Assert.AreEqual(new[] { 3, 3 }, XYTriangleTwice.FaceSizes.ToArray());
-            Assert.AreEqual(new[] { 0, 3, }, XYTriangleTwice.Topology.FaceIndices.ToArray());
+            Assert.AreEqual(new[] { 0, 3, }, XYTriangleTwice.Topology.FaceToIndexBuffer.ToArray());
             Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5 }, XYTriangleTwice.Indices.ToArray());
         }
 

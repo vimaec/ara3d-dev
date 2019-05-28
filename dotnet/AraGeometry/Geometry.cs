@@ -27,11 +27,11 @@ namespace Ara3D
         {
             Geometry = g;
             IndexBufferToFaces = new int[g.Indices.Count];
-            FaceIndices = new int[g.NumFaces];
+            FaceToIndexBuffer = new int[g.NumFaces];
             var cur = 0;
             for (var i = 0; i < g.NumFaces; ++i)
             {
-                FaceIndices[i] = cur;
+                FaceToIndexBuffer[i] = cur;
                 var faceSize = g.FaceSizes[i];
                 for (var j = 0; j < faceSize; ++j)
                     IndexBufferToFaces[cur++] = i;
@@ -51,16 +51,16 @@ namespace Ara3D
         public IGeometry Geometry { get; }
         public List<int>[] VertexBufferToIndexBuffer { get; } 
         public int[] IndexBufferToFaces { get; }
-        public int[] FaceIndices { get; }
+        public int[] FaceToIndexBuffer { get; }
 
         public int FaceFromIndexBufferIndex(int i)
-            => FaceIndices[i];
+            => IndexBufferToFaces[i];
 
         public IEnumerable<int> FacesFromVertexIndex(int v)
             => VertexBufferToIndexBuffer[v]?.Select(FaceFromIndexBufferIndex).Distinct() ?? Enumerable.Empty<int>();
 
         public IArray<int> IndexIndicesFromFace(int f)
-            => Geometry.FaceSizes[f].Range().Add(FaceIndices[f]);
+            => Geometry.FaceSizes[f].Range().Add(FaceToIndexBuffer[f]);
 
         public IArray<int> VertexIndicesFromFace(int f)
             => Geometry.Indices.SelectByIndex(IndexIndicesFromFace(f));
@@ -107,7 +107,7 @@ namespace Ara3D
         IArray<Vector3> Vertices { get; }
         IArray<int> Indices { get; }
         IArray<int> FaceSizes { get; }
-        IArray<int> FaceIndices { get; }
+        IArray<int> FaceToIndexBuffer { get; }
         IArray<Vector3> MapChannelData(int n);
         IArray<int> MapChannelIndices(int n);
         IArray<Vector3> FaceNormals { get; }
@@ -136,7 +136,7 @@ namespace Ara3D
         public IGeometry Geometry { get; }
         public int Index { get; }
         public int Count => Geometry.FaceSizes[Index];
-        public int this[int n] => Geometry.Indices[Geometry.Topology.FaceIndices[Index] + n];
+        public int this[int n] => Geometry.Indices[Geometry.Topology.FaceToIndexBuffer[Index] + n];
 
         public bool HasDegenerateIndices()
         {
@@ -374,7 +374,7 @@ namespace Ara3D
 
         public static bool IsPolyMesh(this IGeometry self)
             => !self.HasFixedFaceSize();
-        
+
         public static string GetStats(this IGeometry self)
         {
             var sb = new StringBuilder();
@@ -385,7 +385,7 @@ namespace Ara3D
             sb.AppendLine($"Number of indices {self.Indices.Count}");
             sb.AppendLine($"Number of faces  {self.GetFaces().Count}");
             sb.AppendLine($"Bounding box {self.BoundingBox()}");
-            sb.AppendLine($"Averge vertex {self.Vertices.Average()}");
+            sb.AppendLine($"Average vertex {self.Vertices.Average()}");
             // TODO: distance from ground plane (box extent)
             // TODO: closest distance to origin (from box extent)
             // TODO: standard deviation 
@@ -395,6 +395,7 @@ namespace Ara3D
             // TODO: surface area of bounding box on ground plane
             // TODO: average vertex 
             // TODO: average normal and average UV 
+            // TODO: total area 
             var tris = self.Triangles();
             sb.AppendLine($"Triangles {tris.Count}");
             // TODO: this did not return actual distinct triangles and it is slow!!!
@@ -436,7 +437,7 @@ namespace Ara3D
         // TODO: this function need to be generalized to handle all attributes correctly. In fact I think it should proably happen at the IG3D level.
         public static IGeometry Merge(this IArray<IGeometry> geometries)
         {
-            var triMeshes = geometries.Where(g => g != null).Select(g => g.ToTriMesh()).ToArray();
+            var triMeshes = geometries.Where(g => g != null && g.NumFaces > 0).Select(g => g.ToTriMesh()).ToArray();
             var newVertCount = triMeshes.Sum(g => g.Vertices.Count);
             var newFaceCount = triMeshes.Sum(g => g.NumFaces);
             var verts = new Vector3[newVertCount];
@@ -487,7 +488,7 @@ namespace Ara3D
             {
                 var index = faceIndices[i];
                 var faceSize = g3d.FaceSizes[index];
-                var faceIndex = topo.FaceIndices[index];
+                var faceIndex = topo.FaceToIndexBuffer[index];
                 for (var j=0; j < faceSize; ++j)
                     r.Add(g3d.Indices[faceIndex + j]);
             }
@@ -567,10 +568,9 @@ namespace Ara3D
             var faceIndex = 0;
             for (var i = 0; i < g3d.NumFaces; ++i)
             {
-                if (faceIndex != topo.FaceIndices[i])
+                if (faceIndex != topo.FaceToIndexBuffer[i])
                     throw new Exception("Topology face indices is incorrect");
                 var faceSize = g3d.FaceSizes[i];
-                faceIndex += faceSize;
                 
                 var face = g3d.GetFace(i);
                 if (face.Count != faceSize)
@@ -585,6 +585,8 @@ namespace Ara3D
                     if (index != face[j])
                         throw new Exception("Face does not have valid index");
                 }
+
+                faceIndex += faceSize;
             }
         }
 

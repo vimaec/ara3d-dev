@@ -101,7 +101,7 @@
 
         /// <summary>
         /// This is where each groups vertices start at.
-        /// We assume no overlap, so the next group vertex offset delinerates the slice of vertices
+        /// We assume no overlap, so the next group vertex offset delineates the slice of vertices
         /// </summary>
         attr_group_vertex_offset,
 

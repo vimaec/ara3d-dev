@@ -176,6 +176,7 @@ namespace Ara3D.Tests
             // Time the different writing 
             // Try conversions back from the different forms. and the reading. 
             // 
+            TestGeometries.OutputTriangleStatsSummary(g);
             TestGeometries.OutputIGeometryStats(g);
 
             var baseFileName = Path.GetFileName(fileName);
@@ -185,7 +186,7 @@ namespace Ara3D.Tests
             TestWritingFile(outputFileName + ".ara.obj", f => g.WriteObj(f, false));
 
             var g3dFileName = outputFileName + ".ara.g3d";
-            TestWritingFile(g3dFileName, g.WriteG3D);
+            TestWritingFile(g3dFileName, (f) => g.WriteG3D(f));
 
             Console.WriteLine("Testing G3 Sharp writer");
             TestWritingFile(outputFileName + ".g3.obj", f => g.ToG3Sharp().WriteFile(f));

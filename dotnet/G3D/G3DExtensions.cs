@@ -124,7 +124,7 @@ namespace Ara3D
         public static string AttributeTypeString(this AttributeType at)
             => AttributeDescriptor.AttributeTypeToString((int)at);        
 
-        public static IAttribute FindAttribute(this IG3D g3D, AttributeType attributeType, bool throwIfMissing = true)
+        public static IAttribute FindAttribute(this IG3D g3D, AttributeType attributeType, bool throwIfMissing = false)
         {
             var candidates = g3D.FindAttributes(attributeType).ToList();
             if (candidates.Count > 1)
@@ -196,6 +196,7 @@ namespace Ara3D
             => new AttributeDescriptor {
                 _association = (int) assoc,
                 _attribute_type = (int) at,
+                _attribute_type_index = index,
                 _data_arity = arity,
                 _data_type = (int) dt,
             };        
@@ -221,7 +222,7 @@ namespace Ara3D
             return new BFast(buffers);
         }
              
-        public static void WriteG3D(this IG3D g3D, string filePath) 
+        public static string WriteG3D(this IG3D g3D, string filePath) 
             => g3D.ToBFast().WriteToFile(filePath);
 
         public static byte[] ToBytes(this IG3D g3d)
@@ -292,10 +293,7 @@ namespace Ara3D
 
         public static IEnumerable<IAttribute> NormalAttributes(this IG3D g3D)
             => g3D.Attributes(AttributeType.attr_normal);
-
-        public static IEnumerable<IAttribute> GroupIndexAttributes(this IG3D g3D)
-            => g3D.Attributes(AttributeType.attr_group_index);
-
+        
         public static IEnumerable<IAttribute> InstanceTransforms(this IG3D g3D)
             => g3D.Attributes(AttributeType.attr_instance_transform);
 
@@ -431,7 +429,7 @@ namespace Ara3D
             var cornerCount = g3d.CornerVertexIndices().Count;
 
             // Compute the number of groups. Groups requires the precense of a GroupIndex attribute
-            var groupCount = g3d.GroupIndexAttributes().FirstOrDefault()?.Count ?? -1;
+            var groupCount = g3d.Attributes(Association.assoc_group).FirstOrDefault()?.Count ?? -1;
 
             // Compute the number of instance. The first instance channel determines the number of instances
             var instanceCount = g3d.Attributes(Association.assoc_instance).FirstOrDefault()?.Count ?? -1;
@@ -548,7 +546,7 @@ namespace Ara3D
             g3d.Attributes(AttributeType.attr_materialid).ToList()
                 .ValidateArity(1)
                 .ValidateDataType(DataType.dt_int32)
-                .ValidateAssociation(Association.assoc_face);
+                .ValidateAssociation(Association.assoc_face, Association.assoc_group);
 
             g3d.Attributes(AttributeType.attr_pervertex).ToList()
                 .ValidateArity(1)
