@@ -1,0 +1,4 @@
+*
+# Discard everything in here except .gitignore
+!/.gitignore
+!/README.md
