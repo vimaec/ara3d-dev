@@ -7,6 +7,8 @@ namespace Ara3D
     {
         AttributeDescriptor Descriptor { get; }
         int Count { get; }
+
+        // TODO: I think this might be a mistake, 
         IBytes Bytes { get; }
 
         IArray<int> ToInts();

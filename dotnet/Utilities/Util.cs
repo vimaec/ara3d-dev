@@ -1491,6 +1491,24 @@ namespace Ara3D
         /// </summary>
         public static IndexedSet<T> ToIndexedSet<T>(this IEnumerable<T> self)
             => new IndexedSet<T>(self);
+
+        /// <summary>
+        /// Applies a function to transform a function name (withtout extension) leaving it in the same folder and keeping the original extension
+        /// </summary>
+        public static string TransformFileName(string filePath, Func<string, string> func)
+            => Path.Combine(Path.GetDirectoryName(filePath) ?? "", func(Path.GetFileNameWithoutExtension(filePath)) + Path.GetExtension(filePath));
+
+        /// <summary>
+        /// Prepends text to the file name keeping it in the same folder
+        /// </summary>
+        public static string PrependFileName(string filePath, string text)
+            => TransformFileName(filePath, name => text + name);
+
+        /// <summary>
+        /// Prepends text to the file name keeping it in the same folder (and the same extension)
+        /// </summary>
+        public static string AppendFileName(string filePath, string text)
+            => TransformFileName(filePath, name => name + text);
     }
 }
 
