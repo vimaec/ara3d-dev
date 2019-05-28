@@ -299,8 +299,8 @@
 
             while (currentFace < faceCount)
             {
-                MeshGeometry3D geometry3d = new MeshGeometry3D();
-                IntCollection triangleIndices = new IntCollection(100000 * 3);
+                var geometry3d = new MeshGeometry3D();
+                var triangleIndices = new IntCollection(100000 * 3);
                 int subFaceCount = 0;
                 int minIndex = int.MaxValue;
                 int maxIndex = 0;
@@ -391,8 +391,8 @@
 
             while (currentFace < faceCount)
             {
-                MeshGeometry3D geometry3d = new MeshGeometry3D();
-                IntCollection triangleIndices = new IntCollection(100000 * 3);
+                var geometry3d = new MeshGeometry3D();
+                var triangleIndices = new IntCollection(100000 * 3);
                 int subFaceCount = 0;
                 for (; currentFace < faceCount && subFaceCount < 100000; currentFace++, subFaceCount++)
                 {

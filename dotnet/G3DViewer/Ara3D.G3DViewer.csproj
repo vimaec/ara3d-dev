@@ -164,10 +164,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\revit-dev\RevitDataModel\Ara3D.Revit.DataModel.csproj">
-      <Project>{c1d61cf7-bcb8-4db6-a6d8-7a3de02275c9}</Project>
-      <Name>Ara3D.Revit.DataModel</Name>
-    </ProjectReference>
     <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
       <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
       <Name>Ara3D.Geometry</Name>
@@ -179,10 +175,6 @@
     <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
       <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
       <Name>Ara3D.G3D</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\G3SharpBridge\Ara3D.G3SharpBridge.csproj">
-      <Project>{82182a4d-2acc-4f5f-b490-aee4308d3719}</Project>
-      <Name>Ara3D.G3SharpBridge</Name>
     </ProjectReference>
     <ProjectReference Include="..\HelixBridge\Ara3D.HelixBridge.csproj">
       <Project>{91bafdf7-5a40-4fe2-bef3-4397ec6022b0}</Project>
@@ -199,10 +191,6 @@
     <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.Extra\Ara3D.DotNetUtilities.Extra.csproj">
       <Project>{BF25C112-B0A1-447C-9972-8B889AF5859E}</Project>
       <Name>Ara3D.DotNetUtilities.Extra</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WPFBridge\Ara3D.WPFBridge.csproj">
-      <Project>{1a3688a4-45c6-46fb-8dae-510fa25d80c3}</Project>
-      <Name>Ara3D.WPFBridge</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
