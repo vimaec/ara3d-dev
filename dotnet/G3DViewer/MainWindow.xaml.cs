@@ -93,9 +93,6 @@ namespace G3DViewer
                     (DataContext as IDisposable).Dispose();
                 }
             };
-
-//            OpenG3D("E:/VimAecDev/vims/Models/Houston_Courthouse.g3d");
- //           OpenG3D("E:/VimAecDev/vims/Models/main.g3d");
         }
 
         public void OpenG3D(string FileName)
@@ -106,9 +103,7 @@ namespace G3DViewer
             mDisplayStats = new DisplayStats();
             mainViewModel.displayStats = mDisplayStats;
 
-
             var logger = new MyLogger();
-
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -134,9 +129,9 @@ namespace G3DViewer
                 mDisplayStats.AttributeStats.Add(attributeStat);
             }
 
-            IArray<int> materialIds = G3DExtensions.MaterialIds(mG3D);
+            var materialIds = G3DExtensions.MaterialIds(mG3D);
 
-            Dictionary<int, int> materialIdMap = new Dictionary<int, int>();
+            var materialIdMap = new Dictionary<int, int>();
             for (int materialIdIndex = 0; materialIdIndex < materialIds.Count; materialIdIndex++)
             {
                 int materialId = materialIds[materialIdIndex];
@@ -148,10 +143,9 @@ namespace G3DViewer
 
             mDisplayStats.NumMaterialIds = materialIdMap.Count;
 
+            var objectIds = G3DExtensions.ObjectIds(mG3D);
 
-            IArray<int> objectIds = G3DExtensions.ObjectIds(mG3D);
-
-            Dictionary<int, int> objectIdMap = new Dictionary<int, int>();
+            var objectIdMap = new Dictionary<int, int>();
             for (int objectIdIndex = 0; objectIdIndex < objectIds.Count; objectIdIndex++)
             {
                 int objectId = objectIds[objectIdIndex];
@@ -171,11 +165,6 @@ namespace G3DViewer
         public void FileExit_Click(object sender, RoutedEventArgs e)
         {
             Close();
-        }
-
-        private void BatchedMeshGeometryModel3D_Mouse3DDown(object sender, HelixToolkit.Wpf.SharpDX.MouseDown3DEventArgs e)
-        {
-    //        viewModel.SelectedGeometry = e.HitTestResult.Geometry;
         }
 
         private void Grid_KeyDown(object sender, KeyEventArgs e)
