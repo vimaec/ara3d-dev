@@ -50,12 +50,9 @@
         public Matrix ModelsTransform = Matrix.Identity;
         public LineGeometry3D Lines { get; private set; }
         public LineGeometry3D Grid { get; private set; }
-
         public Vector3D DirectionalLightDirection { get; private set; }
         public Color DirectionalLightColor { get; private set; }
         public Color AmbientLightColor { get; private set; }
-        //      public Stream Texture { private set; get; }
-
         public DisplayStats _displayStats;
         public DisplayStats displayStats
         {
@@ -78,16 +75,13 @@
         {
             Title = "G3D Viewer";
             EffectsManager = new DefaultEffectsManager();
-            // camera setup
+
             Camera = new PerspectiveCamera { Position = new Point3D(40, 40, 40), LookDirection = new Vector3D(-40, -40, -40), UpDirection = new Vector3D(0, 1, 0), FarPlaneDistance = 10000.0, NearPlaneDistance = 5.0 };
 
             // setup lighting            
             this.AmbientLightColor = Colors.DarkGray;
             this.DirectionalLightColor = Colors.White;
             this.DirectionalLightDirection = new Vector3D(-2, -5, -2);
-
-            
-        //    Texture = LoadFileToMemory("E:/VimAecDev/Cubemap_Grandcanyon.dds");
         }
 
         public void UpdateSubTitle()
@@ -101,11 +95,7 @@
 
             newViewModelMesh.Model = Model;
             newViewModelMesh.ModelTransform = Media3D.Transform3D.Identity;
-
-            // model material
             newViewModelMesh.ModelMaterial = PhongMaterials.White;
-     //       newViewModelMesh.ModelMaterial.DiffuseMap = LoadFileToMemory("E:/VimAecDev/floor_d.png");
-     //       newViewModelMesh.ModelMaterial.NormalMap = LoadFileToMemory("E:/VimAecDev/floor_n.png");
 
             Models.Add(newViewModelMesh);
             OnPropertyChanged(nameof(Models));
@@ -121,33 +111,11 @@
 
             var color = new Color4(1, 1, 1, 1);
             model.AddInstance(Ara3DToSharpDX(Transform), new InstanceParameter() { DiffuseColor = color, TexCoordOffset = new Vector2(0, 0) });
-         //   model.AddInstance(SharpDX.Matrix.Identity, new InstanceParameter() { DiffuseColor = color, TexCoordOffset = new Vector2(0, 0) });
 
             TriangleCount += model.Model.Triangles.Count();
 
             InstanceCount++;
         }
-   /*        
-        const int num = 1;
-        List<Matrix> instances = new List<Matrix>(num * 2);
-        List<InstanceParameter> parameters = new List<InstanceParameter>(num * 2);
-     
-        private void CreateModels()
-        {
-
-
-            var matrix = Matrix.Identity;
-                    var color = new Color4(1, 1, 1, 1);//new Color4((float)Math.Abs(i) / num, (float)Math.Abs(j) / num, (float)Math.Abs(i + j) / (2 * num), 1);
-                    //  var emissiveColor = new Color4( rnd.NextFloat(0,1) , rnd.NextFloat(0, 1), rnd.NextFloat(0, 1), rnd.NextFloat(0, 0.2f));
-                
-
-                    parameters.Add(new InstanceParameter() { DiffuseColor = color, TexCoordOffset = new Vector2(0,0) });
-                    instances.Add(matrix);
-
-            InstanceParam = parameters.ToArray();
-            ModelInstances = instances.ToArray();
-        }
-        */
         public void OnMouseLeftButtonDownHandler(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var viewport = sender as Viewport3DX;
@@ -229,7 +197,7 @@
         {
             bool hasFixedFaceSize = Ara3D.G3DExtensions.HasFixedFaceSize(g3dFile);
             int faceCount = Ara3D.G3DExtensions.FaceCount(g3dFile);
-            Ara3D.IArray<int> faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
+            var faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
 
             var vertexData = g3dFile.VertexAttribute.ToVector3s();
             var indexData = g3dFile.IndexAttribute.ToInts();
@@ -239,7 +207,7 @@
             {
                 int faceSize = faceSizes[face];
 
-                List<SharpDX.Vector3> vectors = new List<Vector3>(faceSize);
+                var vectors = new List<Vector3>(faceSize);
                 for (int i = 0; i < faceSize; i++)
                 {
                     int vectorIndex = indexData[globalVectorIndex + faceSize - 1 - i];
@@ -259,7 +227,7 @@
         {
             bool hasFixedFaceSize = Ara3D.G3DExtensions.HasFixedFaceSize(g3dFile);
             int faceCount = Ara3D.G3DExtensions.FaceCount(g3dFile);
-            Ara3D.IArray<int> faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
+            var faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
 
             var vertexData = g3dFile.VertexAttribute.ToVector3s();
             var uvData = Ara3D.G3DExtensions.UVs(g3dFile);
@@ -272,8 +240,8 @@
             float aabbMinZ = float.MaxValue;
             float aabbMaxZ = float.MinValue;
 
-            Vector3Collection sharpDxVectos = new Vector3Collection(vertexData.Count);
-            Vector2Collection sharpDxUVs = new Vector2Collection(vertexData.Count);
+            var sharpDxVectos = new Vector3Collection(vertexData.Count);
+            var sharpDxUVs = new Vector2Collection(vertexData.Count);
 
             displayStats.NumVertices += vertexData.Count;
             displayStats.NumFaces += faceCount;
@@ -376,10 +344,7 @@
                 {
                     geometry3d.Positions = new Vector3Collection(sharpDxVectos.GetRange(minIndex, maxIndex - minIndex + 1));
                     geometry3d.Indices = triangleIndices;
-            //        geometry3d.TextureCoordinates = new Vector2Collection(sharpDxUVs.GetRange(minIndex, maxIndex - minIndex + 1));
                     geometry3d.Normals = geometry3d.CalculateNormals();
-
-             //       MeshBuilder.ComputeTangents(geometry3d);
 
                     int modelIndex = AddModel(geometry3d);
                     AddInstance(modelIndex, Ara3D.Matrix4x4.CreateTranslation(-displayStats.AABB.Center));
@@ -432,16 +397,6 @@
             }
 
             return 0;
-
-/*            for (int i = 0; i < Model.TextureCoordinates.Count; ++i)
-            {
-                var tex = Model.TextureCoordinates[i];
-                Model.TextureCoordinates[i] = new Vector2(tex.X * 0.5f, tex.Y * 0.5f);
-            }
-
-            l1.AddBox(new Vector3(0, 0, 0), 1.1, 1.1, 1.1);
-            Lines = l1.ToLineGeometry3D();
-            Lines.Colors = new Color4Collection(Enumerable.Repeat(Colors.White.ToColor4(), Lines.Positions.Count));*/
         }
     }
 }
