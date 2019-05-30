@@ -22,16 +22,14 @@ namespace G3DViewer
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            window = new MainWindow();
+
             if (e.Args.Length == 1)
             {
-                window = new MainWindow();
-                window.OpenG3D(e.Args[0]);
-                window.Show();
+                window.OpenFile(e.Args[0]);
             }
-            else
-            {
-                System.Windows.Application.Current.Shutdown();
-            }
+
+            window.Show();
         }
     }
 }

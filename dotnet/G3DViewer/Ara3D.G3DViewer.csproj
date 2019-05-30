@@ -17,7 +17,7 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -105,6 +105,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\cpp\FbxCliWrapper\FbxCliWrapper.vcxproj">
+      <Project>{aa1cc820-d64c-494f-a027-373342fb1bdc}</Project>
+      <Name>FbxCliWrapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AraGeometry\Ara3D.Geometry.csproj">
       <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
       <Name>Ara3D.Geometry</Name>
@@ -112,6 +116,10 @@
     <ProjectReference Include="..\BFast\Ara3D.BFast.csproj">
       <Project>{4ce35b4d-4fa8-491e-b195-77520c1e8683}</Project>
       <Name>Ara3D.BFast</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FbxImporter\Ara3D.FbxImporter.csproj">
+      <Project>{ca9815ed-c72d-4b7a-9204-2464412734f2}</Project>
+      <Name>Ara3D.FbxImporter</Name>
     </ProjectReference>
     <ProjectReference Include="..\G3D\Ara3D.G3D.csproj">
       <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>

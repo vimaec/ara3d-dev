@@ -80,7 +80,7 @@ namespace G3DViewer
     public partial class MainWindow : Window
     {
         MainViewModel mainViewModel;
-        G3D mG3D = null;
+        IG3D mG3D = null;
 
         public static DisplayStats mDisplayStats = new DisplayStats();
 
@@ -107,9 +107,34 @@ namespace G3DViewer
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            mG3D = G3DExtensions.ReadFromFile(FileName);
+            var G3D = G3DExtensions.ReadFromFile(FileName);
 
             mDisplayStats.LoadTime = stopwatch.ElapsedMilliseconds / 1000.0f;
+
+            OpenIG3D(G3D);
+        }
+
+        public void OpenFBX(string FileName)
+        {
+            mainViewModel = new MainViewModel();
+            this.DataContext = mainViewModel;
+
+            mDisplayStats = new DisplayStats();
+            mainViewModel.displayStats = mDisplayStats;
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var scene = FbxImporter.CreateScene(FileName);
+            mDisplayStats.LoadTime = stopwatch.ElapsedMilliseconds / 1000.0f;
+
+            var geometry = scene.ToIGeometry();
+            OpenIG3D(geometry);
+        }
+
+        public void OpenIG3D(IG3D G3D)
+        {
+            mG3D = G3D;
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             int index = mainViewModel.AddG3DData(mG3D);
 
@@ -162,6 +187,7 @@ namespace G3DViewer
             mainViewModel.displayStats = mDisplayStats;
             Chart.ItemsSource = mDisplayStats.AreaHistogramLog;
         }
+
         public void FileExit_Click(object sender, RoutedEventArgs e)
         {
             Close();
@@ -216,11 +242,21 @@ namespace G3DViewer
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
                 string fileName = files[0];
-                if (System.IO.Path.GetExtension(fileName).ToLower() == ".g3d")
-                {
-                    OpenG3D(fileName);
-                }
+                OpenFile(fileName);
             }
         }
+
+        public void OpenFile(string FileName)
+        {
+            if (System.IO.Path.GetExtension(FileName).ToLower() == ".g3d")
+            {
+                OpenG3D(FileName);
+            }
+            else if (System.IO.Path.GetExtension(FileName).ToLower() == ".fbx")
+            {
+                OpenFBX(FileName);
+            }
+        }
+
     }
 }

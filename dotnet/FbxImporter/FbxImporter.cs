@@ -23,7 +23,7 @@ namespace Ara3D
                 var id = sceneData.mNodeMeshIndexList[i];
                 var geometry = id >= 0 ? geometries[id] : null;
 
-                var translation = new Vector3(
+            /*    var translation = new Vector3(
                     sceneData.mNodeTranslationList[i * 3 + 0],
                     sceneData.mNodeTranslationList[i * 3 + 1],
                     sceneData.mNodeTranslationList[i * 3 + 2]);
@@ -41,10 +41,28 @@ namespace Ara3D
                 var translationMatrix = Matrix4x4.CreateTranslation(translation);
                 var scaleMatrix = Matrix4x4.CreateScale(scale);
 
-                // TODO: this is different from the description of argument of the CreateFromYawPitchRoll function (which could be wrong)
-                var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
+                var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z);*/
 
-                nodeArray[i] = new SceneNode(geometry, sceneData.mNodeNameList[i], translationMatrix * rotationMatrix * scaleMatrix);
+                var transformMatrix = new Matrix4x4(
+                    sceneData.mNodeTransformList[i * 16 + 0 + 0],
+                    sceneData.mNodeTransformList[i * 16 + 1 + 0],
+                    sceneData.mNodeTransformList[i * 16 + 2 + 0],
+                    sceneData.mNodeTransformList[i * 16 + 3 + 0],
+                    sceneData.mNodeTransformList[i * 16 + 0 + 4],
+                    sceneData.mNodeTransformList[i * 16 + 1 + 4],
+                    sceneData.mNodeTransformList[i * 16 + 2 + 4],
+                    sceneData.mNodeTransformList[i * 16 + 3 + 4],
+                    sceneData.mNodeTransformList[i * 16 + 0 + 8],
+                    sceneData.mNodeTransformList[i * 16 + 1 + 8],
+                    sceneData.mNodeTransformList[i * 16 + 2 + 8],
+                    sceneData.mNodeTransformList[i * 16 + 3 + 8],
+                    sceneData.mNodeTransformList[i * 16 + 0 + 12],
+                    sceneData.mNodeTransformList[i * 16 + 1 + 12],
+                    sceneData.mNodeTransformList[i * 16 + 2 + 12],
+                    sceneData.mNodeTransformList[i * 16 + 3 + 12]
+                    );
+
+                nodeArray[i] = new SceneNode(geometry, sceneData.mNodeNameList[i], transformMatrix);
             }
 
             for (var i = 0; i < sceneData.mNodeNameList.Length; i++)

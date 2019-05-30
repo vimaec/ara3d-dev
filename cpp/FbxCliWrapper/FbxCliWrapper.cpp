@@ -237,6 +237,12 @@ namespace FbxClrWrapper
 		mSceneData->mNodeRotationList.push_back(pNode->LclRotation.Get());
 		mSceneData->mNodeScaleList.push_back(pNode->LclScaling.Get());
 
+		FbxAnimEvaluator* pSceneEvaluator = mScene->GetAnimationEvaluator();
+
+		// Get node’s default TRS properties as a transformation matrix
+		FbxAMatrix& myNodeDefaultGlobalTransform = pSceneEvaluator->GetNodeGlobalTransform(pNode);
+		mSceneData->mNodeTransformList.push_back(myNodeDefaultGlobalTransform);
+
 		int meshIndex = -1;
 		if (pNode->GetNodeAttribute())
 		{
