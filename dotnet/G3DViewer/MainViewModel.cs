@@ -44,8 +44,10 @@
         }
     }
 
+    // TODO: Add comments
     public class MainViewModel : BaseViewModel
     {
+        public const int SubMeshSplitSize = 100000; // Size of the mesh (in faces) that get rendered. The main mesh is split into submeshes for rendering.
         public ObservableCollection<MainViewModelMesh> Models { get; set; } = new ObservableCollection<MainViewModelMesh>();
         public Matrix ModelsTransform = Matrix.Identity;
         public LineGeometry3D Lines { get; private set; }
@@ -225,6 +227,7 @@
 
         internal int AddG3DData(Ara3D.IG3D g3dFile)
         {
+            // TODO: Clean/Split/Comment this function
             bool hasFixedFaceSize = Ara3D.G3DExtensions.HasFixedFaceSize(g3dFile);
             int faceCount = Ara3D.G3DExtensions.FaceCount(g3dFile);
             var faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
@@ -268,11 +271,11 @@
             while (currentFace < faceCount)
             {
                 var geometry3d = new MeshGeometry3D();
-                var triangleIndices = new IntCollection(100000 * 3);
+                var triangleIndices = new IntCollection(SubMeshSplitSize * 3);
                 int subFaceCount = 0;
                 int minIndex = int.MaxValue;
                 int maxIndex = 0;
-                for (; currentFace < faceCount && subFaceCount < 100000; currentFace++, subFaceCount++)
+                for (; currentFace < faceCount && subFaceCount < SubMeshSplitSize; currentFace++, subFaceCount++)
                 {
                     int faceSize = faceSizes[currentFace];
 
@@ -357,9 +360,9 @@
             while (currentFace < faceCount)
             {
                 var geometry3d = new MeshGeometry3D();
-                var triangleIndices = new IntCollection(100000 * 3);
+                var triangleIndices = new IntCollection(SubMeshSplitSize * 3);
                 int subFaceCount = 0;
-                for (; currentFace < faceCount && subFaceCount < 100000; currentFace++, subFaceCount++)
+                for (; currentFace < faceCount && subFaceCount < SubMeshSplitSize; currentFace++, subFaceCount++)
                 {
                     int faceSize = faceSizes[currentFace];
 

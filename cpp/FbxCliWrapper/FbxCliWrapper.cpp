@@ -39,7 +39,7 @@ namespace FbxClrWrapper
 
 	int FBXLoader::LoadFBX(String^ FileName)
 	{
-		const char* fileName = (const char*)(void*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(FileName);
+		auto fileName = (const char*)(void*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(FileName);
 		bool lResult = LoadScene(fileName);
 		if (lResult)
 		{
@@ -292,7 +292,7 @@ namespace FbxClrWrapper
 		//////////////////////////////////////////////////////////////////////////
 
 		PrintTabs();
-		const char* nodeName = pNode->GetName();
+		auto nodeName = pNode->GetName();
 		FbxDouble3 translation = pNode->LclTranslation.Get();
 		FbxDouble3 rotation = pNode->LclRotation.Get();
 		FbxDouble3 scaling = pNode->LclScaling.Get();
