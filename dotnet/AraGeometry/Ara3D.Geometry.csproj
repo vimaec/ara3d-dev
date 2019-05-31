@@ -40,6 +40,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="SceneExtensions.cs" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -49,6 +50,7 @@
     </Compile>
     <Compile Include="Geometry.cs" />
     <Compile Include="GeometryReader.cs" />
+    <Compile Include="IScene.cs" />
     <Compile Include="PointsExtensions.cs" />
     <Compile Include="Primitives.cs" />
     <Compile Include="Scene.cs" />

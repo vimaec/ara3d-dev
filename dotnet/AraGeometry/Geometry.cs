@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace Ara3D
@@ -14,6 +16,8 @@ namespace Ara3D
         IArray<int> Indices { get; }  
         IArray<int> FaceSizes { get; }
         IArray<Vector2> UVs { get; }
+
+        // NOTE: not necessarily thread safe
         Topology Topology { get; }
     }
 
@@ -26,47 +30,171 @@ namespace Ara3D
         public Topology(IGeometry g)
         {
             Geometry = g;
-            IndexBufferToFaces = new int[g.Indices.Count];
-            FaceToIndexBuffer = new int[g.NumFaces];
-            var cur = 0;
-            for (var i = 0; i < g.NumFaces; ++i)
+
+            // Compute the mapping from corner (indices of the index buffer) to faces
+            // and the mapping from faces to the first corner in that face
+            CornersToFaces = new int[g.Indices.Count];
+            FacesToCorners = new int[g.NumFaces];
+            var corner = 0;
+            for (var f = 0; f < g.NumFaces; ++f)
             {
-                FaceToIndexBuffer[i] = cur;
-                var faceSize = g.FaceSizes[i];
+                FacesToCorners[f] = corner;
+                var faceSize = g.FaceSizes[f];
                 for (var j = 0; j < faceSize; ++j)
-                    IndexBufferToFaces[cur++] = i;
+                    CornersToFaces[corner++] = f;
             }
 
-            VertexBufferToIndexBuffer = new List<int>[g.Vertices.Count];
-            for (var i = 0; i < g.Indices.Count; ++i)
+            // Compute the mapping from vertex indices to faces that reference them 
+            VerticesToFaces = new List<int>[g.Vertices.Count];
+            for (var c = 0; c < g.Indices.Count; ++c)
             {
-                var index = g.Indices[i];
-                if (VertexBufferToIndexBuffer[index] == null)
-                    VertexBufferToIndexBuffer[index] = new List<int> {i};
+                var v = g.Indices[c];
+                var f = CornersToFaces[c];
+                if (VerticesToFaces[v] == null)
+                    VerticesToFaces[v] = new List<int> { f };
                 else
-                    VertexBufferToIndexBuffer[index].Add(i);
+                    VerticesToFaces[v].Add(f);
+            }
+
+            // NOTE: a non-manifold condition can arise where the same vertex is in multiple faces.
+            // I am not considering that case for now. 
+
+            // Compute the face on the other side of an edge 
+            BorderFaces = (-1).Repeat(g.Indices.Count).ToArray();
+            for (var c = 0; c < g.Indices.Count; ++c)
+            {
+                var f = CornerToFace(c);
+                var c2 = NextCorner(c);
+                foreach (var f2 in FacesFromCorner(c2))
+                {
+                    if (f2 != f)
+                    {
+                        if (FaceHasCorner(f2, c))
+                        {
+                            if (BorderFaces[c] != -1)
+                                NonManifold = true;
+                            BorderFaces[c] = f2;
+                        }
+                    }
+                }
             }
         }
 
         public IGeometry Geometry { get; }
-        public List<int>[] VertexBufferToIndexBuffer { get; } 
-        public int[] IndexBufferToFaces { get; }
-        public int[] FaceToIndexBuffer { get; }
 
-        public int FaceFromIndexBufferIndex(int i)
-            => IndexBufferToFaces[i];
+        public List<int>[] VerticesToFaces { get; }
+        public int[] BorderFaces { get; } // Assumes manifold meshes
+        public int[] CornersToFaces { get; }
+        public int[] FacesToCorners { get; }
+        public bool NonManifold { get; } 
+
+        public int CornerToFace(int i)
+            => CornersToFaces[i];
 
         public IEnumerable<int> FacesFromVertexIndex(int v)
-            => VertexBufferToIndexBuffer[v]?.Select(FaceFromIndexBufferIndex).Distinct() ?? Enumerable.Empty<int>();
+            => VerticesToFaces[v] ?? Enumerable.Empty<int>();
 
         public IArray<int> IndexIndicesFromFace(int f)
-            => Geometry.FaceSizes[f].Range().Add(FaceToIndexBuffer[f]);
+            => Geometry.FaceSizes[f].Range().Add(FacesToCorners[f]);
 
         public IArray<int> VertexIndicesFromFace(int f)
             => Geometry.Indices.SelectByIndex(IndexIndicesFromFace(f));
 
+        public IEnumerable<int> FacesFromCorner(int c)
+            => FacesFromVertexIndex(Geometry.Indices[c]);
+
         public IEnumerable<int> NeighbourFaces(int f)
             => VertexIndicesFromFace(f).ToEnumerable().SelectMany(FacesFromVertexIndex).Where(f2 => f2 != f).Distinct();
+
+        public int VertexIndexFromCorner(int c)
+            => Geometry.Indices[c];
+
+        public bool SharesEdge(int f1, int f2)
+            => NumSharedVertices(f1, f2) >= 2;
+
+        public int NumSharedVertices(int f1, int f2)
+        {
+            var set1 = VertexIndicesFromFace(f1);
+            var set2 = VertexIndicesFromFace(f2);
+
+            var cnt = 0;
+            for (var i=0; i < set1.Count; i++)
+                for (var j=0; j < set2.Count; j++)
+                    if (set1[i] == set2[j])
+                        cnt++;
+            return cnt;
+        }
+
+        // Returns true if the two faces share the same topology
+        public bool SameTopology(int f1, int f2)
+        {
+            var set1 = VertexIndicesFromFace(f1);
+            var set2 = VertexIndicesFromFace(f2);
+            if (set1.Count != set2.Count)
+                return false;
+
+            for (var i = 0; i < set1.Count; i++)
+                if (set1[i] != set2[i])
+                    return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Differs from neighbour faces in that the faces have to share an edge, not just a vertex.
+        /// An alternative construction would have been to getNeighbourFaces and filter out those that don't share
+        /// </summary>
+        public IEnumerable<int> BorderingFacesFromFace(int f)
+            => EdgesFromFace(f).Select(BorderFace).Where(bf => bf >= 0);
+
+        public int BorderFace(int e)
+            => BorderFaces[e];
+
+        public bool IsBorderEdge(int e)
+            => BorderFaces[e] < 0;
+
+        public IArray<int> Faces()
+            => Geometry.NumFaces.Range();
+
+        public bool IsBorderFace(int f)
+            => EdgesFromFace(f).Any(IsBorderEdge);
+
+        public IArray<int> CornersFromFace(int f)
+            => FaceSize(f).Range().Add(FirstCornerInFace(f));
+
+        public IArray<int> EdgesFromFace(int f)
+            => CornersFromFace(f);
+
+        public int FirstCornerInFace(int f)
+            => FacesToCorners[f];
+
+        public int FaceSize(int f)
+            => Geometry.FaceSizes()[f];
+
+        public int FaceFromCorner(int c)
+            => CornersToFaces[c];
+
+        public bool FaceHasCorner(int f, int c)
+            => CornersFromFace(f).Contains(c);
+
+        public int NextCorner(int c)
+        {
+            var f = FaceFromCorner(c);
+            var begin = FirstCornerInFace(f);
+            var end = begin + FaceSize(f);
+            Debug.Assert(c >= begin);
+            Debug.Assert(c < end);
+            var c2 = c + 1;
+            if (c2 < end)
+                return c2;
+            Debug.Assert(c2 == end);
+            return begin;
+        }
+
+        public IArray<int> CornersFromEdge(int e)
+            => LinqArray.Create(e, NextCorner(e));
+
+        public IArray<int> VertexIndicesFromEdge(int e)
+            => CornersFromEdge(e).Select(VertexIndexFromCorner);
     }
 
     public class GeometryDebugView
@@ -129,14 +257,14 @@ namespace Ara3D
     /// <summary>
     /// A face is an array of indices into the vertex buffer of an IGeometry representing a particular
     /// element of a geometry (could be a PolyMesh face, a TriMesh faces, a QuadMesh face, or even a line segment,
-    /// or point if the IGeometry represetns a point cloud. 
+    /// or point if the IGeometry represents a point cloud. 
     /// </summary>
     public struct Face : IArray<int>, IEquatable<Face>
     {
         public IGeometry Geometry { get; }
         public int Index { get; }
         public int Count => Geometry.FaceSizes[Index];
-        public int this[int n] => Geometry.Indices[Geometry.Topology.FaceToIndexBuffer[Index] + n];
+        public int this[int n] => Geometry.Indices[Geometry.Topology.FacesToCorners[Index] + n];
 
         public bool HasDegenerateIndices()
         {
@@ -183,27 +311,8 @@ namespace Ara3D
         public readonly static IGeometry EmptyQuadMesh
             = QuadMesh(LinqArray.Empty<Vector3>(), LinqArray.Empty<int>());
 
-        /*
-        public readonly static IGeometry Box
-            = QuadMesh(new Box(Vector3.Zero, Vector3.One).Corners, 
-            */
-
         public static Vector3 MidPoint(this Face self)
-            => self.Points().Average();        
-
-        /*
-        public static Vector3 MidPoint(this Edge self)
-        {
-            return MidPoint(self[0], self[1]);
-        }
-        */
-
-        /*
-        public static IArray<Vector3> EdgeMidPoints(this Face self)
-        {
-            return self.Edges().Select(MidPoint);
-        }
-        */
+            => self.Points().Average();
 
         public static IArray<Vector3> Points(this Face self)
             => self.Geometry.Vertices.SelectByIndex(self);        
@@ -375,6 +484,7 @@ namespace Ara3D
         public static bool IsPolyMesh(this IGeometry self)
             => !self.HasFixedFaceSize();
 
+        // TODO: this is being superceded by a new set of classes for analyzing geometry called GeometryAnalysis.cs
         public static string GetStats(this IGeometry self)
         {
             var sb = new StringBuilder();
@@ -393,7 +503,7 @@ namespace Ara3D
             // TODO: number of distinct vertices 
             // TODO: volume of bounding box
             // TODO: surface area of bounding box on ground plane
-            // TODO: average vertex 
+            // TODO: average vertex B
             // TODO: average normal and average UV 
             // TODO: total area 
             var tris = self.Triangles();
@@ -435,7 +545,92 @@ namespace Ara3D
             => geometries.ToIArray().Merge();
 
         // TODO: this function need to be generalized to handle all attributes correctly. In fact I think it should proably happen at the IG3D level.
-        public static IGeometry Merge(this IArray<IGeometry> geometries)
+        public static IGeometry Merge(this IArray<IGeometry> geometries, bool weldVertices = false, float weldTolerance = (float)Constants.MmToFeet)
+            => weldVertices ? MergeWelded(geometries, weldTolerance) : MergeUnwelded(geometries);
+
+        public class WeldingVertexLookup
+        {
+            public WeldingVertexLookup(float multiplier = (float)Constants.MmToFeet)
+            {
+                Multiplier = multiplier;
+            }
+
+            /// <summary>
+            /// Returns true if the vector is present in the dictionary and is going to be welded
+            /// </summary>
+            /// <param name="v"></param>
+            /// <returns></returns>
+            public bool Add(Vector3 v)
+            {
+                var int3 = ToInt3(v);
+                var originalCount = VectorRemapping.Count;
+                if (Lookup.ContainsKey(int3))
+                {
+                    VectorRemapping.Add(originalCount, Lookup[int3]);
+                    return true;
+                }
+                var r = Lookup.Count;
+                Lookup.Add(int3, r);
+                Debug.Assert(Lookup[int3] == r);
+                return false;
+            }
+
+            public Dictionary<int, int> VectorRemapping = new Dictionary<int, int>();
+            public Dictionary<Int3, int> Lookup = new Dictionary<Int3, int>();
+            public float Multiplier;
+
+            public Int3 ToInt3(Vector3 v)
+                => new Int3(ToRoundedInt(v.X), ToRoundedInt(v.Y), ToRoundedInt(v.Z));
+
+            public int ToRoundedInt(float x)
+                => (int)(x * Multiplier).Round();
+        }
+
+        public static IGeometry MergeWelded(this IArray<IGeometry> geometries, float weldingTolerance)
+        {
+            var triMeshes = geometries.Where(g => g != null && g.NumFaces > 0).Select(g => g.ToTriMesh()).ToArray();
+            var newFaceCount = triMeshes.Sum(g => g.NumFaces);
+            var verts = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var objectIds = new int[newFaceCount];
+            var materialIds = new int[newFaceCount];
+            var indices = new List<int>();
+            var faceOffset = 0;
+
+            // TODO: maybe make this an argument? A null or default welder could simply not weld.
+            var welder = new WeldingVertexLookup(1 / weldingTolerance);
+
+            // TODO: this assumes the presence of object ids and material ids
+            foreach (var g in triMeshes)
+            {
+                Debug.Assert(g.Vertices.Count == g.UVs.Count);
+                for (var i = 0; i < g.Vertices.Count; ++i)
+                {
+                    if (!welder.Add(g.Vertices[i]))
+                    {
+                        verts.Add(g.Vertices[i]);
+                        uvs.Add(g.UVs[i]);
+                    }
+                }
+
+                for (var i = 0; i < g.Indices.Count; ++i)
+                {
+                    var oldVtxIdx = g.Indices[i];
+                    var newVtxIdx = welder.VectorRemapping[oldVtxIdx];
+                    indices.Add(newVtxIdx);
+                }
+
+                g.MaterialIds()?.CopyTo(materialIds, faceOffset);
+                g.ObjectIds()?.CopyTo(objectIds, faceOffset);
+                faceOffset += g.NumFaces;
+            }
+
+            // TODO: maybe this could all be done using real arrays, probably be faster to serialize, etc.  But that is for later.
+            return TriMesh(verts.ToIArray(), indices.ToIArray(), uvs.ToIArray(), materialIds.ToIArray(), objectIds.ToIArray());
+        }
+
+        // TODO: this function need to be generalized to handle all attributes correctly. In fact I think it should proably happen at the IG3D level.
+        public static IGeometry MergeUnwelded(this IArray<IGeometry> geometries)
         {
             var triMeshes = geometries.Where(g => g != null && g.NumFaces > 0).Select(g => g.ToTriMesh()).ToArray();
             var newVertCount = triMeshes.Sum(g => g.Vertices.Count);
@@ -488,7 +683,7 @@ namespace Ara3D
             {
                 var index = faceIndices[i];
                 var faceSize = g3d.FaceSizes[index];
-                var faceIndex = topo.FaceToIndexBuffer[index];
+                var faceIndex = topo.FacesToCorners[index];
                 for (var j=0; j < faceSize; ++j)
                     r.Add(g3d.Indices[faceIndex + j]);
             }
@@ -522,6 +717,18 @@ namespace Ara3D
 
         public static IArray<Face> GetFaces(this IGeometry g) 
             => g.NumFaces.Select(g.GetFace);
+        
+        public static bool AreCoplanar(this IEnumerable<Face> faces, float tolerance = (float)Constants.OneTenthOfADegree)
+            => faces.Select(f => f.Normal()).AreColinear(tolerance);
+
+        public static bool AreColinear(this IEnumerable<Vector3> vectors, Vector3 reference, float tolerance = (float)Constants.OneTenthOfADegree)
+            => !reference.IsNaN() && vectors.All(v => v.Colinear(reference, tolerance));
+
+        public static bool AreColinear(this IEnumerable<Vector3> vectors, float tolerance = (float) Constants.OneTenthOfADegree)
+            => vectors.ToList().AreColinear(tolerance);
+
+        public static bool AreColinear(this IList<Vector3> vectors, float tolerance = (float)Constants.OneTenthOfADegree)
+            => vectors.Count <= 1 || vectors.Skip(1).AreColinear(vectors[0], tolerance);
 
         public static IGeometry Merge(this IGeometry g, params IGeometry[] others)
         {
@@ -568,7 +775,7 @@ namespace Ara3D
             var faceIndex = 0;
             for (var i = 0; i < g3d.NumFaces; ++i)
             {
-                if (faceIndex != topo.FaceToIndexBuffer[i])
+                if (faceIndex != topo.FacesToCorners[i])
                     throw new Exception("Topology face indices is incorrect");
                 var faceSize = g3d.FaceSizes[i];
                 
@@ -672,5 +879,12 @@ namespace Ara3D
 
         public static IGeometry SetObjectIds(this IGeometry g, IArray<int> ids)
             => g.ReplaceAttribute(ids.ToObjectIdsAttribute()).ToIGeometry();
+
+        public static bool SequenceAlmostEquals(this IArray<Vector3> vs1, IArray<Vector3> vs2, float tolerance = Constants.Tolerance)
+            => vs1.Count == vs2.Count && vs1.Indices().All(i => vs1[i].AlmostEquals(vs2[i], tolerance));
+
+        public static bool SameVerticesAndTopology(this IGeometry g1, IGeometry g2, float tolerance = Constants.Tolerance)
+            => g1.Indices.SequenceEquals(g2.Indices) && g1.Vertices.SequenceAlmostEquals(g2.Vertices, tolerance);
+
     }
 }

@@ -3,21 +3,30 @@ using System.Linq;
 
 namespace Ara3D
 {
-    public class DictionaryOfLists<K, V> : Dictionary<K, List<V>>
+    public class DictionaryOfLists<TKey, TValue> : Dictionary<TKey, List<TValue>>
     {
-        public void Add(K k, V v)
+        public DictionaryOfLists()
+        { }
+
+        public DictionaryOfLists(IEnumerable<IGrouping<TKey, TValue>> groups)
+        {
+            foreach (var grp in groups)
+                Add(grp.Key, grp.ToList());
+        }
+
+        public void Add(TKey k, TValue v)
         {
             if (!ContainsKey(k))
-                Add(k, new List<V>());
+                Add(k, new List<TValue>());
             this[k].Add(v);
         }
 
-        public IEnumerable<V> AllValues
+        public IEnumerable<TValue> AllValues
             => Values.SelectMany(xs => xs);
 
-        public List<V> GetOrDefault(K k) {
+        public List<TValue> GetOrDefault(TKey k) {
             if (!ContainsKey(k))
-                return new List<V>();
+                return new List<TValue>();
             return this[k];
         }
     }

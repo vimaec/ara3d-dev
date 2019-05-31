@@ -728,5 +728,11 @@ namespace Ara3D
         /// </summary>
         public static IArray<U> Cast<T, U>(this IArray<T> xs) where T: U
             => xs.Select(x => (U)x);
+
+        /// <summary>
+        /// Returns true if the value is present in the array.
+        /// </summary>
+        public static bool Contains<T>(this IArray<T> xs, T value)
+            => xs.Any(x => x.Equals(value));
     }
 }

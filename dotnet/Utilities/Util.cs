@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
@@ -545,6 +546,18 @@ namespace Ara3D
                 self[key] = value;
             else
                 self.Add(key, value);
+        }
+
+        /// <summary>
+        /// Updates a value in the dictionary using the provided function, passing default
+        /// if no value is present.
+        /// </summary>
+        public static void AddOrUpdate<K, V>(this IDictionary<K, V> self, K key, Func<V, V> func)
+        {
+            if (self.ContainsKey(key))
+                self[key] = func(self[key]);
+            else
+                self.Add(key, func(default));
         }
 
         /// <summary>
@@ -1468,6 +1481,12 @@ namespace Ara3D
             => InvalidFileNameRegex.Replace(s, m => "_");
 
         /// <summary>
+        /// Returns true if the string has any invalid file name chars
+        /// </summary>
+        public static bool HasInvalidFileNameChars(this string s)
+            => InvalidFileNameRegex.Match(s).Success;
+
+        /// <summary>
         /// Returns the name of the outer most folder given a file path or a directory path
         /// https://stackoverflow.com/questions/3736462/getting-the-folder-name-from-a-path
         /// </summary>
@@ -1499,16 +1518,58 @@ namespace Ara3D
             => Path.Combine(Path.GetDirectoryName(filePath) ?? "", func(Path.GetFileNameWithoutExtension(filePath)) + Path.GetExtension(filePath));
 
         /// <summary>
-        /// Prepends text to the file name keeping it in the same folder
+        /// Prepends text to the file name keeping it in the same folder and with the same extension
         /// </summary>
         public static string PrependFileName(string filePath, string text)
             => TransformFileName(filePath, name => text + name);
 
         /// <summary>
-        /// Prepends text to the file name keeping it in the same folder (and the same extension)
+        /// Prepends text to the file name keeping it in the same folder and with the same extension
         /// </summary>
         public static string AppendFileName(string filePath, string text)
             => TransformFileName(filePath, name => name + text);
+
+        /// <summary>
+        /// Returns all the lines of all the files 
+        /// </summary>
+        public static IEnumerable<string> ReadManyLines(IEnumerable<string> fileNames)
+            => fileNames.SelectMany(File.ReadLines);
+
+        /// <summary>
+        /// Concatenates the contents of all the files and writes them to a new file.
+        /// </summary>
+        public static void ConcatFiles(string filePath, IEnumerable<string> fileNames)
+            => File.WriteAllLines(filePath, ReadManyLines(fileNames));
+
+        /// <summary>
+        /// Concatenates the contents of all the CSV files and writes them to a new file.
+        /// Only the header of the first file is kept
+        /// </summary>
+        public static void ConcatCsvFiles(string filePath, IEnumerable<string> fileNames)
+            => File.WriteAllLines(filePath, 
+                fileNames.SelectMany((f, n) => 
+                    File.ReadLines(f).Skip(n > 0 ? 1 : 0)));
+
+        /// <summary>
+        /// Generates a hash set from an enumerable collection
+        /// </summary>
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> self)
+            => new HashSet<T>(self);
+
+        /// <summary>
+        /// Given a collection of items, counts how often each unique item is found.
+        /// </summary>
+        public static Dictionary<T, int> CountInstances<T>(this IEnumerable<T> self)
+            => self.WhereNotNull().GroupBy(x => x).ToDictionary(grp => grp.Key, grp => grp.Count());
+
+        /// <summary>
+        /// Given a collection of items, and a map function, counts how often each mapped item is found.
+        /// </summary>
+        public static Dictionary<U, int> CountInstances<T, U>(this IEnumerable<T> self, Func<T, U> map)
+            => self.Select(map).CountInstances();
+
+        public static DictionaryOfLists<TKey, TValue> ToDictionaryOfLists<TKey, TValue>(this IEnumerable<IGrouping<TKey, TValue>> groups)
+            => new DictionaryOfLists<TKey, TValue>(groups);
     }
 }
 
