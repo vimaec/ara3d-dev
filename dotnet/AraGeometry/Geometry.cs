@@ -30,6 +30,9 @@ namespace Ara3D
         public Topology(IGeometry g)
         {
             Geometry = g;
+            Corners = g.Indices.Indices();
+            Faces = Geometry.NumFaces.Range();
+            Vertices = g.Vertices.Indices();
 
             // Compute the mapping from corner (indices of the index buffer) to faces
             // and the mapping from faces to the first corner in that face
@@ -60,20 +63,23 @@ namespace Ara3D
             // I am not considering that case for now. 
 
             // Compute the face on the other side of an edge 
-            BorderFaces = (-1).Repeat(g.Indices.Count).ToArray();
+            EdgeToOtherFace = (-1).Repeat(g.Indices.Count).ToArray();
             for (var c = 0; c < g.Indices.Count; ++c)
             {
-                var f = CornerToFace(c);
                 var c2 = NextCorner(c);
-                foreach (var f2 in FacesFromCorner(c2))
-                {
-                    if (f2 != f)
-                    {
-                        if (FaceHasCorner(f2, c))
-                        {
-                            if (BorderFaces[c] != -1)
-                                NonManifold = true;
-                            BorderFaces[c] = f2;
+                var f0 = CornerToFace(c);
+                foreach (var f1 in FacesFromCorner(c))
+                { 
+                    if (f1 != f0)
+                    { 
+                        foreach (var f2 in FacesFromCorner(c2))
+                        { 
+                            if (f2 == f1)
+                            {
+                                if (EdgeToOtherFace[c] != -1)
+                                    NonManifold = true;
+                                EdgeToOtherFace[c] = f2;
+                            }
                         }
                     }
                 }
@@ -83,10 +89,14 @@ namespace Ara3D
         public IGeometry Geometry { get; }
 
         public List<int>[] VerticesToFaces { get; }
-        public int[] BorderFaces { get; } // Assumes manifold meshes
+        public int[] EdgeToOtherFace { get; } // Assumes manifold meshes
         public int[] CornersToFaces { get; }
         public int[] FacesToCorners { get; }
         public bool NonManifold { get; } 
+        public IArray<int> Corners { get; }
+        public IArray<int> Vertices { get; }
+        public IArray<int> Edges => Corners;
+        public IArray<int> Faces { get; }
 
         public int CornerToFace(int i)
             => CornersToFaces[i];
@@ -147,13 +157,10 @@ namespace Ara3D
             => EdgesFromFace(f).Select(BorderFace).Where(bf => bf >= 0);
 
         public int BorderFace(int e)
-            => BorderFaces[e];
+            => EdgeToOtherFace[e];
 
         public bool IsBorderEdge(int e)
-            => BorderFaces[e] < 0;
-
-        public IArray<int> Faces()
-            => Geometry.NumFaces.Range();
+            => EdgeToOtherFace[e] < 0;
 
         public bool IsBorderFace(int f)
             => EdgesFromFace(f).Any(IsBorderEdge);
@@ -168,7 +175,7 @@ namespace Ara3D
             => FacesToCorners[f];
 
         public int FaceSize(int f)
-            => Geometry.FaceSizes()[f];
+            => Geometry.FaceSizes[f];
 
         public int FaceFromCorner(int c)
             => CornersToFaces[c];
@@ -195,6 +202,36 @@ namespace Ara3D
 
         public IArray<int> VertexIndicesFromEdge(int e)
             => CornersFromEdge(e).Select(VertexIndexFromCorner);
+
+        public IEnumerable<int> NeighbourVertices(int v)
+            => FacesFromVertexIndex(v).SelectMany(f => VertexIndicesFromFace(f).ToEnumerable()).Where(v2 => v2 != v).Distinct();
+
+        public IEnumerable<int> BorderEdges
+            => Edges.Where(IsBorderEdge);
+
+        public IEnumerable<int> BorderFaces 
+            => Faces.Where(IsBorderFace);
+
+        public int EdgeFirstCorner(int e)
+            => e;
+
+        public int EdgeNextCorner(int e)
+            => NextCorner(e);
+
+        public int EdgeFirstVertex(int e)
+            => VertexIndexFromCorner(EdgeFirstCorner(e));
+
+        public int EdgeNextVertex(int e)
+            => VertexIndexFromCorner(EdgeFirstCorner(e));
+
+        public IArray<int> EdgeVertices(int e)
+            => LinqArray.Create(EdgeFirstVertex(e), EdgeNextVertex(e));
+
+        public Vector3 PointFromVertex(int v)
+            => Geometry.Vertices[v];
+
+        public IArray<Vector3> EdgePoints(int e)
+            => EdgeVertices(e).Select(PointFromVertex);
     }
 
     public class GeometryDebugView
@@ -541,8 +578,8 @@ namespace Ara3D
             return TriMesh(self.Vertices, indices.ToIArray());
         }
 
-        public static IGeometry Merge(this IEnumerable<IGeometry> geometries) 
-            => geometries.ToIArray().Merge();
+        public static IGeometry Merge(this IEnumerable<IGeometry> geometries, bool weldVertices = false, float weldTolerance = (float)Constants.MmToFeet) 
+            => geometries.ToIArray().Merge(weldVertices, weldTolerance);
 
         // TODO: this function need to be generalized to handle all attributes correctly. In fact I think it should proably happen at the IG3D level.
         public static IGeometry Merge(this IArray<IGeometry> geometries, bool weldVertices = false, float weldTolerance = (float)Constants.MmToFeet)
@@ -885,6 +922,29 @@ namespace Ara3D
 
         public static bool SameVerticesAndTopology(this IGeometry g1, IGeometry g2, float tolerance = Constants.Tolerance)
             => g1.Indices.SequenceEquals(g2.Indices) && g1.Vertices.SequenceAlmostEquals(g2.Vertices, tolerance);
+
+        public static Vector3 CenterPoint(this IGeometry g)
+            => g.Vertices.Average();
+
+        public static IGeometry SimplePolygonTessellate(this IEnumerable<Vector3> points)
+        {
+            var pts = points.ToList();
+            var cnt = pts.Count;
+            var sum = Vector3.Zero;
+            var idxs = new List<int>(pts.Count * 3);
+            for (var i = 0; i < pts.Count; ++i)
+            {
+                idxs.Add(i);
+                idxs.Add(i + 1 % cnt);
+                idxs.Add(cnt);
+                sum += pts[i];
+            }
+
+            var midPoint = sum / pts.Count;
+            pts.Add(midPoint);
+
+            return Geometry.TriMesh(pts.ToIArray(), idxs.ToIArray());
+        }
 
     }
 }

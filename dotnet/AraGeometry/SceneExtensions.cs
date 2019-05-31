@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Ara3D
 {
@@ -31,6 +32,7 @@ namespace Ara3D
                     return true;
                 visited.Add(n);
             }
+
             return false;
         }
 
@@ -57,7 +59,7 @@ namespace Ara3D
         public static ISceneNode Merge(this ISceneNode node, IEnumerable<ISceneNode> rest)
         {
             var inv = node.Transform.Inverse();
-            var geos = rest.Select(n => n.Geometry.Transform(n.Transform * inv)).Prepend(node.Geometry);    
+            var geos = rest.Select(n => n.Geometry.Transform(n.Transform * inv)).Prepend(node.Geometry);
             // TODO: keep the node properties? Or merge them all together? Or throw them all out?
             return new SceneNode(node.Properties, geos.Merge(), node.Transform);
         }
@@ -68,9 +70,9 @@ namespace Ara3D
         public static IScene ToScene(this IEnumerable<IEnumerable<ISceneNode>> groups)
             => groups.Select(xs => xs.Merge()).ToScene();
 
-        public static Matrix4x4 LocalTransform(this ISceneNode node) 
-            => node.Parent != null 
-                ? node.Transform * node.Parent.Transform.Inverse() 
+        public static Matrix4x4 LocalTransform(this ISceneNode node)
+            => node.Parent != null
+                ? node.Transform * node.Parent.Transform.Inverse()
                 : node.Transform;
 
         public static IEnumerable<IGeometry> UniqueGeometries(this IScene scene)
@@ -93,7 +95,7 @@ namespace Ara3D
         {
             var props = nodes.FirstOrDefault()?.Scene?.Properties;
 
-            var newNodes = new List<ISceneNode> { new SceneNode(null) };
+            var newNodes = new List<ISceneNode> {new SceneNode(null)};
             var geometries = new HashSet<IGeometry>();
             var root = newNodes[0];
             var tmp = new Dictionary<ISceneNode, SceneNode>();
@@ -158,5 +160,12 @@ namespace Ara3D
 
         public static Dictionary<IGeometry, int> GeometryCounts(this IScene scene)
             => scene.AllNodes().CountInstances(x => x.Geometry);
+
+        public static ISceneNode ReplaceGeometry(this ISceneNode node, IGeometry g)
+            => new SceneNode(node.Properties, g, node.Transform);
+
+        public static IScene ReplaceGeometry(this IScene scene, Dictionary<IGeometry, IGeometry> lookup)
+            => scene.AllNodes().Select(n => n.ReplaceGeometry(n.Geometry != null ? lookup[n.Geometry] : null))
+                .ToScene();
     }
 }
