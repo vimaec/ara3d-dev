@@ -30,13 +30,25 @@ namespace FbxClrWrapper
 		static FBXSceneData ^ GetSceneData() { return mSceneData_; }
 
 	private:
-		static void TransformDataToCLI()
+		static bool TransformDataToCLI()
 		{
-			mSceneData_ = gcnew FBXSceneData(*mSceneData);
+			if (mSceneData != nullptr)
+			{
+				mSceneData_ = gcnew FBXSceneData(*mSceneData);
+				return true;
+			}
+
+			return false;
 		}
-		static void TransformDataFromCLI()
+		static bool TransformDataFromCLI()
 		{
-			mSceneData = new FBXSceneDataInternal(mSceneData_);
+			if (mSceneData_ != nullptr)
+			{
+				mSceneData = new FBXSceneDataInternal(mSceneData_);
+				return true;
+			}
+
+			return false;
 		}
 
 		static void InitializeSdkObjects();

@@ -80,7 +80,7 @@ namespace Ara3D
             return nodeArray.ToIArray();
         }
 
-        public static IScene CreateScene(string FBXFileName)
+        public static IScene LoadFBX(string FBXFileName)
         {
             FBXLoader.Initialize();
             if (FBXLoader.LoadFBX(FBXFileName) >= 0)
@@ -88,8 +88,6 @@ namespace Ara3D
                 FBXLoader.ShutDown();
 
                 var sceneData = FBXLoader.GetSceneData();
-
-                ValidateSceneData(sceneData);
 
                 var geometryArray = CreateIGeometyArray(sceneData.mMeshList);
                 var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
@@ -99,55 +97,21 @@ namespace Ara3D
             }
 
             FBXLoader.ShutDown();
-            return null;
+            throw new System.Exception("Failed to load FBX File");
         }
 
-        public static void CreateFBX(IScene Scene, string FBXFileName)
+        public static void SaveFBX(IScene Scene, string FBXFileName)
         {
             FBXLoader.Initialize();
+
             if (FBXLoader.SaveFBX(FBXFileName) >= 0)
             {
                 FBXLoader.ShutDown();
-
-                var sceneData = FBXLoader.GetSceneData();
-
-                ValidateSceneData(sceneData);
-
-                var geometryArray = CreateIGeometyArray(sceneData.mMeshList);
-                var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
-
-                var scene = new Scene(sceneNodeArray[0], geometryArray, sceneNodeArray);
                 return;
             }
 
             FBXLoader.ShutDown();
-            return;
-        }
-
-        public static bool ValidateSceneData(FBXSceneData SceneData)
-        {
-            int totalFaces = 0;
-            int totalTriangles = 0;
-            int totalIndices = 0;
-            foreach (var mesh in SceneData.mMeshList)
-            {
-                int meshIndices = 0;
-                foreach (var faceSize in mesh.mFaceSize)
-                {
-                    meshIndices += faceSize;
-                    totalTriangles += faceSize + 1 - 3;
-                }
-
-                if (meshIndices != mesh.mIndices.Length)
-                {
-                    return false;
-                }
-
-                totalIndices += meshIndices;
-                totalFaces += mesh.mFaceSize.Length;
-            }
-
-            return true;
+            throw new System.Exception("Failed to save FBX File");
         }
     }
 }

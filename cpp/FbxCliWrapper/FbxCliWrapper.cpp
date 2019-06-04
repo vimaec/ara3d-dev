@@ -36,15 +36,15 @@ namespace FbxClrWrapper
 		delete mSceneData;
 		mScene->Destroy();
 		mSdkManager->Destroy();
+		mSceneData_ = nullptr;
 	}
 
 	int FBXLoader::LoadFBX(String^ FileName)
 	{
 		auto fileName = (const char*)(void*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(FileName);
 		bool lResult = LoadScene(fileName);
-		if (lResult)
+		if (lResult && TransformDataToCLI())
 		{
-			TransformDataToCLI();
 			return 0;
 		}
 
@@ -53,7 +53,10 @@ namespace FbxClrWrapper
 
 	 int FBXLoader::SaveFBX(String^ FileName)
 	 {
-		 TransformDataFromCLI();
+		 if (!TransformDataFromCLI())
+		 {
+			 return -1;
+		 }
 
 		 auto fileName = (const char*)(void*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(FileName);
 		 bool lResult = SaveScene(fileName);
@@ -64,7 +67,6 @@ namespace FbxClrWrapper
 
 		 return -1;
 	 }
-
 
 	void FBXLoader::InitializeSdkObjects()
 	{
@@ -228,10 +230,17 @@ namespace FbxClrWrapper
 		// Create all the fbx nodes required
 		FbxNode* lRootNode = mScene->GetRootNode();
 		std::vector<FbxNode*> nodeList;
-		for (auto nodeName : mSceneData->mNodeNameList)
+		for (int nodeIndex = 0; nodeIndex < (int)mSceneData->mNodeNameList.size(); nodeIndex++)
 		{
-			FbxNode* lChild = FbxNode::Create(mScene, nodeName.c_str());
-			nodeList.push_back(lChild);
+			auto nodeName = mSceneData->mNodeNameList[nodeIndex];
+
+			FbxNode* newNode = FbxNode::Create(mScene, nodeName.c_str());
+
+			newNode->LclTranslation = mSceneData->mNodeTranslationList[nodeIndex];
+			newNode->LclRotation = mSceneData->mNodeRotationList[nodeIndex];
+			newNode->LclScaling = mSceneData->mNodeScaleList[nodeIndex];
+
+			nodeList.push_back(newNode);
 		}
 
 		// use the parent index list to insert children into correct nodes
@@ -375,10 +384,10 @@ namespace FbxClrWrapper
 
 		mSceneData->mNodeMeshIndexList.push_back(meshIndex);
 
-		auto nodeName = pNode->GetName();
+/*		auto nodeName = pNode->GetName();
 		FbxDouble3 translation = pNode->LclTranslation.Get();
 		FbxDouble3 rotation = pNode->LclRotation.Get();
-		FbxDouble3 scaling = pNode->LclScaling.Get();
+		FbxDouble3 scaling = pNode->LclScaling.Get();*/
 	
 		// Recursively process the children.
 		for (int j = 0; j < pNode->GetChildCount(); j++)

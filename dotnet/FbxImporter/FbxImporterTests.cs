@@ -15,7 +15,7 @@ namespace Ara3D
         //[TestCase(@"D:\DATA\C14 - 92001 Sustainability Pavillion Master.fbx", @"D:\DATA\out_2.obj")] // NOTE: this one ran out of memory.
         public static void TestFbxImporter(string filePath, string outputFilePath)
         {
-            var scene = FbxImporter.CreateScene(filePath);
+            var scene = FbxImporter.LoadFBX(filePath);
             scene.ToIGeometry().WriteObj(outputFilePath);
         }
     }

@@ -123,12 +123,12 @@ namespace G3DViewer
             mainViewModel.displayStats = mDisplayStats;
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            var scene = FbxImporter.CreateScene(FileName);
+            var scene = FbxImporter.LoadFBX(FileName);
             mDisplayStats.LoadTime = stopwatch.ElapsedMilliseconds / 1000.0f;
 
             var geometry = scene.ToIGeometry();
             OpenIG3D(geometry);
-            //            OpenIG3D(scene.TransformedGeometries()[2]);
+            /*OpenIG3D(scene.TransformedGeometries()[2]);
             return;            
             foreach (var geom in scene.TransformedGeometries().ToArray())
             {
@@ -136,7 +136,7 @@ namespace G3DViewer
                 {
                     OpenIG3D(geom);
                 }
-            }
+            }*/
         }
 
         public void OpenIG3D(IG3D G3D)

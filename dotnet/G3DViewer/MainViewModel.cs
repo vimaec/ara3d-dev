@@ -21,12 +21,6 @@
     using System.Linq;
     using System.Collections.ObjectModel;
 
-    public struct sG3DObject
-    {
-        int mStartIndex;
-        int mCount;
-    }
-
     public class MainViewModelMesh : ObservableObject
     {
         public MeshGeometry3D Model { get; set; }
