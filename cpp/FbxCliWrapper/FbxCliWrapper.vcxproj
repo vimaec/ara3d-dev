@@ -133,11 +133,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FbxCliWrapper.h" />
+    <ClInclude Include="FBXMeshData.h" />
+    <ClInclude Include="FBXSceneData.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="FbxCliWrapper.cpp" />
+    <ClCompile Include="FBXMeshData.cpp" />
+    <ClCompile Include="FBXSceneData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />

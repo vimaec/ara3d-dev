@@ -225,6 +225,48 @@
             displayStats.NumFaces += faceCount;
         }
 
+        internal void AddTriangle(int i0, int i1, int i2, ref float faceArea, ref int minIndex, ref int maxIndex, ref Vector3Collection sharpDxVectos, ref IntCollection triangleIndices)
+        {
+            var v0 = sharpDxVectos[i0];
+            var v1 = sharpDxVectos[i1];
+            var v2 = sharpDxVectos[i2];
+            float triangleArea = Vector3.Cross(v0 - v1, v0 - v2).Length() * 0.5f;
+            faceArea += triangleArea;
+
+            displayStats.NumTriangles++;
+
+            if (triangleArea > 0.0f)
+            {
+                if (triangleArea < DisplayStats.SmallTriangleSize)
+                {
+                    displayStats.NumSmallTriangles++;
+                }
+
+                // Ignore small triangles
+                float diagonalArea = displayStats.AABB.Diagonal * 0.0002f;
+                if (triangleArea > diagonalArea * diagonalArea)
+                {
+                    minIndex = Math.Min(minIndex, i0);
+                    maxIndex = Math.Max(maxIndex, i0);
+                    minIndex = Math.Min(minIndex, i1);
+                    maxIndex = Math.Max(maxIndex, i1);
+                    minIndex = Math.Min(minIndex, i2);
+                    maxIndex = Math.Max(maxIndex, i2);
+                    triangleIndices.Add(i0);
+                    triangleIndices.Add(i1);
+                    triangleIndices.Add(i2);
+                }
+
+
+                displayStats.MinTriangleArea = Math.Min(triangleArea, displayStats.MinTriangleArea);
+                displayStats.MaxTriangleArea = Math.Max(triangleArea, displayStats.MaxTriangleArea);
+            }
+            else
+            {
+                displayStats.NumDegenerateTriangles++;
+            }
+        }
+
         internal int AddG3DData(Ara3D.IG3D g3dFile)
         {
             // TODO: Clean/Split/Comment this function
@@ -233,7 +275,6 @@
             var faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
 
             var vertexData = g3dFile.VertexAttribute.ToVector3s();
-            var uvData = Ara3D.G3DExtensions.UVs(g3dFile);
             var indexData = Ara3D.G3DExtensions.CornerVertexIndices(g3dFile);
 
             float aabbMinX = float.MaxValue;
@@ -244,7 +285,6 @@
             float aabbMaxZ = float.MinValue;
 
             var sharpDxVectos = new Vector3Collection(vertexData.Count);
-            var sharpDxUVs = new Vector2Collection(vertexData.Count);
 
             displayStats.NumVertices += vertexData.Count;
             displayStats.NumFaces += faceCount;
@@ -252,7 +292,6 @@
             for (int vertexIndex = 0; vertexIndex < vertexData.Count; vertexIndex++)
             {
                 sharpDxVectos.Add(Ara3DToSharpDX(vertexData[vertexIndex]));
-                sharpDxUVs.Add(Ara3DToSharpDX(uvData[vertexIndex]));
 
                 aabbMinX = Math.Min(aabbMinX, vertexData[vertexIndex].X);
                 aabbMinY = Math.Min(aabbMinY, vertexData[vertexIndex].Z);
@@ -280,49 +319,38 @@
                     int faceSize = faceSizes[currentFace];
 
                     float faceArea = 0.0f;
-                    for (int i = 0; i < faceSize - 2; i++)
+                    if (faceSize == 3)
                     {
                         int i0 = indexData[globalVectorIndex];
-                        int i1 = indexData[globalVectorIndex + i + 2];
-                        int i2 = indexData[globalVectorIndex + i + 1];
+                        int i1 = indexData[globalVectorIndex + 2];
+                        int i2 = indexData[globalVectorIndex + 1];
 
-                        var v0 = sharpDxVectos[i0];
-                        var v1 = sharpDxVectos[i1];
-                        var v2 = sharpDxVectos[i2];
-                        float triangleArea = Vector3.Cross(v0 - v1, v0 - v2).Length() * 0.5f;
-                        faceArea += triangleArea;
+                        AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);
+                    }
+                    else if (faceSize == 4)
+                    {
+                        int i0 = indexData[globalVectorIndex];
+                        int i1 = indexData[globalVectorIndex + 2];
+                        int i2 = indexData[globalVectorIndex + 1];
 
-                        displayStats.NumTriangles++;
+                        AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);/**/
 
-                        if (triangleArea > 0.0f)
+                        i0 = indexData[globalVectorIndex + 0];
+                        i1 = indexData[globalVectorIndex + 3];
+                        i2 = indexData[globalVectorIndex + 2];
+
+                        AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);
+                        /**/
+                    }
+                    else
+                    {
+                        for (int i = 0; i < faceSize - 2; i++)
                         {
-                            if (triangleArea < DisplayStats.SmallTriangleSize)
-                            {
-                                displayStats.NumSmallTriangles++;
-                            }
+                            int i0 = indexData[globalVectorIndex];
+                            int i1 = indexData[globalVectorIndex + i + 2];
+                            int i2 = indexData[globalVectorIndex + i + 1];
 
-                            // Ignore small triangles
-                            float diagonalArea = displayStats.AABB.Diagonal * 0.0002f;
-                            if (triangleArea > diagonalArea * diagonalArea)
-                            {
-                                minIndex = Math.Min(minIndex, i0);
-                                maxIndex = Math.Max(maxIndex, i0);
-                                minIndex = Math.Min(minIndex, i1);
-                                maxIndex = Math.Max(maxIndex, i1);
-                                minIndex = Math.Min(minIndex, i2);
-                                maxIndex = Math.Max(maxIndex, i2);
-                                triangleIndices.Add(i0);
-                                triangleIndices.Add(i1);
-                                triangleIndices.Add(i2);
-                            }
-
-
-                            displayStats.MinTriangleArea = Math.Min(triangleArea, displayStats.MinTriangleArea);
-                            displayStats.MaxTriangleArea = Math.Max(triangleArea, displayStats.MaxTriangleArea);
-                        }
-                        else
-                        {
-                            displayStats.NumDegenerateTriangles++;
+                            AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);
                         }
                     }
 
@@ -366,7 +394,7 @@
                 {
                     int faceSize = faceSizes[currentFace];
 
-                    for (int i = 0; i < faceSize - 2; i++)
+                /*    for (int i = 0; i < faceSize - 2; i++)
                     {
                         int i0 = indexData[globalVectorIndex];
                         int i1 = indexData[globalVectorIndex + i + 2];
@@ -382,7 +410,7 @@
                             int histogramIndex = (int)Math.Floor(normalizedArea * (float)(DisplayStats.NumHistogramDivisions - 1));
                             displayStats.AreaHistogramArray[histogramIndex]++;
                         }
-                    }
+                    }*/
 
                     globalVectorIndex += faceSize;
                 }

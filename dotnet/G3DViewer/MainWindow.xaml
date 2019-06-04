@@ -63,7 +63,7 @@
                 <hx:ItemsModel3D.ItemTemplate>
                     <DataTemplate>
                         <hx:InstancingMeshGeometryModel3D
-                            CullMode="Back"
+                            CullMode="None"
                             Geometry="{Binding Model}"
                             InstanceParamArray="{Binding InstanceParams}"
                             Instances="{Binding ModelInstances}"

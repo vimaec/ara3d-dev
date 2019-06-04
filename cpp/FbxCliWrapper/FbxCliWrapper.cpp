@@ -1,4 +1,5 @@
 #include "FbxCliWrapper.h"
+#include <assert.h>
 
 #ifdef _WIN64
 	#if _DEBUG
@@ -43,12 +44,27 @@ namespace FbxClrWrapper
 		bool lResult = LoadScene(fileName);
 		if (lResult)
 		{
-			TransformData();
+			TransformDataToCLI();
 			return 0;
 		}
 
 		return -1;
 	}
+
+	 int FBXLoader::SaveFBX(String^ FileName)
+	 {
+		 TransformDataFromCLI();
+
+		 auto fileName = (const char*)(void*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(FileName);
+		 bool lResult = SaveScene(fileName);
+		 if (lResult)
+		 {
+			 return 0;
+		 }
+
+		 return -1;
+	 }
+
 
 	void FBXLoader::InitializeSdkObjects()
 	{
@@ -78,12 +94,47 @@ namespace FbxClrWrapper
 		}
 	}
 
+	bool FBXLoader::SaveScene(const char* pFilename)
+	{
+		// Create an IOSettings object.
+		FbxIOSettings* ios = FbxIOSettings::Create(mSdkManager, IOSROOT);
+		mSdkManager->SetIOSettings(ios);
+
+		// ... Configure the FbxIOSettings object here ...
+
+		// Create an exporter.
+		FbxExporter* lExporter = FbxExporter::Create(mSdkManager, "");
+
+		// Initialize the exporter.
+		bool lExportStatus = lExporter->Initialize(pFilename, -1, mSdkManager->GetIOSettings());
+
+
+		if (!lExportStatus) 
+		{
+			printf("Call to FbxExporter::Initialize() failed.\n");
+			printf("Error returned: %s\n\n", lExporter->GetStatus().GetErrorString());
+			return false;
+		}
+
+		// Create a new scene so it can be populated by the CLI Data.
+		mScene = FbxScene::Create(mSdkManager, "myScene");
+
+		ExportNodes();
+
+		// Export the scene to the file.
+		bool result = lExporter->Export(mScene);
+
+		// Destroy the exporter.
+		lExporter->Destroy();
+
+		return result;
+	}
+
 	bool FBXLoader::LoadScene(const char* pFilename)
 	{
 		int lFileMajor, lFileMinor, lFileRevision;
 		int lSDKMajor, lSDKMinor, lSDKRevision;
 		//int lFileFormat = -1;
-		int i, lAnimStackCount;
 		bool lStatus;
 		char lPassword[1024];
 
@@ -117,35 +168,6 @@ namespace FbxClrWrapper
 		if (lImporter->IsFBX())
 		{
 			FBXSDK_printf("FBX file format version for file '%s' is %d.%d.%d\n\n", pFilename, lFileMajor, lFileMinor, lFileRevision);
-
-			// From this point, it is possible to access animation stack information without
-			// the expense of loading the entire file.
-
-			FBXSDK_printf("Animation Stack Information\n");
-
-			lAnimStackCount = lImporter->GetAnimStackCount();
-
-			FBXSDK_printf("    Number of Animation Stacks: %d\n", lAnimStackCount);
-			FBXSDK_printf("    Current Animation Stack: \"%s\"\n", lImporter->GetActiveAnimStackName().Buffer());
-			FBXSDK_printf("\n");
-
-			for (i = 0; i < lAnimStackCount; i++)
-			{
-				FbxTakeInfo* lTakeInfo = lImporter->GetTakeInfo(i);
-
-				FBXSDK_printf("    Animation Stack %d\n", i);
-				FBXSDK_printf("         Name: \"%s\"\n", lTakeInfo->mName.Buffer());
-				FBXSDK_printf("         Description: \"%s\"\n", lTakeInfo->mDescription.Buffer());
-
-				// Change the value of the import name if the animation stack should be imported 
-				// under a different name.
-				FBXSDK_printf("         Import Name: \"%s\"\n", lTakeInfo->mImportName.Buffer());
-
-				// Set the value of the import state to false if the animation stack should be not
-				// be imported. 
-				FBXSDK_printf("         Import State: %s\n", lTakeInfo->mSelect ? "true" : "false");
-				FBXSDK_printf("\n");
-			}
 
 			// Set the import states. By default, the import states are always set to 
 			// true. The code below shows how to change these states.
@@ -192,44 +214,96 @@ namespace FbxClrWrapper
 		// Destroy the importer.
 		lImporter->Destroy();
 
-		// Print the nodes of the scene and their attributes recursively.
-		// Note that we are not printing the root node because it should
-		// not contain any attributes.
 		FbxNode* lRootNode = mScene->GetRootNode();
 		if (lRootNode)
 		{
-			PrintNode(lRootNode, -1);
-			//			for (int i = 0; i < lRootNode->GetChildCount(); i++)
-			//			{
-			//				PrintNode(lRootNode->GetChild(i));
-			//			}
+			ProcessNode(lRootNode, -1);
 		}
-
-	
-		FBXSDK_printf("\nPress any key to continue.\n");
-
-		FBXSDK_CRT_SECURE_NO_WARNING_BEGIN
-			getchar();
-		FBXSDK_CRT_SECURE_NO_WARNING_END
 
 		return lStatus;
 	}
 
-
-	int numTabs = 0;
-	// Print the required number of tabs.
-	void FBXLoader::PrintTabs()
+	void FBXLoader::ExportNodes()
 	{
-		for (int i = 0; i < numTabs; i++)
+		// Create all the fbx nodes required
+		FbxNode* lRootNode = mScene->GetRootNode();
+		std::vector<FbxNode*> nodeList;
+		for (auto nodeName : mSceneData->mNodeNameList)
 		{
-			printf("\t");
+			FbxNode* lChild = FbxNode::Create(mScene, nodeName.c_str());
+			nodeList.push_back(lChild);
+		}
+
+		// use the parent index list to insert children into correct nodes
+		for (int nodeIndex = 0; nodeIndex < mSceneData->mNodeParentList.size(); nodeIndex++)
+		{
+			int32_t nodeParent = mSceneData->mNodeParentList[nodeIndex];
+
+			if (nodeParent == -1)
+			{
+				lRootNode->AddChild(nodeList[nodeIndex]);
+			}
+			else
+			{
+				nodeList[nodeParent]->AddChild(nodeList[nodeIndex]);
+			}
+		}
+
+		// use the geometry index list to add all of the geometry attributes
+		for (int nodeIndex = 0; nodeIndex < mSceneData->mNodeParentList.size(); nodeIndex++)
+		{
+			uint32_t meshIndex = mSceneData->mNodeMeshIndexList[nodeIndex];
+
+			if (meshIndex == -1)
+			{
+				continue;
+			}
+
+			auto mesh = mSceneData->mMeshList[meshIndex];
+
+			// Create a mesh.
+			FbxMesh* lMesh = FbxMesh::Create(mScene, mSceneData->mMeshIdList[meshIndex].c_str());
+
+			// Set the node attribute of the mesh node.
+			nodeList[nodeIndex]->SetNodeAttribute(lMesh);
+
+			// Initialize the control point array of the mesh.
+			lMesh->InitControlPoints((int)mesh.mVertices.size());
+			FbxVector4* lControlPoints = lMesh->GetControlPoints();
+
+			for (int vertexIndex = 0; vertexIndex < mesh.mVertices.size() / 3; vertexIndex++)
+			{
+				lControlPoints[vertexIndex].mData[0] = mesh.mVertices[vertexIndex * 3 + 0];
+				lControlPoints[vertexIndex].mData[1] = mesh.mVertices[vertexIndex * 3 + 1];
+				lControlPoints[vertexIndex].mData[2] = mesh.mVertices[vertexIndex * 3 + 2];
+			}
+
+			lMesh->ReservePolygonVertexCount((int)mesh.mIndices.size());
+			for (int p = 0; p < mesh.mIndices.size(); p++)
+			{
+				int index = mesh.mIndices[p];
+				lMesh->mPolygonVertices[p] = index;
+			}
+
+			int globalVertexIndex = 0;
+			for (int polygonIndex = 0; polygonIndex < mesh.mFaceSize.size(); polygonIndex++)
+			{
+				lMesh->BeginPolygon();
+				int faceSize = mesh.mFaceSize[polygonIndex];
+				for (int vertexIndex = 0; vertexIndex < faceSize; vertexIndex++)
+				{
+					lMesh->AddPolygon(mesh.mIndices[globalVertexIndex + vertexIndex]);
+				}
+				lMesh->EndPolygon();
+
+				globalVertexIndex += faceSize;
+			}
 		}
 	}
 
-	// Print a node, its attributes, and all its children recursively.
-	void FBXLoader::PrintNode(FbxNode* pNode, int ParentIndex)
+	void FBXLoader::ProcessNode(FbxNode* pNode, int ParentIndex)
 	{
-		int nodeIndex = mSceneData->mNodeNameList.size();
+		int nodeIndex = (int)mSceneData->mNodeNameList.size();
 		mSceneData->mNodeNameList.push_back(pNode->GetName());
 		mSceneData->mNodeParentList.push_back(ParentIndex);
 
@@ -239,7 +313,7 @@ namespace FbxClrWrapper
 
 		FbxAnimEvaluator* pSceneEvaluator = mScene->GetAnimationEvaluator();
 
-		// Get node’s default TRS properties as a transformation matrix
+		// Get node's default TRS properties as a transformation matrix
 		FbxAMatrix& myNodeDefaultGlobalTransform = pSceneEvaluator->GetNodeGlobalTransform(pNode);
 		mSceneData->mNodeTransformList.push_back(myNodeDefaultGlobalTransform);
 
@@ -250,113 +324,67 @@ namespace FbxClrWrapper
 			if (AttributeType == FbxNodeAttribute::eMesh)
 			{
 				FbxMesh* pMesh = (FbxMesh*)pNode->GetNodeAttribute();
-				FbxVector4* pVertices = pMesh->GetControlPoints();
-				int iNumVertices = pMesh->GetControlPointsCount();
 
-				PrintTabs();
-				printf("Mesh Node, PolyCount: %d\n", pMesh->GetPolygonCount());
-
-				FBXMeshDataInternal mesh;
-
-				for (int j = 0; j < pMesh->GetPolygonCount(); j++)
+				if (mSceneData->mMeshMap.find(pMesh) != mSceneData->mMeshMap.end())
 				{
-					int iNumIndices = pMesh->GetPolygonSize(j);
-					mesh.mFaceSize.push_back(iNumIndices);
+					meshIndex = mSceneData->mMeshMap[pMesh];
+				}
+				else
+				{
+			//		FbxGeometryConverter lGeomConverter(mSdkManager);
+			//		lGeomConverter.Triangulate(pMesh, /*replace*/true);
 
-					for (int k = 0; k < iNumIndices; k++)
+					FbxVector4* pVertices = pMesh->GetControlPoints();
+					int iNumVertices = pMesh->GetControlPointsCount();
+
+					FBXMeshDataInternal mesh;
+
+					int maxIndex = 0;
+
+					for (int p = 0; p < pMesh->mPolygonVertices.Size(); p++)
 					{
-						int iControlPointIndex = pMesh->GetPolygonVertex(j, k);
-						mesh.mIndices.push_back(iControlPointIndex);
+						int index = pMesh->mPolygonVertices[p];
+						mesh.mIndices.push_back(index);
+						maxIndex = maxIndex > index ? maxIndex : index;
 					}
-				}
 
-				for (int k = 0; k < iNumVertices; k++)
-				{
-					float x = (float)pVertices[k].mData[0];
-					float y = (float)pVertices[k].mData[1];
-					float z = (float)pVertices[k].mData[2];
-					mesh.mVertices.push_back(x);
-					mesh.mVertices.push_back(y);
-					mesh.mVertices.push_back(z);
-				}
+					for (int p = 0; p < pMesh->mPolygons.Size(); p++)
+					{
+						mesh.mFaceSize.push_back(pMesh->mPolygons[p].mSize);
+					}
 
-				meshIndex = mSceneData->mMeshList.size();
-				mSceneData->mMeshList.push_back(mesh);
-				mSceneData->mMeshIdList.push_back(pNode->GetName());
+					assert(pMesh->mPolygonVertices.Size() == mesh.mIndices.size());
+					assert(maxIndex < iNumVertices);
+
+					for (int k = 0; k < iNumVertices; k++)
+					{
+						float x = (float)pVertices[k].mData[0];
+						float y = (float)pVertices[k].mData[1];
+						float z = (float)pVertices[k].mData[2];
+						mesh.mVertices.push_back(x);
+						mesh.mVertices.push_back(y);
+						mesh.mVertices.push_back(z);
+					}
+
+					meshIndex = (int)mSceneData->mMeshList.size();
+					mSceneData->mMeshList.push_back(mesh);
+					mSceneData->mMeshIdList.push_back(pMesh->GetName());
+				}
 			}
 		}
 
 		mSceneData->mNodeMeshIndexList.push_back(meshIndex);
 
-
-		//////////////////////////////////////////////////////////////////////////
-
-		PrintTabs();
 		auto nodeName = pNode->GetName();
 		FbxDouble3 translation = pNode->LclTranslation.Get();
 		FbxDouble3 rotation = pNode->LclRotation.Get();
 		FbxDouble3 scaling = pNode->LclScaling.Get();
-
-		// Print the contents of the node.
-		printf("<node name='%s' translation='(%f, %f, %f)' rotation='(%f, %f, %f)' scaling='(%f, %f, %f)'>\n",
-			nodeName,
-			translation[0], translation[1], translation[2],
-			rotation[0], rotation[1], rotation[2],
-			scaling[0], scaling[1], scaling[2]
-		);
-		numTabs++;
-
-		// Print the node's attributes.
-		for (int i = 0; i < pNode->GetNodeAttributeCount(); i++)
-			PrintAttribute(pNode->GetNodeAttributeByIndex(i));
-
-		// Recursively print the children.
+	
+		// Recursively process the children.
 		for (int j = 0; j < pNode->GetChildCount(); j++)
-			PrintNode(pNode->GetChild(j), nodeIndex);
-
-		numTabs--;
-		PrintTabs();
-		printf("</node>\n");
-	}
-	/**
- * Print an attribute.
- */
-	void FBXLoader::PrintAttribute(FbxNodeAttribute* pAttribute) {
-		if (!pAttribute) return;
-
-		FbxString typeName = GetAttributeTypeName(pAttribute->GetAttributeType());
-		FbxString attrName = pAttribute->GetName();
-		PrintTabs();
-		// Note: to retrieve the character array of a FbxString, use its Buffer() method.
-		printf("<attribute type='%s' name='%s'/>\n", typeName.Buffer(), attrName.Buffer());
-	}
-
-	/**
- * Return a string-based representation based on the attribute type.
- */
-	FbxString FBXLoader::GetAttributeTypeName(FbxNodeAttribute::EType type) {
-		switch (type) {
-		case FbxNodeAttribute::eUnknown: return "unidentified";
-		case FbxNodeAttribute::eNull: return "null";
-		case FbxNodeAttribute::eMarker: return "marker";
-		case FbxNodeAttribute::eSkeleton: return "skeleton";
-		case FbxNodeAttribute::eMesh: return "mesh";
-		case FbxNodeAttribute::eNurbs: return "nurbs";
-		case FbxNodeAttribute::ePatch: return "patch";
-		case FbxNodeAttribute::eCamera: return "camera";
-		case FbxNodeAttribute::eCameraStereo: return "stereo";
-		case FbxNodeAttribute::eCameraSwitcher: return "camera switcher";
-		case FbxNodeAttribute::eLight: return "light";
-		case FbxNodeAttribute::eOpticalReference: return "optical reference";
-		case FbxNodeAttribute::eOpticalMarker: return "marker";
-		case FbxNodeAttribute::eNurbsCurve: return "nurbs curve";
-		case FbxNodeAttribute::eTrimNurbsSurface: return "trim nurbs surface";
-		case FbxNodeAttribute::eBoundary: return "boundary";
-		case FbxNodeAttribute::eNurbsSurface: return "nurbs surface";
-		case FbxNodeAttribute::eShape: return "shape";
-		case FbxNodeAttribute::eLODGroup: return "lodgroup";
-		case FbxNodeAttribute::eSubDiv: return "subdiv";
-		default: return "unknown";
+		{
+			ProcessNode(pNode->GetChild(j), nodeIndex);
 		}
 	}
+
 };

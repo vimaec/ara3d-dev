@@ -128,6 +128,15 @@ namespace G3DViewer
 
             var geometry = scene.ToIGeometry();
             OpenIG3D(geometry);
+            //            OpenIG3D(scene.TransformedGeometries()[2]);
+            return;            
+            foreach (var geom in scene.TransformedGeometries().ToArray())
+            {
+                if (geom != null)
+                {
+                    OpenIG3D(geom);
+                }
+            }
         }
 
         public void OpenIG3D(IG3D G3D)
@@ -155,32 +164,34 @@ namespace G3DViewer
             }
 
             var materialIds = G3DExtensions.MaterialIds(mG3D);
-
-            var materialIdMap = new Dictionary<int, int>();
-            for (int materialIdIndex = 0; materialIdIndex < materialIds.Count; materialIdIndex++)
+            if (materialIds != null)
             {
-                int materialId = materialIds[materialIdIndex];
-                if (!materialIdMap.ContainsKey(materialId))
+                var materialIdMap = new Dictionary<int, int>();
+                for (int materialIdIndex = 0; materialIdIndex < materialIds.Count; materialIdIndex++)
                 {
-                    materialIdMap[materialId] = materialId;
+                    int materialId = materialIds[materialIdIndex];
+                    if (!materialIdMap.ContainsKey(materialId))
+                    {
+                        materialIdMap[materialId] = materialId;
+                    }
                 }
+                mDisplayStats.NumMaterialIds = materialIdMap.Count;
             }
-
-            mDisplayStats.NumMaterialIds = materialIdMap.Count;
 
             var objectIds = G3DExtensions.ObjectIds(mG3D);
-
-            var objectIdMap = new Dictionary<int, int>();
-            for (int objectIdIndex = 0; objectIdIndex < objectIds.Count; objectIdIndex++)
+            if (objectIds != null)
             {
-                int objectId = objectIds[objectIdIndex];
-                if (!objectIdMap.ContainsKey(objectId))
+                var objectIdMap = new Dictionary<int, int>();
+                for (int objectIdIndex = 0; objectIdIndex < objectIds.Count; objectIdIndex++)
                 {
-                    objectIdMap[objectId] = objectId;
+                    int objectId = objectIds[objectIdIndex];
+                    if (!objectIdMap.ContainsKey(objectId))
+                    {
+                        objectIdMap[objectId] = objectId;
+                    }
                 }
+                mDisplayStats.NumObjectIds = objectIdMap.Count;
             }
-
-            mDisplayStats.NumObjectIds = objectIdMap.Count;
 
             mainViewModel.Title = "";
             mainViewModel.UpdateSubTitle();
