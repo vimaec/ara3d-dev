@@ -149,6 +149,11 @@
   <ItemGroup>
     <Image Include="app.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dotnet\LinqArray\Ara3D.LinqArray.csproj">
+      <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

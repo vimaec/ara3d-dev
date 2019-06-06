@@ -7,9 +7,6 @@ namespace FbxClrWrapper
 	{
 		mNodeNameList.resize(SrcData->mNodeNameList->Length);
 		mNodeParentList.resize(SrcData->mNodeParentList->Length);
-		mNodeTranslationList.resize(SrcData->mNodeTranslationList->Length * 3);
-		mNodeRotationList.resize(SrcData->mNodeRotationList->Length * 3);
-		mNodeScaleList.resize(SrcData->mNodeScaleList->Length * 3);
 		mNodeTransformList.resize(SrcData->mNodeTransformList->Length * 4 * 4);
 		mNodeMeshIndexList.resize(SrcData->mNodeMeshIndexList->Length);
 		mMeshList.resize(SrcData->mMeshList->Length);
@@ -23,24 +20,6 @@ namespace FbxClrWrapper
 		for (size_t i = 0; i < SrcData->mNodeParentList->Length; i++)
 		{
 			mNodeParentList[i] = SrcData->mNodeParentList[i];
-		}
-		for (size_t i = 0; i < SrcData->mNodeTranslationList->Length / 3; i++)
-		{
-			mNodeTranslationList[i].mData[0] = (float)SrcData->mNodeTranslationList[i * 3 + 0];
-			mNodeTranslationList[i].mData[1] = (float)SrcData->mNodeTranslationList[i * 3 + 1];
-			mNodeTranslationList[i].mData[2] = (float)SrcData->mNodeTranslationList[i * 3 + 2];
-		}
-		for (size_t i = 0; i < SrcData->mNodeRotationList->Length / 3; i++)
-		{
-			mNodeRotationList[i].mData[0] = (float)SrcData->mNodeRotationList[i * 3 + 0];
-			mNodeRotationList[i].mData[1] = (float)SrcData->mNodeRotationList[i * 3 + 1];
-			mNodeRotationList[i].mData[2] = (float)SrcData->mNodeRotationList[i * 3 + 2];
-		}
-		for (size_t i = 0; i < SrcData->mNodeScaleList->Length / 3; i++)
-		{
-			mNodeScaleList[i].mData[0] = (float)SrcData->mNodeScaleList[i * 3 + 0];
-			mNodeScaleList[i].mData[1] = (float)SrcData->mNodeScaleList[i * 3 + 1];
-			mNodeScaleList[i].mData[2] = (float)SrcData->mNodeScaleList[i * 3 + 2];
 		}
 		for (size_t i = 0; i < SrcData->mNodeTransformList->Length / 16; i++)
 		{
@@ -80,9 +59,6 @@ namespace FbxClrWrapper
 	{
 		mNodeNameList = gcnew array<String^>(SrcData.mNodeNameList.size());
 		mNodeParentList = gcnew array<int32_t>(SrcData.mNodeParentList.size());
-		mNodeTranslationList = gcnew array<float>(SrcData.mNodeTranslationList.size() * 3);
-		mNodeRotationList = gcnew array<float>(SrcData.mNodeRotationList.size() * 3);
-		mNodeScaleList = gcnew array<float>(SrcData.mNodeScaleList.size() * 3);
 		mNodeTransformList = gcnew array<float>(SrcData.mNodeTransformList.size() * 4 * 4);
 		mNodeMeshIndexList = gcnew array<int>(SrcData.mNodeMeshIndexList.size());
 		mMeshList = gcnew array<FBXMeshData^>(SrcData.mMeshList.size());
@@ -95,24 +71,6 @@ namespace FbxClrWrapper
 		for (size_t i = 0; i < SrcData.mNodeParentList.size(); i++)
 		{
 			mNodeParentList[i] = SrcData.mNodeParentList[i];
-		}
-		for (size_t i = 0; i < SrcData.mNodeTranslationList.size(); i++)
-		{
-			mNodeTranslationList[i * 3 + 0] = (float)SrcData.mNodeTranslationList[i].mData[0];
-			mNodeTranslationList[i * 3 + 1] = (float)SrcData.mNodeTranslationList[i].mData[1];
-			mNodeTranslationList[i * 3 + 2] = (float)SrcData.mNodeTranslationList[i].mData[2];
-		}
-		for (size_t i = 0; i < SrcData.mNodeRotationList.size(); i++)
-		{
-			mNodeRotationList[i * 3 + 0] = (float)SrcData.mNodeRotationList[i].mData[0];
-			mNodeRotationList[i * 3 + 1] = (float)SrcData.mNodeRotationList[i].mData[1];
-			mNodeRotationList[i * 3 + 2] = (float)SrcData.mNodeRotationList[i].mData[2];
-		}
-		for (size_t i = 0; i < SrcData.mNodeScaleList.size(); i++)
-		{
-			mNodeScaleList[i * 3 + 0] = (float)SrcData.mNodeScaleList[i].mData[0];
-			mNodeScaleList[i * 3 + 1] = (float)SrcData.mNodeScaleList[i].mData[1];
-			mNodeScaleList[i * 3 + 2] = (float)SrcData.mNodeScaleList[i].mData[2];
 		}
 		for (size_t i = 0; i < SrcData.mNodeTransformList.size(); i++)
 		{

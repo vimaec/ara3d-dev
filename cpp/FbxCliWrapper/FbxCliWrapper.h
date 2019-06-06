@@ -28,6 +28,7 @@ namespace FbxClrWrapper
 		static int LoadFBX(String^ FileName);
 		static int SaveFBX(String^ FileName);
 		static FBXSceneData ^ GetSceneData() { return mSceneData_; }
+		static void SetSceneData(FBXSceneData^ SceneData) { mSceneData_ = SceneData; }
 
 	private:
 		static bool TransformDataToCLI()
@@ -42,7 +43,7 @@ namespace FbxClrWrapper
 		}
 		static bool TransformDataFromCLI()
 		{
-			if (mSceneData_ != nullptr)
+			if (mSceneData != nullptr)
 			{
 				mSceneData = new FBXSceneDataInternal(mSceneData_);
 				return true;

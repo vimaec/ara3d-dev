@@ -23,26 +23,6 @@ namespace Ara3D
                 var id = sceneData.mNodeMeshIndexList[i];
                 var geometry = id >= 0 ? geometries[id] : null;
 
-            /*    var translation = new Vector3(
-                    sceneData.mNodeTranslationList[i * 3 + 0],
-                    sceneData.mNodeTranslationList[i * 3 + 1],
-                    sceneData.mNodeTranslationList[i * 3 + 2]);
-
-                var scale = new Vector3(
-                    sceneData.mNodeScaleList[i * 3 + 0],
-                    sceneData.mNodeScaleList[i * 3 + 1],
-                    sceneData.mNodeScaleList[i * 3 + 2]);
-
-                var rotation = new Vector3(
-                    sceneData.mNodeRotationList[i * 3 + 0],
-                    sceneData.mNodeRotationList[i * 3 + 1],
-                    sceneData.mNodeRotationList[i * 3 + 2]);
-
-                var translationMatrix = Matrix4x4.CreateTranslation(translation);
-                var scaleMatrix = Matrix4x4.CreateScale(scale);
-
-                var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z);*/
-
                 var transformMatrix = new Matrix4x4(
                     sceneData.mNodeTransformList[i * 16 + 0 + 0],
                     sceneData.mNodeTransformList[i * 16 + 1 + 0],
@@ -80,14 +60,71 @@ namespace Ara3D
             return nodeArray.ToIArray();
         }
 
+        private static void CreateFBXMeshList(IArray<IGeometry> Geometries, ref FBXSceneData SceneData)
+        {
+            List<FBXMeshData> meshList = new List<FBXMeshData>();
+            List<string> meshIdList = new List<string>();
+
+            for (int geometryIndex = 0; geometryIndex < Geometries.Count; geometryIndex++)
+            {
+                var mesh = new FBXMeshData();
+                var geometry = Geometries[geometryIndex];
+
+                mesh.mInds = geometry.Indices;
+                mesh.mVerts = geometry.Vertices.ToFloats();
+                mesh.mFcSz = geometry.FaceSizes;
+
+                meshList.Add(mesh);
+                meshIdList.Add("<no name>");
+            }
+
+            SceneData.mMeshList = meshList.ToArray();
+            SceneData.mMeshIdList = meshIdList.ToArray();
+        }
+        
+        private static void CreateFBXNodes(IArray<ISceneNode> Nodes, IArray<IGeometry> Geometries, ref FBXSceneData SceneData)
+        {
+            List<string> nodeNameList = new List<string>();
+            List<int> nodeParentList = new List<int>();
+            List<float> nodeTransformList = new List<float>();
+            List<int> nodeMeshIndexList = new List<int>();
+
+            // For performance and practicality, we need to generate a map from node/geom to index in the array
+            Dictionary<ISceneNode, int> sceneNodeMap = new Dictionary<ISceneNode, int>();
+            Dictionary<IGeometry, int> geomertryMap = new Dictionary<IGeometry, int>();
+
+            for (int nodeIndex = 0; nodeIndex < Nodes.Count; nodeIndex++)
+            {
+                sceneNodeMap[Nodes[nodeIndex]] = nodeIndex;
+            }
+
+            for (int geometryIndex = 0; geometryIndex < Geometries.Count; geometryIndex++)
+            {
+                geomertryMap[Geometries[geometryIndex]] = geometryIndex;
+            }
+
+            for (int nodeIndex = 0; nodeIndex < Nodes.Count; nodeIndex++)
+            {
+                var node = Nodes[nodeIndex];
+                nodeNameList.Add(node.Name);
+                nodeParentList.Add(node.Parent != null ? sceneNodeMap[node.Parent] : -1);
+                nodeMeshIndexList.Add((node.Geometry != null && geomertryMap.ContainsKey(node.Geometry)) ? geomertryMap[node.Geometry] : -1);
+                nodeTransformList.AddRange(node.Transform.ToFloats());
+            }
+
+            SceneData.mNodeNameList = nodeNameList.ToArray();
+            SceneData.mNodeParentList = nodeParentList.ToArray();
+            SceneData.mNodeTransformList = nodeTransformList.ToArray();
+            SceneData.mNodeMeshIndexList = nodeMeshIndexList.ToArray();
+        }
+
         public static IScene LoadFBX(string FBXFileName)
         {
             FBXLoader.Initialize();
             if (FBXLoader.LoadFBX(FBXFileName) >= 0)
             {
-                FBXLoader.ShutDown();
-
                 var sceneData = FBXLoader.GetSceneData();
+                FBXLoader.ShutDown();
 
                 var geometryArray = CreateIGeometyArray(sceneData.mMeshList);
                 var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
@@ -103,6 +140,11 @@ namespace Ara3D
         public static void SaveFBX(IScene Scene, string FBXFileName)
         {
             FBXLoader.Initialize();
+
+            var sceneData = new FBXSceneData();
+            CreateFBXMeshList(Scene.Geometries, ref sceneData);
+            CreateFBXNodes(Scene.Nodes, Scene.Geometries, ref sceneData);
+            FBXLoader.SetSceneData(sceneData);
 
             if (FBXLoader.SaveFBX(FBXFileName) >= 0)
             {

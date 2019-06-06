@@ -5,21 +5,21 @@ namespace FbxClrWrapper
 {
 	FBXMeshDataInternal::FBXMeshDataInternal(FBXMeshData^ SrcData)
 	{
-		mIndices.resize(SrcData->mIndices->Length);
-		mVertices.resize(SrcData->mVertices->Length);
-		mFaceSize.resize(SrcData->mFaceSize->Length);
+		mIndices.resize(SrcData->mInds->Count);
+		mVertices.resize(SrcData->mVerts->Count);
+		mFaceSize.resize(SrcData->mFcSz->Count);
 
-		for (size_t i = 0; i < SrcData->mIndices->Length; i++)
+		for (int i = 0; i < SrcData->mInds->Count; i++)
 		{
-			mIndices[i] = SrcData->mIndices[i];
+			mIndices[i] = SrcData->mInds[i];
 		}
-		for (size_t i = 0; i < SrcData->mVertices->Length; i++)
+		for (int i = 0; i < SrcData->mVerts->Count; i++)
 		{
-			mVertices[i] = SrcData->mVertices[i];
+			mVertices[i] = SrcData->mVerts[i];
 		}
-		for (size_t i = 0; i < SrcData->mFaceSize->Length; i++)
+		for (int i = 0; i < SrcData->mFcSz->Count; i++)
 		{
-			mFaceSize[i] = SrcData->mFaceSize[i];
+			mFaceSize[i] = SrcData->mFcSz[i];
 		}
 	}
 

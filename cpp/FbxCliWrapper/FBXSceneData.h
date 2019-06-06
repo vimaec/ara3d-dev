@@ -17,11 +17,8 @@ namespace FbxClrWrapper
 	public:
 		std::vector<std::string> mNodeNameList;
 		std::vector<int32_t> mNodeParentList;
-		std::vector<FbxDouble3> mNodeTranslationList;
-		std::vector<FbxDouble3> mNodeRotationList;
-		std::vector<FbxDouble3> mNodeScaleList;
 		std::vector<FbxDouble4x4> mNodeTransformList;
-		std::vector<int> mNodeMeshIndexList;
+		std::vector<int32_t> mNodeMeshIndexList;
 
 		std::vector<FBXMeshDataInternal> mMeshList;
 		std::vector<std::string> mMeshIdList;
@@ -39,11 +36,8 @@ namespace FbxClrWrapper
 	public:
 		array<String^>^ mNodeNameList;
 		array<int32_t>^ mNodeParentList;
-		array<float>^ mNodeTranslationList;
-		array<float>^ mNodeRotationList;
-		array<float>^ mNodeScaleList;
 		array<float>^ mNodeTransformList;
-		array<int>^ mNodeMeshIndexList;
+		array<int32_t>^ mNodeMeshIndexList;
 
 		array<FBXMeshData^>^ mMeshList;
 		array<String^>^ mMeshIdList;

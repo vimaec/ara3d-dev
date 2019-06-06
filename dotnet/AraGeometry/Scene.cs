@@ -8,6 +8,7 @@ namespace Ara3D
     public interface IScene
     {
         ISceneNode Root { get; }
+        IArray<IGeometry> Geometries { get; }
         IArray<ISceneNode> Nodes { get; }
     }
 
