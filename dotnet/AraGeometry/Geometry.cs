@@ -946,5 +946,8 @@ namespace Ara3D
             return Geometry.TriMesh(pts.ToIArray(), idxs.ToIArray());
         }
 
+        public static bool IsCoplanar(this IGeometry g, float tolerance = (float)Constants.OneTenthOfADegree) 
+            => g.GetFaces().ToEnumerable().AreCoplanar(tolerance);
+
     }
 }
