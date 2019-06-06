@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{45A97135-9EB4-411E-AF1C-47048775D89B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FbxImporterTest</RootNamespace>
+    <AssemblyName>FbxImporterTest</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Ara3D-dev\dotnet\AraGeometry\Ara3D.Geometry.csproj">
+      <Project>{e89008fa-6d3f-48de-900a-be5a9d79f4ae}</Project>
+      <Name>Ara3D.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Ara3D-dev\dotnet\BFast\Ara3D.BFast.csproj">
+      <Project>{4ce35b4d-4fa8-491e-b195-77520c1e8683}</Project>
+      <Name>Ara3D.BFast</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Ara3D-dev\dotnet\G3D\Ara3D.G3D.csproj">
+      <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
+      <Name>Ara3D.G3D</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Ara3D-dev\dotnet\LinqArray\Ara3D.LinqArray.csproj">
+      <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
+      <Name>Ara3D.LinqArray</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Math3D\src\Ara3D.Math3D.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+      <Name>Ara3D.Math3D</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\cpp\FbxCliWrapper\FbxCliWrapper.vcxproj">
+      <Project>{aa1cc820-d64c-494f-a027-373342fb1bdc}</Project>
+      <Name>FbxCliWrapper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FbxImporter\Ara3D.FbxImporter.csproj">
+      <Project>{ca9815ed-c72d-4b7a-9204-2464412734f2}</Project>
+      <Name>Ara3D.FbxImporter</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

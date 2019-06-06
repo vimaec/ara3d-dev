@@ -3,6 +3,16 @@
     /// <summary>
     /// The version identifier for this version of the G3D specification
     /// </summary>
+#if _CPP_
+    public class G3DVersion
+    {
+        public:
+            const int Major = 9;
+            const int Minor = 1;
+            const int Revision = 0;
+            const char* Date = "2019-02-10";
+    };
+#else
     public class G3DVersion
     {
         public int Major = 9;
@@ -10,6 +20,7 @@
         public int Revision = 0;
         public string Date = "2019-02-10";
     }
+#endif
 
     /// <summary>
     /// The different types of data types that can be used as elements.

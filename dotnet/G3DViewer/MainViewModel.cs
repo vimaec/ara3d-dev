@@ -21,12 +21,6 @@
     using System.Linq;
     using System.Collections.ObjectModel;
 
-    public struct sG3DObject
-    {
-        int mStartIndex;
-        int mCount;
-    }
-
     public class MainViewModelMesh : ObservableObject
     {
         public MeshGeometry3D Model { get; set; }
@@ -44,23 +38,28 @@
         }
     }
 
+    // TODO: Add comments
     public class MainViewModel : BaseViewModel
     {
+        public const int SubMeshSplitSize = 100000; // Size of the mesh (in faces) that get rendered. The main mesh is split into submeshes for rendering.
         public ObservableCollection<MainViewModelMesh> Models { get; set; } = new ObservableCollection<MainViewModelMesh>();
         public Matrix ModelsTransform = Matrix.Identity;
         public LineGeometry3D Lines { get; private set; }
         public LineGeometry3D Grid { get; private set; }
-
         public Vector3D DirectionalLightDirection { get; private set; }
         public Color DirectionalLightColor { get; private set; }
         public Color AmbientLightColor { get; private set; }
-        public Stream Texture { private set; get; }
-
+        public DisplayStats _displayStats;
         public DisplayStats displayStats
         {
             get
             {
-                return MainWindow.mDisplayStats;
+                return _displayStats;
+            }
+            set
+            {
+                _displayStats = value;
+                OnPropertyChanged(nameof(displayStats));
             }
         }
 
@@ -72,16 +71,13 @@
         {
             Title = "G3D Viewer";
             EffectsManager = new DefaultEffectsManager();
-            // camera setup
+
             Camera = new PerspectiveCamera { Position = new Point3D(40, 40, 40), LookDirection = new Vector3D(-40, -40, -40), UpDirection = new Vector3D(0, 1, 0), FarPlaneDistance = 10000.0, NearPlaneDistance = 5.0 };
 
             // setup lighting            
             this.AmbientLightColor = Colors.DarkGray;
             this.DirectionalLightColor = Colors.White;
             this.DirectionalLightDirection = new Vector3D(-2, -5, -2);
-
-            
-            // Texture = LoadFileToMemory("E:/VimAecDev/Cubemap_Grandcanyon.dds");
         }
 
         public void UpdateSubTitle()
@@ -95,11 +91,7 @@
 
             newViewModelMesh.Model = Model;
             newViewModelMesh.ModelTransform = Media3D.Transform3D.Identity;
-
-            // model material
             newViewModelMesh.ModelMaterial = PhongMaterials.White;
-            newViewModelMesh.ModelMaterial.DiffuseMap = LoadFileToMemory("E:/VimAecDev/floor_d.png");
-            newViewModelMesh.ModelMaterial.NormalMap = LoadFileToMemory("E:/VimAecDev/floor_n.png");
 
             Models.Add(newViewModelMesh);
             OnPropertyChanged(nameof(Models));
@@ -114,34 +106,12 @@
             var model = Models[ModelIndex];
 
             var color = new Color4(1, 1, 1, 1);
-         //   model.AddInstance(Ara3DToSharpDX(Transform), new InstanceParameter() { DiffuseColor = color, TexCoordOffset = new Vector2(0, 0) });
-            model.AddInstance(SharpDX.Matrix.Identity, new InstanceParameter() { DiffuseColor = color, TexCoordOffset = new Vector2(0, 0) });
+            model.AddInstance(Ara3DToSharpDX(Transform), new InstanceParameter() { DiffuseColor = color, TexCoordOffset = new Vector2(0, 0) });
 
             TriangleCount += model.Model.Triangles.Count();
 
             InstanceCount++;
         }
-   /*        
-        const int num = 1;
-        List<Matrix> instances = new List<Matrix>(num * 2);
-        List<InstanceParameter> parameters = new List<InstanceParameter>(num * 2);
-     
-        private void CreateModels()
-        {
-
-
-            var matrix = Matrix.Identity;
-                    var color = new Color4(1, 1, 1, 1);//new Color4((float)Math.Abs(i) / num, (float)Math.Abs(j) / num, (float)Math.Abs(i + j) / (2 * num), 1);
-                    //  var emissiveColor = new Color4( rnd.NextFloat(0,1) , rnd.NextFloat(0, 1), rnd.NextFloat(0, 1), rnd.NextFloat(0, 0.2f));
-                
-
-                    parameters.Add(new InstanceParameter() { DiffuseColor = color, TexCoordOffset = new Vector2(0,0) });
-                    instances.Add(matrix);
-
-            InstanceParam = parameters.ToArray();
-            ModelInstances = instances.ToArray();
-        }
-        */
         public void OnMouseLeftButtonDownHandler(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var viewport = sender as Viewport3DX;
@@ -178,14 +148,20 @@
         {
             return new SharpDX.Vector3(input.X, input.Z, input.Y);
         }
+        static SharpDX.Vector2 Ara3DToSharpDX(Ara3D.Vector2 input)
+        {
+            return new SharpDX.Vector2(input.X, input.Y);
+        }
         static SharpDX.Matrix Ara3DToSharpDX(Ara3D.Matrix4x4 input)
         {
-            return new SharpDX.Matrix(
+            var ret = new SharpDX.Matrix(
                 input.M11, input.M12, input.M13, input.M14,
                 input.M21, input.M22, input.M23, input.M24,
                 input.M31, input.M32, input.M33, input.M34,
                 input.M41, input.M42, input.M43, input.M44
                 );
+
+            return ret;
         }
 
         MeshBuilder bakedMeshBuilder = null;
@@ -217,7 +193,7 @@
         {
             bool hasFixedFaceSize = Ara3D.G3DExtensions.HasFixedFaceSize(g3dFile);
             int faceCount = Ara3D.G3DExtensions.FaceCount(g3dFile);
-            Ara3D.IArray<int> faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
+            var faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
 
             var vertexData = g3dFile.VertexAttribute.ToVector3s();
             var indexData = g3dFile.IndexAttribute.ToInts();
@@ -227,7 +203,7 @@
             {
                 int faceSize = faceSizes[face];
 
-                List<SharpDX.Vector3> vectors = new List<Vector3>(faceSize);
+                var vectors = new List<Vector3>(faceSize);
                 for (int i = 0; i < faceSize; i++)
                 {
                     int vectorIndex = indexData[globalVectorIndex + faceSize - 1 - i];
@@ -243,51 +219,209 @@
             displayStats.NumFaces += faceCount;
         }
 
+        internal void AddTriangle(int i0, int i1, int i2, ref float faceArea, ref int minIndex, ref int maxIndex, ref Vector3Collection sharpDxVectos, ref IntCollection triangleIndices)
+        {
+            var v0 = sharpDxVectos[i0];
+            var v1 = sharpDxVectos[i1];
+            var v2 = sharpDxVectos[i2];
+            float triangleArea = Vector3.Cross(v0 - v1, v0 - v2).Length() * 0.5f;
+            faceArea += triangleArea;
+
+            displayStats.NumTriangles++;
+
+            if (triangleArea > 0.0f)
+            {
+                if (triangleArea < DisplayStats.SmallTriangleSize)
+                {
+                    displayStats.NumSmallTriangles++;
+                }
+
+                // Ignore small triangles
+                float diagonalArea = displayStats.AABB.Diagonal * 0.0002f;
+                if (triangleArea > diagonalArea * diagonalArea)
+                {
+                    minIndex = Math.Min(minIndex, i0);
+                    maxIndex = Math.Max(maxIndex, i0);
+                    minIndex = Math.Min(minIndex, i1);
+                    maxIndex = Math.Max(maxIndex, i1);
+                    minIndex = Math.Min(minIndex, i2);
+                    maxIndex = Math.Max(maxIndex, i2);
+                    triangleIndices.Add(i0);
+                    triangleIndices.Add(i1);
+                    triangleIndices.Add(i2);
+                }
+
+
+                displayStats.MinTriangleArea = Math.Min(triangleArea, displayStats.MinTriangleArea);
+                displayStats.MaxTriangleArea = Math.Max(triangleArea, displayStats.MaxTriangleArea);
+            }
+            else
+            {
+                displayStats.NumDegenerateTriangles++;
+            }
+        }
+
         internal int AddG3DData(Ara3D.IG3D g3dFile)
         {
+            // TODO: Clean/Split/Comment this function
             bool hasFixedFaceSize = Ara3D.G3DExtensions.HasFixedFaceSize(g3dFile);
             int faceCount = Ara3D.G3DExtensions.FaceCount(g3dFile);
-            Ara3D.IArray<int> faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
+            var faceSizes = Ara3D.G3DExtensions.FaceSizes(g3dFile);
 
             var vertexData = g3dFile.VertexAttribute.ToVector3s();
-            var indexData = g3dFile.IndexAttribute.ToInts();
+            var indexData = Ara3D.G3DExtensions.CornerVertexIndices(g3dFile);
 
+            float aabbMinX = float.MaxValue;
+            float aabbMaxX = float.MinValue;
+            float aabbMinY = float.MaxValue;
+            float aabbMaxY = float.MinValue;
+            float aabbMinZ = float.MaxValue;
+            float aabbMaxZ = float.MinValue;
 
-            var b1 = new MeshBuilder(true, true, true);
-            var l1 = new LineBuilder();
+            var sharpDxVectos = new Vector3Collection(vertexData.Count);
 
+            displayStats.NumVertices += vertexData.Count;
+            displayStats.NumFaces += faceCount;
+
+            for (int vertexIndex = 0; vertexIndex < vertexData.Count; vertexIndex++)
+            {
+                sharpDxVectos.Add(Ara3DToSharpDX(vertexData[vertexIndex]));
+
+                aabbMinX = Math.Min(aabbMinX, vertexData[vertexIndex].X);
+                aabbMinY = Math.Min(aabbMinY, vertexData[vertexIndex].Z);
+                aabbMinZ = Math.Min(aabbMinZ, vertexData[vertexIndex].Y);
+
+                aabbMaxX = Math.Max(aabbMaxX, vertexData[vertexIndex].X);
+                aabbMaxY = Math.Max(aabbMaxY, vertexData[vertexIndex].Z);
+                aabbMaxZ = Math.Max(aabbMaxZ, vertexData[vertexIndex].Y);
+            }
+
+            displayStats.AABB = new Ara3D.Box(new Ara3D.Vector3(aabbMinX, aabbMinY, aabbMinZ), new Ara3D.Vector3(aabbMaxX, aabbMaxY, aabbMaxZ));
+
+            int currentFace = 0;
             int globalVectorIndex = 0;
-            for (int face = 0; face < faceCount; face++)
-            {
-                int faceSize = faceSizes[face];
 
-                List<SharpDX.Vector3> vectors = new List<Vector3>(faceSize);
-                for (int i = 0; i < faceSize; i++)
+            while (currentFace < faceCount)
+            {
+                var geometry3d = new MeshGeometry3D();
+                var triangleIndices = new IntCollection(SubMeshSplitSize * 3);
+                int subFaceCount = 0;
+                int minIndex = int.MaxValue;
+                int maxIndex = 0;
+                for (; currentFace < faceCount && subFaceCount < SubMeshSplitSize; currentFace++, subFaceCount++)
                 {
-                    int vectorIndex = indexData[globalVectorIndex + faceSize - 1 - i];
-                    vectors.Add(Ara3DToSharpDX(vertexData[vectorIndex]));
+                    int faceSize = faceSizes[currentFace];
+
+                    float faceArea = 0.0f;
+                    if (faceSize == 3)
+                    {
+                        int i0 = indexData[globalVectorIndex];
+                        int i1 = indexData[globalVectorIndex + 2];
+                        int i2 = indexData[globalVectorIndex + 1];
+
+                        AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);
+                    }
+                    else if (faceSize == 4)
+                    {
+                        int i0 = indexData[globalVectorIndex];
+                        int i1 = indexData[globalVectorIndex + 2];
+                        int i2 = indexData[globalVectorIndex + 1];
+
+                        AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);/**/
+
+                        i0 = indexData[globalVectorIndex + 0];
+                        i1 = indexData[globalVectorIndex + 3];
+                        i2 = indexData[globalVectorIndex + 2];
+
+                        AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);
+                        /**/
+                    }
+                    else
+                    {
+                        for (int i = 0; i < faceSize - 2; i++)
+                        {
+                            int i0 = indexData[globalVectorIndex];
+                            int i1 = indexData[globalVectorIndex + i + 2];
+                            int i2 = indexData[globalVectorIndex + i + 1];
+
+                            AddTriangle(i0, i1, i2, ref faceArea, ref minIndex, ref maxIndex, ref sharpDxVectos, ref triangleIndices);
+                        }
+                    }
+
+                    if (faceArea == 0.0f)
+                    {
+                        displayStats.NumDegenerateFaces++;
+                    }
+
+                    if (faceArea < DisplayStats.SmallTriangleSize)
+                    {
+                        displayStats.NumSmallFaces++;
+                    }
+
+                    globalVectorIndex += faceSize;
                 }
 
-                globalVectorIndex += faceSize;
-
-                b1.AddPolygon(vectors);
-
-                for (int vectorIndex = 0; vectorIndex < faceSize; vectorIndex++ )
+                for (int index =0; index < triangleIndices.Count; index++)
                 {
-                    l1.AddLine(vectors[vectorIndex], vectors[(vectorIndex + 1) % faceSize]);
+                    triangleIndices[index] -= minIndex;
+                }
+                if (triangleIndices.Count > 0)
+                {
+                    geometry3d.Positions = new Vector3Collection(sharpDxVectos.GetRange(minIndex, maxIndex - minIndex + 1));
+                    geometry3d.Indices = triangleIndices;
+                    geometry3d.Normals = geometry3d.CalculateNormals();
+
+                    int modelIndex = AddModel(geometry3d);
+                    AddInstance(modelIndex, Ara3D.Matrix4x4.CreateTranslation(-displayStats.AABB.Center));
                 }
             }
 
-            return AddModel(b1.ToMeshGeometry3D());
-/*            for (int i = 0; i < Model.TextureCoordinates.Count; ++i)
+            currentFace = 0;
+            globalVectorIndex = 0;
+
+            while (currentFace < faceCount)
             {
-                var tex = Model.TextureCoordinates[i];
-                Model.TextureCoordinates[i] = new Vector2(tex.X * 0.5f, tex.Y * 0.5f);
+                var geometry3d = new MeshGeometry3D();
+                var triangleIndices = new IntCollection(SubMeshSplitSize * 3);
+                int subFaceCount = 0;
+                for (; currentFace < faceCount && subFaceCount < SubMeshSplitSize; currentFace++, subFaceCount++)
+                {
+                    int faceSize = faceSizes[currentFace];
+
+                /*    for (int i = 0; i < faceSize - 2; i++)
+                    {
+                        int i0 = indexData[globalVectorIndex];
+                        int i1 = indexData[globalVectorIndex + i + 2];
+                        int i2 = indexData[globalVectorIndex + i + 1];
+
+                        var v0 = sharpDxVectos[i0];
+                        var v1 = sharpDxVectos[i1];
+                        var v2 = sharpDxVectos[i2];
+                        float triangleArea = Vector3.Cross(v0 - v1, v0 - v2).Length() * 0.5f;
+                        if (triangleArea > 0.0f)
+                        {
+                            float normalizedArea = (triangleArea - displayStats.MinTriangleArea) / (displayStats.MaxTriangleArea - displayStats.MinTriangleArea);
+                            int histogramIndex = (int)Math.Floor(normalizedArea * (float)(DisplayStats.NumHistogramDivisions - 1));
+                            displayStats.AreaHistogramArray[histogramIndex]++;
+                        }
+                    }*/
+
+                    globalVectorIndex += faceSize;
+                }
             }
 
-            l1.AddBox(new Vector3(0, 0, 0), 1.1, 1.1, 1.1);
-            Lines = l1.ToLineGeometry3D();
-            Lines.Colors = new Color4Collection(Enumerable.Repeat(Colors.White.ToColor4(), Lines.Positions.Count));*/
+            for (int i = 0; i < DisplayStats.NumHistogramDivisions; i++)
+            {
+                float area0 = i / (float)(DisplayStats.NumHistogramDivisions - 1) * (displayStats.MaxTriangleArea - displayStats.MinTriangleArea) + displayStats.MinTriangleArea;
+                float area1 = (i + 1) / (float)(DisplayStats.NumHistogramDivisions - 1) * (displayStats.MaxTriangleArea - displayStats.MinTriangleArea) + displayStats.MinTriangleArea;
+
+                string key = string.Format("{0:0.00} - {1:0.00}", area0, area1);
+
+                displayStats.AreaHistogram[key] = displayStats.AreaHistogramArray[i];
+                displayStats.AreaHistogramLog[key] = (float)Math.Log10(displayStats.AreaHistogramArray[i] + 1);
+            }
+
+            return 0;
         }
     }
 }

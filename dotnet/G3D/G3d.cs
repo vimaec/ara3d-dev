@@ -100,6 +100,10 @@ $@"{{
         private readonly IAttribute m_faceIndexAttribute;
         private readonly IAttribute m_materialIdAttribute;
 
+        public G3D(params IAttribute[] attributes)
+            : this(attributes, null, null)
+        { }
+
         public G3D(IEnumerable<IAttribute> attributes, BFast buffer = null, string header = null)
         {
             Buffer = buffer;
