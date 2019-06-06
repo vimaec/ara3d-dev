@@ -125,6 +125,12 @@ namespace Ara3D
             => self.CopyTo(new T[self.Count]);
 
         /// <summary>
+        /// Converts the IArray into a system List. 
+        /// </summary>
+        public static List<T> ToList<T>(this IArray<T> self)
+            => self.AddTo(new List<T>());
+
+        /// <summary>
         /// Converts the array into a function that returns values from an integer, returning a default value if out of range.  
         /// </summary>
         public static Func<int, T> ToFunction<T>(this IArray<T> self, T def = default)
@@ -722,5 +728,11 @@ namespace Ara3D
         /// </summary>
         public static IArray<U> Cast<T, U>(this IArray<T> xs) where T: U
             => xs.Select(x => (U)x);
+
+        /// <summary>
+        /// Returns true if the value is present in the array.
+        /// </summary>
+        public static bool Contains<T>(this IArray<T> xs, T value)
+            => xs.Any(x => x.Equals(value));
     }
 }
