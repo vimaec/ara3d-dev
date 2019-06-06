@@ -346,8 +346,8 @@ namespace FbxClrWrapper
 				}
 				else
 				{
-			//		FbxGeometryConverter lGeomConverter(mSdkManager);
-			//		lGeomConverter.Triangulate(pMesh, /*replace*/true);
+					//FbxGeometryConverter lGeomConverter(mSdkManager);
+					//pMesh = (FbxMesh*)lGeomConverter.Triangulate(pMesh, false);
 
 					FbxVector4* pVertices = pMesh->GetControlPoints();
 					int iNumVertices = pMesh->GetControlPointsCount();

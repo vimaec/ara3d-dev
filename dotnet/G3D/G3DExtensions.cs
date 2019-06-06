@@ -25,14 +25,14 @@ namespace Ara3D
         public static IAttribute ToAttribute<T>(this IArray<T> data, Association assoc, AttributeType at, int index = 0) where T : struct
             => data.ToAttribute(Descriptor<T>(assoc, at, index));
 
-        public static IAttribute ToFaceSizeAttribute(this int data)
-            => new[] {data}.ToAttribute(Association.assoc_object, AttributeType.attr_facesize);
+        public static IAttribute ToFaceSizeAttribute(this int data, Association association = Association.assoc_object)
+            => new[] {data}.ToAttribute(association, AttributeType.attr_facesize);
 
-        public static IAttribute ToFaceSizeAttribute(this int[] data)
-            => data.ToAttribute(Association.assoc_object, AttributeType.attr_facesize);
+        public static IAttribute ToFaceSizeAttribute(this int[] data, Association association = Association.assoc_object)
+            => data.ToAttribute(association, AttributeType.attr_facesize);
 
-        public static IAttribute ToFaceSizeAttribute(this IArray<int> data)
-            => data.ToAttribute(Association.assoc_object, AttributeType.attr_facesize);
+        public static IAttribute ToFaceSizeAttribute(this IArray<int> data, Association association = Association.assoc_object)
+            => data.ToAttribute(association, AttributeType.attr_facesize);
 
         public static IAttribute ToVertexAttribute(this Vector3[] data)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex);
