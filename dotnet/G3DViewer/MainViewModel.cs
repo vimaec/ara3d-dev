@@ -296,7 +296,7 @@
                 aabbMaxZ = Math.Max(aabbMaxZ, vertexData[vertexIndex].Y);
             }
 
-            displayStats.AABB = new Ara3D.Box(new Ara3D.Vector3(aabbMinX, aabbMinY, aabbMinZ), new Ara3D.Vector3(aabbMaxX, aabbMaxY, aabbMaxZ));
+            displayStats.AABB = new Ara3D.AABox(new Ara3D.Vector3(aabbMinX, aabbMinY, aabbMinZ), new Ara3D.Vector3(aabbMaxX, aabbMaxY, aabbMaxZ));
 
             int currentFace = 0;
             int globalVectorIndex = 0;

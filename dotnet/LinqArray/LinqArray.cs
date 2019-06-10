@@ -520,6 +520,12 @@ namespace Ara3D
             => (self.Count + 1).Select(i => i < self.Count ? self[i] : x);
 
         /// <summary>
+        /// Creates a new array that concatenates the given items to itself.
+        /// </summary>
+        public static IArray<T> Append<T>(this IArray<T> self, params T[] x)
+            => self.Concatenate(x.ToIArray());
+
+        /// <summary>
         /// Creates a new array that concatenates a unit item list of one item before it   
         /// Repeatedly calling Prepend would result in significant performance degradation.
         /// </summary>
