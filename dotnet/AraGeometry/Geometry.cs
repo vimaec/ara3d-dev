@@ -512,10 +512,10 @@ namespace Ara3D
         public static IGeometry Scale(this IGeometry self, float amount)
             => self.Deform(v => v * amount);
 
-        public static Box BoundingBox(this IArray<Vector3> vertices)
-            => Box.Create(vertices.ToEnumerable());        
+        public static AABox BoundingBox(this IArray<Vector3> vertices)
+            => AABox.Create(vertices.ToEnumerable());        
 
-        public static Box BoundingBox(this IGeometry self)
+        public static AABox BoundingBox(this IGeometry self)
             => self.Vertices.BoundingBox();
 
         public static bool IsPolyMesh(this IGeometry self)

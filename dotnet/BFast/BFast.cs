@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 namespace Ara3D
 {
     /// <summary>
-    /// The programmatic interface of a BFast data structure.
+    /// The programmatic interface of a BFast data structure. A container of binary arrays of data.
     /// </summary>
     public interface IBFast
     {

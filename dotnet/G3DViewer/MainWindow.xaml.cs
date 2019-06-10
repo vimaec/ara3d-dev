@@ -62,7 +62,7 @@ namespace G3DViewer
         public float LoadTime { get; set; }
         public float VertexBufferGenerationTime { get; set; }
         public int FileSize { get; set; }
-        public Box AABB { get; set; } = new Box();
+        public AABox AABB { get; set; } = new AABox();
         public ObservableCollection<AttributeStat> AttributeStats { get; } = new ObservableCollection<AttributeStat>();
 
         public const int NumHistogramDivisions = 16;
