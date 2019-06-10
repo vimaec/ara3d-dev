@@ -114,7 +114,12 @@ namespace Ara3D
                 nodeNameList.Add(node.Properties["name"]);
                 nodeParentList.Add(node.Parent != null ? sceneNodeMap[node.Parent] : -1);
                 nodeMeshIndexList.Add((node.Geometry != null && geomertryMap.ContainsKey(node.Geometry)) ? geomertryMap[node.Geometry] : -1);
-                nodeTransformList.AddRange(node.Transform.ToFloats());
+
+                //var trans = Matrix4x4.Transpose(node.Transform);
+                //var trans = node.Transform;
+                var trans = Matrix4x4.Identity;
+
+                nodeTransformList.AddRange(trans.ToFloats());
             }
 
             SceneData.mNodeNameList = nodeNameList.ToArray();
@@ -173,7 +178,12 @@ namespace Ara3D
                 {
                     nodeMeshIndexList.Add(-1);
                 }
-                nodeTransformList.AddRange(node.Transform.ToFloats());
+
+                //var trans = Matrix4x4.Transpose(node.Transform);
+                var trans = node.Transform;
+                //var trans = Matrix4x4.Identity;
+
+                nodeTransformList.AddRange(trans.ToFloats());
             }
 
             SceneData.mNodeNameList = nodeNameList.ToArray();

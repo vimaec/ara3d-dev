@@ -104,6 +104,8 @@ namespace FbxClrWrapper
 
 		// ... Configure the FbxIOSettings object here ...
 
+		ios->SetBoolProp(IMP_FBX_GLOBAL_SETTINGS, true);
+
 		// Create an exporter.
 		FbxExporter* lExporter = FbxExporter::Create(mSdkManager, "");
 
@@ -120,6 +122,12 @@ namespace FbxClrWrapper
 
 		// Create a new scene so it can be populated by the CLI Data.
 		mScene = FbxScene::Create(mSdkManager, "myScene");
+
+/*		FbxAxisSystem newAxisSystem(FbxAxisSystem::EUpVector::eYAxis,
+			FbxAxisSystem::EFrontVector::eParityOdd,
+			FbxAxisSystem::ECoordSystem::eRightHanded);
+
+		mScene->GetGlobalSettings().SetAxisSystem(newAxisSystem);*/
 
 		ExportNodes();
 
@@ -216,6 +224,14 @@ namespace FbxClrWrapper
 		// Destroy the importer.
 		lImporter->Destroy();
 
+		auto axisSytem = mScene->GetGlobalSettings().GetAxisSystem();
+
+	/*	FbxAxisSystem newAxisSystem(FbxAxisSystem::EUpVector::eYAxis,
+			FbxAxisSystem::EFrontVector::eParityOdd,
+			FbxAxisSystem::ECoordSystem::eRightHanded);
+
+		newAxisSystem.ConvertScene(mScene);*/
+
 		FbxNode* lRootNode = mScene->GetRootNode();
 		if (lRootNode)
 		{
@@ -228,9 +244,10 @@ namespace FbxClrWrapper
 	void FBXLoader::ExportNodes()
 	{
 		// Create all the fbx nodes required
+		// Skip the IScene's root node
 		FbxNode* lRootNode = mScene->GetRootNode();
 		std::vector<FbxNode*> nodeList;
-		for (int nodeIndex = 0; nodeIndex < (int)mSceneData->mNodeNameList.size(); nodeIndex++)
+		for (int nodeIndex = 1; nodeIndex < (int)mSceneData->mNodeNameList.size(); nodeIndex++)
 		{
 			auto nodeName = mSceneData->mNodeNameList[nodeIndex];
 
@@ -287,20 +304,27 @@ namespace FbxClrWrapper
 			int32_t meshIndex = mSceneData->mNodeMeshIndexList[nodeIndex];
 			int32_t nodeParentIndex = mSceneData->mNodeParentList[nodeIndex];
 			FbxMatrix nodeLocalTransform;
-			auto node = nodeList[nodeIndex];
+			auto node = nodeIndex == 0 ? lRootNode : nodeList[nodeIndex - 1];
 
 			if (nodeParentIndex == -1)
 			{
 				nodeLocalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
+			}
+			else if (nodeParentIndex == 0)
+			{
+				auto nodeGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
+				auto parentGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeParentIndex]);
+				nodeLocalTransform = parentGlobalTransform.Inverse() * nodeGlobalTransform;
+				//nodeLocalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
 				bool res = lRootNode->AddChild(node);
 			}
 			else
 			{
 				auto nodeGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
 				auto parentGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeParentIndex]);
-				nodeLocalTransform = nodeGlobalTransform * parentGlobalTransform.Inverse();
+				nodeLocalTransform = parentGlobalTransform.Inverse() * nodeGlobalTransform;
 
-				bool res = nodeList[nodeParentIndex]->AddChild(node);
+				bool res = nodeList[nodeParentIndex - 1]->AddChild(node);
 			}
 
 			if (meshIndex != -1)
@@ -315,6 +339,8 @@ namespace FbxClrWrapper
 			FbxVector4 pScaling;
 			double pSign;
 			nodeLocalTransform.GetElements(pTranslation, pRotation, pShearing, pScaling, pSign);
+
+			pRotation = pRotation * (180.0 / 3.1415); // GetElements returns rotation in radians, node->LclRotation wants degrees
 
 			node->LclTranslation = pTranslation;
 			node->LclRotation = pRotation;
@@ -331,6 +357,10 @@ namespace FbxClrWrapper
 		// Get node's default TRS properties as a transformation matrix
 		FbxAMatrix& myNodeDefaultGlobalTransform = pNode->EvaluateGlobalTransform();
 		mSceneData->mNodeTransformList.push_back(myNodeDefaultGlobalTransform);
+
+		FbxDouble3 pTranslation	= pNode->LclTranslation;
+		FbxDouble3 pRotation	= pNode->LclRotation;
+		FbxDouble3 pScaling		= pNode->LclScaling;
 
 		int meshIndex = -1;
 		if (pNode->GetNodeAttribute())
@@ -384,6 +414,8 @@ namespace FbxClrWrapper
 					meshIndex = (int)mSceneData->mMeshList.size();
 					mSceneData->mMeshList.push_back(mesh);
 					mSceneData->mMeshIdList.push_back(pMesh->GetName());
+
+					mSceneData->mMeshMap[pMesh] = meshIndex;
 				}
 			}
 		}

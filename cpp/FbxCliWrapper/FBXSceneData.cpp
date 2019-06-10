@@ -7,7 +7,7 @@ namespace FbxClrWrapper
 	{
 		mNodeNameList.resize(SrcData->mNodeNameList->Length);
 		mNodeParentList.resize(SrcData->mNodeParentList->Length);
-		mNodeTransformList.resize(SrcData->mNodeTransformList->Length * 4 * 4);
+		mNodeTransformList.resize(SrcData->mNodeTransformList->Length >> 4);
 		mNodeMeshIndexList.resize(SrcData->mNodeMeshIndexList->Length);
 		mMeshList.resize(SrcData->mMeshList->Length);
 		mMeshIdList.resize(SrcData->mMeshIdList->Length);
