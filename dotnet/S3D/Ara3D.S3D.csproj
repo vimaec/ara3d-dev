@@ -77,11 +77,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Memory">
-      <Version>4.5.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

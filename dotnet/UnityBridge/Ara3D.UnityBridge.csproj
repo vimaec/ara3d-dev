@@ -45,6 +45,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProceduralGeometry.cs" />
     <Compile Include="UnityConverters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
@@ -69,11 +70,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Memory">
-      <Version>4.5.3</Version>
-    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

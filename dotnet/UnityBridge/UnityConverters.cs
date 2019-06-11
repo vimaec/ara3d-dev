@@ -160,7 +160,7 @@ namespace Ara3D
         }
 
         public static Mesh GetMesh(this MeshFilter filter)
-            => filter == null ? null : (filter.mesh == null ? filter.sharedMesh : filter.mesh);
+            => filter == null ? null : filter.sharedMesh;
 
         public static Mesh GetMesh(this GameObject obj)
             => obj == null ? null : obj.GetComponent<MeshFilter>().GetMesh();
@@ -170,6 +170,8 @@ namespace Ara3D
 
         public static Mesh CreateMesh(this MonoBehaviour mono, bool renderable = true)
         {
+            if (mono == null || mono.gameObject == null)
+                return null;
             if (renderable)
                 mono.gameObject.AddComponent<MeshRenderer>();
             return mono.gameObject.AddComponent<MeshFilter>().mesh = new Mesh();
