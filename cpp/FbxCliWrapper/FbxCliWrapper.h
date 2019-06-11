@@ -31,32 +31,16 @@ namespace FbxClrWrapper
 		static void SetSceneData(FBXSceneData^ SceneData) { mSceneData_ = SceneData; }
 
 	private:
-		static bool TransformDataToCLI()
-		{
-			if (mSceneData != nullptr)
-			{
-				mSceneData_ = gcnew FBXSceneData(*mSceneData);
-				return true;
-			}
-
-			return false;
-		}
-		static bool TransformDataFromCLI()
-		{
-			if (mSceneData != nullptr)
-			{
-				mSceneData = new FBXSceneDataInternal(mSceneData_);
-				return true;
-			}
-
-			return false;
-		}
+		static bool TransformDataToCLI();
+		static bool TransformDataFromCLI();
 
 		static void InitializeSdkObjects();
 		static bool LoadScene(const char* pFilename);
 		static bool SaveScene(const char* pFilename);
-		static void ProcessNode(FbxNode* pNode, int ParentIndex);
+		static void ProcessFBXNode(FbxNode* pNode, int ParentIndex);
 		static void ExportNodes();
-
+		static int ExtractFBXMeshData(FbxMesh* pMesh);
+		static void CreateFBXMeshList(std::vector<FbxMesh*>& MeshList);
+		static void CreateFBXNodes(std::vector<FbxMesh*>& MeshList);
 	};
 }

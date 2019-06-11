@@ -235,13 +235,109 @@ namespace FbxClrWrapper
 		FbxNode* lRootNode = mScene->GetRootNode();
 		if (lRootNode)
 		{
-			ProcessNode(lRootNode, -1);
+			ProcessFBXNode(lRootNode, -1);
 		}
 
 		return lStatus;
 	}
 
 	void FBXLoader::ExportNodes()
+	{
+		// Create all the FBX meshes and nodes
+		std::vector<FbxMesh*> meshList;
+		CreateFBXMeshList(meshList);
+		CreateFBXNodes(meshList);
+	}
+
+	void FBXLoader::ProcessFBXNode(FbxNode* pNode, int ParentIndex)
+	{
+		int nodeIndex = (int)mSceneData->mNodeNameList.size();
+		mSceneData->mNodeNameList.push_back(pNode->GetName());
+		mSceneData->mNodeParentList.push_back(ParentIndex);
+
+		// Get node's default TRS properties as a transformation matrix
+		FbxAMatrix& myNodeDefaultGlobalTransform = pNode->EvaluateGlobalTransform();
+		mSceneData->mNodeTransformList.push_back(myNodeDefaultGlobalTransform);
+
+		FbxDouble3 pTranslation	= pNode->LclTranslation;
+		FbxDouble3 pRotation	= pNode->LclRotation;
+		FbxDouble3 pScaling		= pNode->LclScaling;
+
+		int meshIndex = -1;
+		if (pNode->GetNodeAttribute())
+		{
+			FbxNodeAttribute::EType AttributeType = pNode->GetNodeAttribute()->GetAttributeType();
+			if (AttributeType == FbxNodeAttribute::eMesh)
+			{
+				auto pMesh = (FbxMesh*)pNode->GetNodeAttribute();
+
+				if (mSceneData->mMeshMap.find(pMesh) != mSceneData->mMeshMap.end())
+				{
+					meshIndex = mSceneData->mMeshMap[pMesh];
+				}
+				else
+				{
+					meshIndex = ExtractFBXMeshData(pMesh);
+				}
+			}
+		}
+
+		mSceneData->mNodeMeshIndexList.push_back(meshIndex);
+
+		// Recursively process the children.
+		for (int j = 0; j < pNode->GetChildCount(); j++)
+		{
+			ProcessFBXNode(pNode->GetChild(j), nodeIndex);
+		}
+	}
+
+	int FBXLoader::ExtractFBXMeshData(FbxMesh* pMesh)
+	{
+		//FbxGeometryConverter lGeomConverter(mSdkManager);
+		//pMesh = (FbxMesh*)lGeomConverter.Triangulate(pMesh, false);
+
+		FbxVector4* pVertices = pMesh->GetControlPoints();
+		int iNumVertices = pMesh->GetControlPointsCount();
+
+		FBXMeshDataInternal mesh;
+
+		int maxIndex = 0;
+
+		for (int p = 0; p < pMesh->mPolygonVertices.Size(); p++)
+		{
+			int index = pMesh->mPolygonVertices[p];
+			mesh.mIndices.push_back(index);
+			maxIndex = maxIndex > index ? maxIndex : index;
+		}
+
+		for (int p = 0; p < pMesh->mPolygons.Size(); p++)
+		{
+			mesh.mFaceSize.push_back(pMesh->mPolygons[p].mSize);
+		}
+
+		assert(pMesh->mPolygonVertices.Size() == mesh.mIndices.size());
+		assert(maxIndex < iNumVertices);
+
+		for (int k = 0; k < iNumVertices; k++)
+		{
+			float x = (float)pVertices[k].mData[0];
+			float y = (float)pVertices[k].mData[1];
+			float z = (float)pVertices[k].mData[2];
+			mesh.mVertices.push_back(x);
+			mesh.mVertices.push_back(y);
+			mesh.mVertices.push_back(z);
+		}
+
+		int meshIndex = (int)mSceneData->mMeshList.size();
+		mSceneData->mMeshList.push_back(mesh);
+		mSceneData->mMeshIdList.push_back(pMesh->GetName());
+
+		mSceneData->mMeshMap[pMesh] = meshIndex;
+
+		return meshIndex;
+	}
+
+	void FBXLoader::CreateFBXNodes(std::vector<FbxMesh*>& MeshList)
 	{
 		// Create all the fbx nodes required
 		// Skip the IScene's root node
@@ -255,8 +351,57 @@ namespace FbxClrWrapper
 			nodeList.push_back(newNode);
 		}
 
+		// use the parent index list to insert children into correct nodes
+		for (int nodeIndex = 0; nodeIndex < mSceneData->mNodeParentList.size(); nodeIndex++)
+		{
+			int32_t meshIndex = mSceneData->mNodeMeshIndexList[nodeIndex];
+			int32_t nodeParentIndex = mSceneData->mNodeParentList[nodeIndex];
+			FbxMatrix nodeLocalTransform;
+			auto node = nodeIndex == 0 ? lRootNode : nodeList[nodeIndex - 1];
+
+			if (nodeParentIndex == -1)
+			{
+				nodeLocalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
+			}
+			else if (nodeParentIndex == 0)
+			{
+				auto nodeGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
+				auto parentGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeParentIndex]);
+				nodeLocalTransform = parentGlobalTransform.Inverse() * nodeGlobalTransform;
+				//nodeLocalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
+				bool res = lRootNode->AddChild(node);
+			}
+			else
+			{
+				auto nodeGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
+				auto parentGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeParentIndex]);
+				nodeLocalTransform = parentGlobalTransform.Inverse() * nodeGlobalTransform;
+
+				bool res = nodeList[nodeParentIndex - 1]->AddChild(node);
+			}
+
+			if (meshIndex != -1)
+			{
+				// Set the node attribute of the mesh node.
+				node->SetNodeAttribute(MeshList[meshIndex]);
+			}
+
+			FbxVector4 pTranslation;
+			FbxVector4 pRotation;
+			FbxVector4 pShearing;
+			FbxVector4 pScaling;
+			double pSign;
+			nodeLocalTransform.GetElements(pTranslation, pRotation, pShearing, pScaling, pSign);
+
+			node->LclTranslation = pTranslation;
+			node->LclRotation = pRotation;
+			node->LclScaling = pScaling;
+		}
+	}
+
+	void FBXLoader::CreateFBXMeshList(std::vector<FbxMesh*> & MeshList)
+	{
 		// Create all the FBX meshes
-		std::vector<FbxMesh*> meshList;
 		for (int meshIndex = 0; meshIndex < (int)mSceneData->mMeshList.size(); meshIndex++)
 		{
 			// Create a mesh.
@@ -295,138 +440,28 @@ namespace FbxClrWrapper
 				globalVertexIndex += faceSize;
 			}
 
-			meshList.push_back(lMesh);
-		}
-
-		// use the parent index list to insert children into correct nodes
-		for (int nodeIndex = 0; nodeIndex < mSceneData->mNodeParentList.size(); nodeIndex++)
-		{
-			int32_t meshIndex = mSceneData->mNodeMeshIndexList[nodeIndex];
-			int32_t nodeParentIndex = mSceneData->mNodeParentList[nodeIndex];
-			FbxMatrix nodeLocalTransform;
-			auto node = nodeIndex == 0 ? lRootNode : nodeList[nodeIndex - 1];
-
-			if (nodeParentIndex == -1)
-			{
-				nodeLocalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
-			}
-			else if (nodeParentIndex == 0)
-			{
-				auto nodeGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
-				auto parentGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeParentIndex]);
-				nodeLocalTransform = parentGlobalTransform.Inverse() * nodeGlobalTransform;
-				//nodeLocalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
-				bool res = lRootNode->AddChild(node);
-			}
-			else
-			{
-				auto nodeGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeIndex]);
-				auto parentGlobalTransform = *reinterpret_cast<FbxMatrix*>(&mSceneData->mNodeTransformList[nodeParentIndex]);
-				nodeLocalTransform = parentGlobalTransform.Inverse() * nodeGlobalTransform;
-
-				bool res = nodeList[nodeParentIndex - 1]->AddChild(node);
-			}
-
-			if (meshIndex != -1)
-			{
-				// Set the node attribute of the mesh node.
-				node->SetNodeAttribute(meshList[meshIndex]);
-			}
-			
-			FbxVector4 pTranslation;
-			FbxQuaternion pRotation;
-			FbxVector4 pShearing;
-			FbxVector4 pScaling;
-			double pSign;
-			nodeLocalTransform.GetElements(pTranslation, pRotation, pShearing, pScaling, pSign);
-
-			pRotation = pRotation * (180.0 / 3.1415); // GetElements returns rotation in radians, node->LclRotation wants degrees
-
-			node->LclTranslation = pTranslation;
-			node->LclRotation = pRotation;
-			node->LclScaling = pScaling;
+			MeshList.push_back(lMesh);
 		}
 	}
 
-	void FBXLoader::ProcessNode(FbxNode* pNode, int ParentIndex)
+	bool FBXLoader::TransformDataToCLI()
 	{
-		int nodeIndex = (int)mSceneData->mNodeNameList.size();
-		mSceneData->mNodeNameList.push_back(pNode->GetName());
-		mSceneData->mNodeParentList.push_back(ParentIndex);
-
-		// Get node's default TRS properties as a transformation matrix
-		FbxAMatrix& myNodeDefaultGlobalTransform = pNode->EvaluateGlobalTransform();
-		mSceneData->mNodeTransformList.push_back(myNodeDefaultGlobalTransform);
-
-		FbxDouble3 pTranslation	= pNode->LclTranslation;
-		FbxDouble3 pRotation	= pNode->LclRotation;
-		FbxDouble3 pScaling		= pNode->LclScaling;
-
-		int meshIndex = -1;
-		if (pNode->GetNodeAttribute())
+		if (mSceneData != nullptr)
 		{
-			FbxNodeAttribute::EType AttributeType = pNode->GetNodeAttribute()->GetAttributeType();
-			if (AttributeType == FbxNodeAttribute::eMesh)
-			{
-				FbxMesh* pMesh = (FbxMesh*)pNode->GetNodeAttribute();
-
-				if (mSceneData->mMeshMap.find(pMesh) != mSceneData->mMeshMap.end())
-				{
-					meshIndex = mSceneData->mMeshMap[pMesh];
-				}
-				else
-				{
-					//FbxGeometryConverter lGeomConverter(mSdkManager);
-					//pMesh = (FbxMesh*)lGeomConverter.Triangulate(pMesh, false);
-
-					FbxVector4* pVertices = pMesh->GetControlPoints();
-					int iNumVertices = pMesh->GetControlPointsCount();
-
-					FBXMeshDataInternal mesh;
-
-					int maxIndex = 0;
-
-					for (int p = 0; p < pMesh->mPolygonVertices.Size(); p++)
-					{
-						int index = pMesh->mPolygonVertices[p];
-						mesh.mIndices.push_back(index);
-						maxIndex = maxIndex > index ? maxIndex : index;
-					}
-
-					for (int p = 0; p < pMesh->mPolygons.Size(); p++)
-					{
-						mesh.mFaceSize.push_back(pMesh->mPolygons[p].mSize);
-					}
-
-					assert(pMesh->mPolygonVertices.Size() == mesh.mIndices.size());
-					assert(maxIndex < iNumVertices);
-
-					for (int k = 0; k < iNumVertices; k++)
-					{
-						float x = (float)pVertices[k].mData[0];
-						float y = (float)pVertices[k].mData[1];
-						float z = (float)pVertices[k].mData[2];
-						mesh.mVertices.push_back(x);
-						mesh.mVertices.push_back(y);
-						mesh.mVertices.push_back(z);
-					}
-
-					meshIndex = (int)mSceneData->mMeshList.size();
-					mSceneData->mMeshList.push_back(mesh);
-					mSceneData->mMeshIdList.push_back(pMesh->GetName());
-
-					mSceneData->mMeshMap[pMesh] = meshIndex;
-				}
-			}
+			mSceneData_ = gcnew FBXSceneData(*mSceneData);
+			return true;
 		}
 
-		mSceneData->mNodeMeshIndexList.push_back(meshIndex);
-
-		// Recursively process the children.
-		for (int j = 0; j < pNode->GetChildCount(); j++)
-		{
-			ProcessNode(pNode->GetChild(j), nodeIndex);
-		}
+		return false;
 	}
+	bool FBXLoader::TransformDataFromCLI()
+	{
+		if (mSceneData != nullptr)
+		{
+			mSceneData = new FBXSceneDataInternal(mSceneData_);
+			return true;
+		}
 
+		return false;
+	}
 };
