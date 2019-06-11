@@ -8,15 +8,11 @@
     using Point3D = System.Windows.Media.Media3D.Point3D;
     using Vector3D = System.Windows.Media.Media3D.Vector3D;
     using Transform3D = System.Windows.Media.Media3D.Transform3D;
-    using TranslateTransform3D = System.Windows.Media.Media3D.TranslateTransform3D;
     using Color = System.Windows.Media.Color;
-    using Plane = SharpDX.Plane;
     using Vector3 = SharpDX.Vector3;
     using Colors = System.Windows.Media.Colors;
     using Color4 = SharpDX.Color4;
     using System;
-    using System.IO;
-    using System.Windows.Threading;
     using System.Diagnostics;
     using System.Linq;
     using System.Collections.ObjectModel;

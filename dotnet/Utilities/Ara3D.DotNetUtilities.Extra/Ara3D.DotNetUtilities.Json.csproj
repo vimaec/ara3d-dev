@@ -7,8 +7,8 @@
     <ProjectGuid>{BF25C112-B0A1-447C-9972-8B889AF5859E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ara3D.DotNetUtilities.Extra</RootNamespace>
-    <AssemblyName>Ara3D.DotNetUtilities.Extra</AssemblyName>
+    <RootNamespace>Ara3D</RootNamespace>
+    <AssemblyName>Ara3D.DotNetUtilities.Json</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

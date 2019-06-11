@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Ara3D.DotNetUtilities.Extra
+namespace Ara3D
 {
     public class WrappedJsonSerializer : JsonSerializer, IJsonSerializer {}
 

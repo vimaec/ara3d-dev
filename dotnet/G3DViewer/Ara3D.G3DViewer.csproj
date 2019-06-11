@@ -137,9 +137,9 @@
       <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
       <Name>Ara3D.DotNetUtilities</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.Extra\Ara3D.DotNetUtilities.Extra.csproj">
+    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.Extra\Ara3D.DotNetUtilities.Json.csproj">
       <Project>{BF25C112-B0A1-447C-9972-8B889AF5859E}</Project>
-      <Name>Ara3D.DotNetUtilities.Extra</Name>
+      <Name>Ara3D.DotNetUtilities.Json</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

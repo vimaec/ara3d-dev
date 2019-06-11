@@ -1,5 +1,4 @@
-﻿using Ara3D;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Ara3D
 {

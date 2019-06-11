@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Ara3D;
 // Explicitly specify math types to make it clear what each function does
-using Vector2 = Ara3D.Vector2;
-using Vector3 = Ara3D.Vector3;
-using Quaternion = Ara3D.Quaternion;
-using Matrix4x4 = Ara3D.Matrix4x4;
 using UVector3 = UnityEngine.Vector3;
 using UVector2 = UnityEngine.Vector2;
 using UQuaternion = UnityEngine.Quaternion;
-using UMatrix4x4 = UnityEngine.Matrix4x4;
 
 namespace Ara3D
 {

@@ -2,7 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 
-namespace Ara3D.DotNetUtilities
+namespace Ara3D
 {
     /// <summary>
     /// A minimal subset of the Newtonsoft.Json.JsonSerializer.
