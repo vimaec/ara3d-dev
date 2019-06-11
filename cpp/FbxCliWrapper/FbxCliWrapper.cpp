@@ -123,11 +123,11 @@ namespace FbxClrWrapper
 		// Create a new scene so it can be populated by the CLI Data.
 		mScene = FbxScene::Create(mSdkManager, "myScene");
 
-/*		FbxAxisSystem newAxisSystem(FbxAxisSystem::EUpVector::eYAxis,
+		FbxAxisSystem newAxisSystem(FbxAxisSystem::EUpVector::eYAxis,
 			FbxAxisSystem::EFrontVector::eParityOdd,
 			FbxAxisSystem::ECoordSystem::eRightHanded);
 
-		mScene->GetGlobalSettings().SetAxisSystem(newAxisSystem);*/
+		mScene->GetGlobalSettings().SetAxisSystem(newAxisSystem);
 
 		ExportNodes();
 
@@ -226,11 +226,11 @@ namespace FbxClrWrapper
 
 		auto axisSytem = mScene->GetGlobalSettings().GetAxisSystem();
 
-	/*	FbxAxisSystem newAxisSystem(FbxAxisSystem::EUpVector::eYAxis,
+		FbxAxisSystem newAxisSystem(FbxAxisSystem::EUpVector::eYAxis,
 			FbxAxisSystem::EFrontVector::eParityOdd,
 			FbxAxisSystem::ECoordSystem::eRightHanded);
 
-		newAxisSystem.ConvertScene(mScene);*/
+		newAxisSystem.ConvertScene(mScene);
 
 		FbxNode* lRootNode = mScene->GetRootNode();
 		if (lRootNode)
