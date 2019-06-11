@@ -47,6 +47,7 @@
     <Compile Include="ArrayOps.cs">
       <DesignTime>True</DesignTime>
       <DependentUpon>ArrayOps.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="Geometry.cs" />
     <Compile Include="GeometryReader.cs" />

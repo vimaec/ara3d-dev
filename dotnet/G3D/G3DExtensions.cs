@@ -10,15 +10,35 @@ namespace Ara3D
         public static int ElementCount(this IAttribute x)
             => x.Count / x.Descriptor.DataArity;
 
+        public static IAttribute ToAttribute(this Memory<byte> data, AttributeDescriptor desc)
+        { 
+            switch (desc.DataType)
+            {
+                case DataType.dt_int8:
+                    return data.Span.Cast<byte>().ToAttribute(desc);
+                case DataType.dt_int16:
+                    return data.Span.Cast<short>().ToAttribute(desc);
+                case DataType.dt_int32:
+                    return data.Span.Cast<int>().ToAttribute(desc);
+                case DataType.dt_int64:
+                    return data.Span.Cast<long>().ToAttribute(desc);
+                case DataType.dt_float32:
+                    return data.Span.Cast<float>().ToAttribute(desc);
+                case DataType.dt_float64:
+                    return data.Span.Cast<double>().ToAttribute(desc);
+            }
+            throw new Exception($"{desc.DataType} is not a valid data type");
+        }
+
+        public static IAttribute ToAttribute<T>(this Span<T> data, AttributeDescriptor desc) where T : struct
+            => data.ToArray().ToAttribute(desc);
+
         public static IAttribute ToAttribute<T>(this IArray<T> xs, AttributeDescriptor desc) where T: struct 
             => new AttributeArray<T>(xs, desc);
 
-        public static IAttribute ToAttribute(this IBytes bytes, AttributeDescriptor desc) 
-            => new AttributeBytes(bytes, desc);
-
         public static IAttribute ToAttribute<T>(this T[] data, AttributeDescriptor desc) where T : struct
-            => data.Pin().ToAttribute(desc);
-               
+            => data.ToIArray().ToAttribute(desc);
+
         public static IAttribute ToAttribute<T>(this T[] data, Association assoc, AttributeType at, int index = 0, int data_arity = 1) where T : struct
             => data.ToAttribute(Descriptor<T>(assoc, at, index, data_arity));
 
@@ -213,10 +233,10 @@ namespace Ara3D
         
         public static BFast ToBFast(this IG3D g3D)
         {
-            var buffers = new List<IBytes>();
-            buffers.Add(G3D.DefaultHeader.ToBytesAscii().Pin());
-            var descriptors = g3D.Descriptors().ToArray().Pin();
-            buffers.Add(descriptors);
+            var buffers = new List<Memory<byte>>();
+            buffers.Add(G3D.DefaultHeader.ToBytesAscii().ToMemory());
+            var descriptors = g3D.Descriptors().ToArray().AsMemory();
+            buffers.Add(descriptors.ToBytes());
             foreach (var attr in g3D.Attributes)
                 buffers.Add(attr.Bytes);
             return new BFast(buffers);

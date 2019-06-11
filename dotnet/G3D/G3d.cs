@@ -143,18 +143,18 @@ $@"{{
                 throw new Exception("Expected at least two data buffers in file: header, and attribute descriptor array");                
 
             var header = bfast.Buffers[0].ToBytes().ToUtf8();
-            var descriptors = bfast.Buffers[1].ToStructs<AttributeDescriptor>();
+            var descriptors = bfast.Buffers[1].Span.ToStructs<AttributeDescriptor>().ToArray();
             var buffers = bfast.Buffers.Skip(2).ToArray();
             if (descriptors.Length != buffers.Length)
                 throw new Exception("Incorrect number of descriptors");
 
+            // TODO: this guy is going to be hard to process 
+            // I have raw bytes, and I have to cast it to the correct type.
+            // That correct type depends on the type flag stored in the descriptor 
             return new G3D(buffers.Zip(descriptors, G3DExtensions.ToAttribute), bfast, header);
         }
 
         // TODO: all of these copies make me die a little bit inside
-        public static G3D Create(IBytes bytes)
-            => Create(bytes.ToBytes());    
-
         public static G3D Create(byte[] bytes)
             => Create(new Memory<byte>(bytes));
 

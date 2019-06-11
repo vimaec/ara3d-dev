@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -23,7 +24,7 @@ namespace Ara3D
     {
         FileHeader Header { get; }
         Range[] Ranges { get; }
-        IBytes GetBuffer(int n);
+        Memory<byte> GetBuffer(int n);
     }
 
     public static class BFastConstants
@@ -137,7 +138,7 @@ namespace Ara3D
     /// </summary>
     public class BFast : BFastBaseClass, IBFast
     {
-        public readonly IList<IBytes> Buffers;
+        public readonly IList<Memory<byte>> Buffers;
 
         /// <summary>
         /// Creates a BFast structure from the data in memory. 
@@ -165,7 +166,11 @@ namespace Ara3D
             return n % Alignment == 0;
         }
 
-        public BFast(IList<IBytes> buffers)
+        public BFast(IEnumerable<Memory<byte>> buffers)
+            : this(buffers.ToList())
+        {  }
+
+        public BFast(IList<Memory<byte>> buffers)
         {
             Buffers = buffers;
 
@@ -185,11 +190,11 @@ namespace Ara3D
                 Debug.Assert(IsAligned(curIndex));
 
                 _ranges[i].Begin = curIndex;
-                curIndex += buffers[i].ByteCount;
+                curIndex += buffers[i].Length;
                 _ranges[i].End = curIndex;
                 curIndex = ComputeNextAlignment(curIndex);
 
-                Debug.Assert(_ranges[i].Count == buffers[i].ByteCount);
+                Debug.Assert(_ranges[i].Count == buffers[i].Length);
             }
 
             // Finish with the header
@@ -217,12 +222,9 @@ namespace Ara3D
             // Get the ranges 
             _ranges = memory.Slice(FileHeader.Size, Range.Size * (int) Header.NumArrays).Span.ToStructs<Range>();
             ValidateRanges();
-
-            // Get the buffers
-            Buffers = _ranges.Select(r => memory.ToIBytes((int)r.Begin, (int)r.Count)).ToList();
         }
 
-        public IBytes GetBuffer(int n)
+        public Memory<byte> GetBuffer(int n)
             => Buffers[n];
     }
 
@@ -230,14 +232,14 @@ namespace Ara3D
     {
         public static int NumBuffers(this IBFast bf) => (int)bf.Header.NumArrays;
 
-        public static IEnumerable<IBytes> GetBuffers(this IBFast bf)
+        public static IEnumerable<Memory<Byte>> GetBuffers(this IBFast bf)
         {
             for (var i = 0; i < bf.NumBuffers(); ++i)
                 yield return bf.GetBuffer(i);
         }
 
         public static BFast AsBFast(this IEnumerable<byte[]> buffers)
-            => new BFast(buffers.Select(b => b.Pin() as IBytes).ToList());
+            => new BFast(buffers.Select(b => new Memory<byte>(b)).ToList());
 
         public static void WritePadding(BinaryWriter bw)
         {
@@ -257,7 +259,8 @@ namespace Ara3D
         {
             bw.Write(bf.Header);
             WritePadding(bw);
-            bw.Write(bf.Ranges);
+            foreach (var r in bf.Ranges)
+                bw.Write(r);
             WritePadding(bw);
             foreach (var b in bf.GetBuffers())
             {
@@ -291,63 +294,5 @@ namespace Ara3D
 
         public static void ReadBFast(Stream stream)
             => stream.ReadAllBytes().AsBFast();
-    }
-
-    /// <summary>
-    /// Opens a BFAST file as a memory mapped file. This enables you to read the header, 
-    /// the locations of the data and only the specific arrays that you are interested in. 
-    /// </summary>
-    public class BFastFileReader : BFastBaseClass, IDisposable
-    {
-        public MemoryMappedFile MappedFile;
-
-        public BFastFileReader(string filePath)
-        {
-            Open(filePath);
-
-            using (var accessor = MappedFile.CreateViewAccessor(0, FileHeader.Size))
-                accessor.Read(0, out _header);
-
-            ValidateHeader();
-
-            _ranges = new Range[Header.NumArrays];
-
-            using (var accessor = MappedFile.CreateViewAccessor(FileHeader.Size, Range.Size * Count))
-                for (var i = 0; i < Count; ++i)
-                    accessor.Read(i * Range.Size, out _ranges[i]);
-
-            ValidateRanges();
-        }
-
-        /// <summary>
-        /// Returns the number of arrays. 
-        /// </summary>
-        public int Count => _ranges.Length;
-
-        public Memory<byte> GetBuffer(int n)
-        {
-            // Will throw an overflow exception if the buffer is longer than 2GB. 
-            return MappedFile.ReadBytes(_ranges[n].Begin, (int)_ranges[n].Count).ToMemory();
-        }
-
-        public void Open(string filePath)
-        {
-            // https://docs.microsoft.com/en-us/dotnet/api/system.io.memorymappedfiles.memorymappedfile.createfromfile?view=netframework-4.7.2
-            MappedFile = MemoryMappedFile.CreateFromFile(filePath);
-        }
-
-        public void Close()
-        {
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            if (MappedFile != null)
-            {
-                MappedFile.Dispose();
-                MappedFile = null;
-            }
-        }
     }
 }
