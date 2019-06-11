@@ -292,7 +292,6 @@ namespace Ara3D
         public static void ReadBFast(Stream stream)
             => stream.ReadAllBytes().AsBFast();
     }
-    /*
 
     /// <summary>
     /// Opens a BFAST file as a memory mapped file. This enables you to read the header, 
@@ -351,5 +350,4 @@ namespace Ara3D
             }
         }
     }
-    */
 }
