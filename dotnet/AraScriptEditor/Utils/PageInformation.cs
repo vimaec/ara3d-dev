@@ -214,7 +214,7 @@ namespace ScintillaPrinting
 		/// <param name="oBounds"></param>
 		/// <param name="strDocumentName"></param>
 		/// <param name="iPageNumber"></param>
-		public void Draw(Graphics oGraphics, Rectangle oBounds, String strDocumentName, int iPageNumber)
+		public void Draw(Graphics oGraphics, Rectangle oBounds, string strDocumentName, int iPageNumber)
 		{
 			StringFormat oFormat = new StringFormat(StringFormat.GenericDefault);
 			Pen oPen = Pens.Black;

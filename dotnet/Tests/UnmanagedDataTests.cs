@@ -41,8 +41,8 @@ namespace Ara3D.Tests
                     using (var pin3 = zs.Pin())
                         pin.CopyTo(pin3);
 
-                    Assert.AreEqual(4.0, zs[4], Double.Epsilon);
-                    Assert.AreEqual(11.0, zs[11], Double.Epsilon);
+                    Assert.AreEqual(4.0, zs[4], double.Epsilon);
+                    Assert.AreEqual(11.0, zs[11], double.Epsilon);
                 }
             }
         }
