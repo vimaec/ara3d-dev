@@ -373,12 +373,6 @@ namespace Ara3D
             => t.IsPrimitive || t.GetAllFields().Select(f => f.FieldType).All(ContainsNoReferences);        
 
         /// <summary>
-        /// Converts a struct to bytes. 
-        /// </summary>
-        public static byte[] StructToBytes<T>(T self) where T : struct
-            => StructToBytes(self);        
-
-        /// <summary>
         /// Converts a struct or formatted class to a series of bytes 
         /// </summary>
         public static byte[] StructToBytes(object self)
