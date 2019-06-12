@@ -17,7 +17,7 @@ namespace Ara3D.Tests
     public static class IOTests
     {
         // TODO: make this an environment variable
-        public static string TestInputFolder = @"C:\dev\repos\_test_input";
+        public static string TestInputFolder = @"D:\dev\repos\_test_input";
         public static string TestOutputFolder = Path.Combine(Path.GetTempPath(), "ara3d", "_test_output");
 
         public static IEnumerable<string> GetInputFiles(string ext)

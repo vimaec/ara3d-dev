@@ -232,8 +232,8 @@ namespace Ara3D
         {
             var buffers = new List<Memory<byte>>();
             buffers.Add(G3D.DefaultHeader.ToBytesAscii().ToMemory());
-            var descriptors = g3D.Descriptors().ToArray().AsMemory();
-            buffers.Add(descriptors.ToBytes());
+            var descriptors = g3D.Descriptors().ToArray();
+            buffers.Add(descriptors.AsMemory().ToBytes());
             foreach (var attr in g3D.Attributes)
                 buffers.Add(attr.Bytes);
             return buffers;

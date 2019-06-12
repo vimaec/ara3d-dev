@@ -375,7 +375,7 @@ namespace Ara3D
         /// <summary>
         /// Converts a struct to bytes. 
         /// </summary>
-        public static byte[] ToBytes<T>(this T self) where T : struct
+        public static byte[] StructToBytes<T>(T self) where T : struct
             => StructToBytes(self);        
 
         /// <summary>
@@ -397,8 +397,7 @@ namespace Ara3D
         public static byte[] ArrayToBytes<T>(T[] self) where T: struct
         {
             if (self == null) return null;
-            var t = self.GetType();
-            var n = Marshal.SizeOf(t) * self.Length;
+            var n = Marshal.SizeOf<T>() * self.Length;
             var r = new byte[n];
             using (var dest = r.Pin())
             {
@@ -656,7 +655,7 @@ namespace Ara3D
         /// Writes a struct to a stream without any size
         /// </summary>
         public static void Write<T>(this BinaryWriter self, T value) where T : struct
-            => self.Write(ToBytes(value));
+            => self.Write(StructToBytes(value));
 
         /// <summary>
         /// Writes an array of structs to a stream without any count
@@ -886,13 +885,25 @@ namespace Ara3D
             => bytes.ToStructs<T>()[0];        
 
         public static T ToStruct<T>(this Span<byte> span) where T : struct
-            => span.ToStructs<T>()[0];        
+            => span.ToStructs<T>()[0];
+
+        public static Memory<T> ToMemory<T>(this Span<T> span)
+            => new Memory<T>(span.ToArray());
 
         public static Span<T> Cast<T>(this Span<byte> span) where T : struct
             => MemoryMarshal.Cast<byte, T>(span);        
 
-        public static Span<byte> AsBytes<T>(this Span<T> span) where T : struct
-            => MemoryMarshal.AsBytes(span);        
+        public static Span<byte> AsByteSpan<T>(this Span<T> span) where T : struct
+            => MemoryMarshal.AsBytes(span);
+
+        public static Span<byte> AsByteSpan<T>(this Memory<T> memory) where T : struct
+            => memory.Span.AsByteSpan();
+
+        public static byte[] ToBytes<T>(this Span<T> span) where T : struct
+            => span.AsByteSpan().ToArray();
+
+        public static byte[] ToBytes<T>(this Memory<T> memory) where T : struct
+            => memory.Span.ToBytes();
 
         public static Memory<T> ToMemory<T>(this T[] data) where T : struct
             => new Memory<T>(data);        
