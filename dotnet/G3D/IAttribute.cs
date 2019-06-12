@@ -1,9 +1,13 @@
-﻿namespace Ara3D
+﻿using System.Diagnostics;
+
+namespace Ara3D
 {
     public interface IAttribute
     {
         AttributeDescriptor Descriptor { get; }
-        int Count { get; }
+
+        // This is the number of data items in the attribute if there were 4 vector3 this would be 12. 
+        int DataCount { get; } 
 
         // TODO: should be Memory<byte> ??
         byte[] Bytes { get; }
@@ -25,29 +29,32 @@
 
     public class AttributeArray<T> : IAttribute where T: struct
     {
-        public IArray<T> Data;
-        public AttributeDescriptor Descriptor { get; }
-        public int Count => Data.Count;
-        public byte[] Bytes => Util.ArrayToBytes(Data.ToArray());
+        private IArray<T> _data { get; }
 
-        public IArray<int> ToInts() => Data.ToInts();
-        public IArray<byte> ToBytes() => Data.ToBytes();
-        public IArray<short> ToShorts() => Data.ToShorts();
-        public IArray<long> ToLongs() => Data.ToLongs();
-        public IArray<float> ToFloats() => Data.ToFloats();
-        public IArray<double> ToDoubles() => Data.ToDoubles();
-        public IArray<Vector2> ToVector2s() => Data.ToVector2s();
-        public IArray<Vector3> ToVector3s() => Data.ToVector3s();
-        public IArray<Vector4> ToVector4s() => Data.ToVector4s();
-        public IArray<Matrix4x4> ToMatrices() => Data.ToMatrices();
-        public IArray<DVector2> ToDVector2s() => Data.ToDVector2s();
-        public IArray<DVector3> ToDVector3s() => Data.ToDVector3s();
-        public IArray<DVector4> ToDVector4s() => Data.ToDVector4s();
+        public AttributeDescriptor Descriptor { get; }
+        public int DataCount { get; }
+        public byte[] Bytes => Util.ArrayToBytes(_data.ToArray());
+
+        public IArray<int> ToInts() => _data.ToInts();
+        public IArray<byte> ToBytes() => _data.ToBytes();
+        public IArray<short> ToShorts() => _data.ToShorts();
+        public IArray<long> ToLongs() => _data.ToLongs();
+        public IArray<float> ToFloats() => _data.ToFloats();
+        public IArray<double> ToDoubles() => _data.ToDoubles();
+        public IArray<Vector2> ToVector2s() => _data.ToVector2s();
+        public IArray<Vector3> ToVector3s() => _data.ToVector3s();
+        public IArray<Vector4> ToVector4s() => _data.ToVector4s();
+        public IArray<Matrix4x4> ToMatrices() => _data.ToMatrices();
+        public IArray<DVector2> ToDVector2s() => _data.ToDVector2s();
+        public IArray<DVector3> ToDVector3s() => _data.ToDVector3s();
+        public IArray<DVector4> ToDVector4s() => _data.ToDVector4s();
 
         public AttributeArray(IArray<T> data, AttributeDescriptor desc)
         {
-            Data = data;
+            _data = data;
             Descriptor = desc;
+            var typeArity = G3DExtensions.TypeArity<T>();
+            DataCount = _data.Count * typeArity;
         }
     }
 }

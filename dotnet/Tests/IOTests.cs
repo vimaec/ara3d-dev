@@ -96,8 +96,10 @@ namespace Ara3D.Tests
             CheckAttribute(vertexBuffer, Association.assoc_vertex, AttributeType.attr_vertex, DataType.dt_float32, 3);
             CheckAttribute(indexBuffer, Association.assoc_corner, AttributeType.attr_index, DataType.dt_int32, 1);
             var g3d = G3D.Create(vertexBuffer, indexBuffer);
-            Assert.AreEqual(4, vertexBuffer.Count);
-            Assert.AreEqual(12, indexBuffer.Count);
+            Assert.AreEqual(12, vertexBuffer.DataCount);
+            Assert.AreEqual(4, vertexBuffer.ElementCount());
+            Assert.AreEqual(12, indexBuffer.DataCount);
+            Assert.AreEqual(12, indexBuffer.ElementCount());
             var g = g3d.ToIGeometry();
             CheckTestTetrahedron(g);
             /*

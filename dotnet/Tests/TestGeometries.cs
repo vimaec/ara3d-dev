@@ -83,7 +83,7 @@ namespace Ara3D
                 var attr2 = attrs2[i];
                 Assert.AreEqual(attr1.Descriptor.ToString(), attr2.Descriptor.ToString());
                 Assert.AreEqual(attr1.Bytes.Length, attr2.Bytes.Length);
-                Assert.AreEqual(attr1.Count, attr2.Count);
+                Assert.AreEqual(attr1.DataCount, attr2.DataCount);
 
                 // TODO: perhaps in some cases we want an exact byte compare (which should be triggered using a flag).
             }
@@ -122,7 +122,7 @@ namespace Ara3D
             Console.WriteLine(stats);
             Assert.IsTrue(g.AreAllIndicesValid());
             foreach (var attr in g.SortedAttributes())
-                Console.WriteLine($"{attr.Descriptor} #bytes={attr.Bytes.Length} count={attr.Count}");
+                Console.WriteLine($"{attr.Descriptor} #bytes={attr.Bytes.Length} dataCount={attr.DataCount} elementCount={attr.ElementCount()}");
         }
 
         public static void GeometryNullOps(IGeometry g)
