@@ -55,7 +55,7 @@ namespace Ara3D
 
         public override string ToString()
         {
-            return $"{Level.EnumName()} {Index} {When} {Message}";
+            return $"{Level.ToString()} {Index} {When} {Message}";
         }
     }
 

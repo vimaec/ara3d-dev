@@ -7,7 +7,7 @@ namespace Ara3D
     /// Pins an array of Blittable structs so that we can access the data as bytes. Manages a GCHandle around the array.
     /// https://stackoverflow.com/questions/1318682/intptr-arithmetics/54462954#54462954
     /// </summary>
-    public sealed class PinnedArray<T> : IDisposable, IBytes
+    public sealed class PinnedArray<T> : IDisposable
     {
         public GCHandle Handle { get; }
         public T[] Array { get; }
@@ -17,9 +17,7 @@ namespace Ara3D
         public IntPtr Ptr { get; private set; }
         
         public IntPtr ElementPointer(int n)
-        {
-            return Marshal.UnsafeAddrOfPinnedArrayElement(Array, n);
-        }
+            => Marshal.UnsafeAddrOfPinnedArrayElement(Array, n);        
 
         public PinnedArray(T[] xs)
         {
@@ -64,7 +62,7 @@ namespace Ara3D
     /// Pins an array of elements so that we can access the data as bytes. Manages a GCHandle around the array.
     /// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.unsafeaddrofpinnedarrayelement?view=netframework-4.7.2
     /// </summary>
-    public sealed class PinnedArray : IDisposable, IBytes
+    public sealed class PinnedArray : IDisposable
     {
         public GCHandle Handle { get; }
         public Array Array { get; }

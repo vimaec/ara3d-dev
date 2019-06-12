@@ -15,7 +15,7 @@ namespace Ara3D
     /// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safebuffer?view=netframework-4.7.2
     /// https://github.com/Microsoft/referencesource/blob/master/mscorlib/system/runtime/interopservices/safebuffer.cs
     /// https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/Runtime/InteropServices/SafeBuffer.cs
-    public sealed class UnmanagedBuffer : IDisposable, IBytes
+    public sealed class UnmanagedBuffer : IDisposable
     {
         // IBytes implementation
         public int ByteCount { get; private set; }    

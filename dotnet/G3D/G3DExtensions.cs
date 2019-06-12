@@ -8,17 +8,37 @@ namespace Ara3D
     public static class G3DExtensions
     {
         public static int ElementCount(this IAttribute x)
-            => x.Count / x.Descriptor.DataArity;
+            => x.DataCount / x.Descriptor.DataArity;
+
+        public static IAttribute ToAttribute(this Memory<byte> data, AttributeDescriptor desc)
+        { 
+            switch (desc.DataType)
+            {
+                case DataType.dt_int8:
+                    return data.Span.Cast<byte>().ToAttribute(desc);
+                case DataType.dt_int16:
+                    return data.Span.Cast<short>().ToAttribute(desc);
+                case DataType.dt_int32:
+                    return data.Span.Cast<int>().ToAttribute(desc);
+                case DataType.dt_int64:
+                    return data.Span.Cast<long>().ToAttribute(desc);
+                case DataType.dt_float32:
+                    return data.Span.Cast<float>().ToAttribute(desc);
+                case DataType.dt_float64:
+                    return data.Span.Cast<double>().ToAttribute(desc);
+            }
+            throw new Exception($"{desc.DataType} is not a valid data type");
+        }
+
+        public static IAttribute ToAttribute<T>(this Span<T> data, AttributeDescriptor desc) where T : struct
+            => data.ToArray().ToAttribute(desc);
 
         public static IAttribute ToAttribute<T>(this IArray<T> xs, AttributeDescriptor desc) where T: struct 
             => new AttributeArray<T>(xs, desc);
 
-        public static IAttribute ToAttribute(this IBytes bytes, AttributeDescriptor desc) 
-            => new AttributeBytes(bytes, desc);
-
         public static IAttribute ToAttribute<T>(this T[] data, AttributeDescriptor desc) where T : struct
-            => data.Pin().ToAttribute(desc);
-               
+            => data.ToIArray().ToAttribute(desc);
+
         public static IAttribute ToAttribute<T>(this T[] data, Association assoc, AttributeType at, int index = 0, int data_arity = 1) where T : struct
             => data.ToAttribute(Descriptor<T>(assoc, at, index, data_arity));
 
@@ -161,36 +181,70 @@ namespace Ara3D
             }
         }
 
-        public static AttributeDescriptor Descriptor<T>(Association assoc, AttributeType at, int index = 0, int arity = 1) where T : struct
+        public static int TypeArity<T>()
         {
             if (typeof(T) == typeof(float))
-                return Descriptor(assoc, at, index, DataType.dt_float32, arity);
+                return 1;
             if (typeof(T) == typeof(double))
-                return Descriptor(assoc, at, index, DataType.dt_float64, arity);
+                return 1;
             if (typeof(T) == typeof(short))
-                return Descriptor(assoc, at, index, DataType.dt_int16, arity);
+                return 1;
             if (typeof(T) == typeof(byte))
-                return Descriptor(assoc, at, index, DataType.dt_int8, arity);
+                return 1;
             if (typeof(T) == typeof(int))
-                return Descriptor(assoc, at, index, DataType.dt_int32, arity);
+                return 1;
             if (typeof(T) == typeof(long))
-                return Descriptor(assoc, at, index, DataType.dt_int64, arity);
+                return 1;
             if (typeof(T) == typeof(Vector2))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 2 * arity);
+                return 2;
             if (typeof(T) == typeof(Vector3))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 3 * arity);
+                return 3;
             if (typeof(T) == typeof(Vector4))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 4 * arity);
+                return 4;
             if (typeof(T) == typeof(DVector2))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 2 * arity);
+                return 2;
             if (typeof(T) == typeof(DVector3))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 3 * arity);
+                return 3;
             if (typeof(T) == typeof(DVector4))
-                return Descriptor(assoc, at, index, DataType.dt_float64, 4 * arity);
+                return 4;
             if (typeof(T) == typeof(Matrix4x4))
-                return Descriptor(assoc, at, index, DataType.dt_float32, 16 * arity);
+                return 16;
             throw new Exception($"Unhandled type {typeof(T)}");
         }
+
+        public static DataType GetDataType<T>()
+        {
+            if (typeof(T) == typeof(float))
+                return DataType.dt_float32;
+            if (typeof(T) == typeof(double))
+                return DataType.dt_float64;
+            if (typeof(T) == typeof(short))
+                return DataType.dt_int16;
+            if (typeof(T) == typeof(byte))
+                return DataType.dt_int8; 
+            if (typeof(T) == typeof(int))
+                return DataType.dt_int32;
+            if (typeof(T) == typeof(long))
+                return DataType.dt_int64;
+            if (typeof(T) == typeof(Vector2))
+                return DataType.dt_float32;
+            if (typeof(T) == typeof(Vector3))
+                return DataType.dt_float32;
+            if (typeof(T) == typeof(Vector4))
+                return DataType.dt_float32;
+            if (typeof(T) == typeof(DVector2))
+                return DataType.dt_float64;
+            if (typeof(T) == typeof(DVector3))
+                return DataType.dt_float64;
+            if (typeof(T) == typeof(DVector4))
+                return DataType.dt_float64;
+            if (typeof(T) == typeof(Matrix4x4))
+                return DataType.dt_float32;
+            throw new Exception($"Unhandled type {typeof(T)}");
+        }
+
+        public static AttributeDescriptor Descriptor<T>(Association assoc, AttributeType at, int index = 0, int arity = 1) where T : struct
+            => Descriptor(assoc, at, index, GetDataType<T>(), TypeArity<T>() * arity);
 
         public static AttributeDescriptor Descriptor(Association assoc, AttributeType at, int index, DataType dt, int arity)
             => new AttributeDescriptor {
@@ -208,25 +262,22 @@ namespace Ara3D
         public static G3D ReadFromStream(Stream stream)
             => G3D.Create(stream.ReadAllBytes());
 
-        public static G3D ToG3D(this BFast bfast)
-            => G3D.Create(bfast);
-        
-        public static BFast ToBFast(this IG3D g3D)
+        public static IList<Memory<byte>> ToBuffers(this IG3D g3D)
         {
-            var buffers = new List<IBytes>();
-            buffers.Add(G3D.DefaultHeader.ToBytesAscii().Pin());
-            var descriptors = g3D.Descriptors().ToArray().Pin();
-            buffers.Add(descriptors);
+            var buffers = new List<Memory<byte>>();
+            buffers.Add(G3D.DefaultHeader.ToBytesAscii().ToMemory());
+            var descriptors = g3D.Descriptors().ToArray();
+            buffers.Add(descriptors.AsMemory().ToBytes());
             foreach (var attr in g3D.Attributes)
                 buffers.Add(attr.Bytes);
-            return new BFast(buffers);
+            return buffers;
         }
              
-        public static string WriteG3D(this IG3D g3D, string filePath) 
-            => g3D.ToBFast().WriteToFile(filePath);
+        public static void WriteG3D(this IG3D g3D, string filePath) 
+            => g3D.ToBuffers().ToBFastFile(filePath);
             
-        public static byte[] ToBytes(this IG3D g3d)
-            => g3d.ToBFast().ToBytes();
+        public static byte[] ToBFast(this IG3D g3d)
+            => g3d.ToBuffers().ToBFastBytes();
 
         public static IG3D ToG3D(this IEnumerable<IAttribute> attributes)
             => new G3D(attributes.WhereNotNull());
@@ -242,9 +293,6 @@ namespace Ara3D
 
         public static IG3D ToG3D(int sidesPerFaces, Vector3[] vertices, int[] indices = null, Vector2[] uvs = null)
             => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute());
-
-        public static BFast ToBFast(this IEnumerable<IAttribute> attributes)
-            => attributes.ToG3D().ToBFast();
 
         public static bool IsSameAttribute(this AttributeDescriptor desc, AttributeDescriptor other)
             => desc.AttributeType == other.AttributeType && desc.Association == other.Association && desc.AttributeTypeIndex == other.AttributeTypeIndex;
@@ -350,9 +398,9 @@ namespace Ara3D
 
         public static IArray<Vector2> UVs(this IG3D g3d)
             => g3d.UVAttributes().FirstOrDefault().ToVector2s();
-                
+
         public static int VertexCount(this IG3D g3d)
-            => g3d.VertexAttribute.Count;
+            => g3d.VertexAttribute.ElementCount();
 
         public static Dictionary<string, IAttribute> ToDictionary(this IEnumerable<IAttribute> attributes)
             => attributes.ToDictionary(attr => attr.Descriptor.ToString(), attr => attr);
@@ -429,10 +477,10 @@ namespace Ara3D
             var cornerCount = g3d.CornerVertexIndices().Count;
 
             // Compute the number of groups. Groups requires the precense of a GroupIndex attribute
-            var groupCount = g3d.Attributes(Association.assoc_group).FirstOrDefault()?.Count ?? -1;
+            var groupCount = g3d.Attributes(Association.assoc_group).FirstOrDefault()?.ElementCount() ?? -1;
 
             // Compute the number of instance. The first instance channel determines the number of instances
-            var instanceCount = g3d.Attributes(Association.assoc_instance).FirstOrDefault()?.Count ?? -1;
+            var instanceCount = g3d.Attributes(Association.assoc_instance).FirstOrDefault()?.ElementCount() ?? -1;
 
             // Check the number of items in each attribute
             foreach (var attr in g3d.Attributes)
@@ -440,32 +488,32 @@ namespace Ara3D
                 switch (attr.Descriptor.Association)
                 {
                     case Association.assoc_vertex:
-                        if (attr.Count != vertexCount)
-                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {vertexCount}");
+                        if (attr.ElementCount() != vertexCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.ElementCount()} items, expected {vertexCount}");
                         break;
                     case Association.assoc_face:
-                        if (attr.Count != faceCount)
-                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {faceCount}");
+                        if (attr.ElementCount() != faceCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.ElementCount()} items, expected {faceCount}");
                         break;
                     case Association.assoc_corner:
-                        if (attr.Count != cornerCount)
-                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {cornerCount}");
+                        if (attr.ElementCount() != cornerCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.ElementCount()} items, expected {cornerCount}");
                         break;
                     case Association.assoc_edge:
-                        if (attr.Count != cornerCount)
-                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {cornerCount}");
+                        if (attr.ElementCount() != cornerCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.ElementCount()} items, expected {cornerCount}");
                         break;
                     case Association.assoc_object:
-                        if (attr.Count != 1)
-                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected 1");
+                        if (attr.ElementCount() != 1)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.ElementCount()} items, expected 1");
                         break;
                     case Association.assoc_group:
-                        if (attr.Count != groupCount)
-                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {groupCount}");
+                        if (attr.ElementCount() != groupCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.ElementCount()} items, expected {groupCount}");
                         break;
                     case Association.assoc_instance:
-                        if (attr.Count != instanceCount)
-                            throw new Exception($"Attribute {attr.Descriptor} has {attr.Count} items, expected {instanceCount}");
+                        if (attr.ElementCount() != instanceCount)
+                            throw new Exception($"Attribute {attr.Descriptor} has {attr.ElementCount()} items, expected {instanceCount}");
                         break;
                     case Association.assoc_none:
                         break;

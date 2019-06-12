@@ -6,14 +6,12 @@ namespace Ara3D
     /// <summary>
     /// Pins a struct so that we can access the data as bytes. Manages a GCHandle around the array.
     /// </summary>
-    public class PinnedStruct<T> : IDisposable, IBytes where T: struct 
+    public class PinnedStruct<T> : IDisposable where T: struct 
     {
         public GCHandle Handle { get; }
         public T Value{ get; }
-
-        // IBytes implementation
         public int ByteCount { get; private set; }
-        public IntPtr Ptr { get; private set; }        
+        public IntPtr Ptr { get; private set; }
 
         public PinnedStruct(T x)
         {

@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 namespace Ara3D.Tests
 {
+    /* TODO: rewrite these tests or delete them
     [TestFixture]
     class UnmanagedDataTests
     {
@@ -112,4 +113,5 @@ namespace Ara3D.Tests
             }
         }
     }
+    */
 }

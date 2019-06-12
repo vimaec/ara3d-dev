@@ -373,21 +373,6 @@ namespace Ara3D
             => t.IsPrimitive || t.GetAllFields().Select(f => f.FieldType).All(ContainsNoReferences);        
 
         /// <summary>
-        /// Performs an action using the the underlying bytes of an array.
-        /// </summary>
-        public static void UsingBytes<T>(this T[] self, Action<IBytes> action)
-        {
-            using (var data = self.Pin())
-                action(data);
-        }
-
-        /// <summary>
-        /// Converts a struct to bytes. 
-        /// </summary>
-        public static byte[] ToBytes<T>(this T self) where T : struct
-            => StructToBytes(self);        
-
-        /// <summary>
         /// Converts a struct or formatted class to a series of bytes 
         /// </summary>
         public static byte[] StructToBytes(object self)
@@ -397,6 +382,24 @@ namespace Ara3D
             var r = new byte[Marshal.SizeOf(t)];
             using (var pin = r.Pin())
                 Marshal.StructureToPtr(self, pin.Ptr, false);
+            return r;
+        }
+
+        /// <summary>
+        /// Converts a struct or formatted class to a series of bytes 
+        /// </summary>
+        public static byte[] ArrayToBytes<T>(T[] self) where T: struct
+        {
+            if (self == null) return null;
+            var n = Marshal.SizeOf<T>() * self.Length;
+            var r = new byte[n];
+            using (var dest = r.Pin())
+            {
+                using (var src = self.Pin())
+                {
+                    Buffer.MemoryCopy(src.Ptr.ToPointer(), dest.Ptr.ToPointer(), n, n);
+                }
+            }
             return r;
         }
 
@@ -605,12 +608,6 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Converts an array of blittable structs to an array of bytes. 
-        /// </summary>
-        public static byte[] ToBytes<T>(this T[] self) where T : struct
-            => (self as Array).ToBytes();        
-
-        /// <summary>
         /// Returns the number of bytes in an array that has been pinned by GCHandle
         /// </summary>
         public static long SizeOfPinnedArray(this Array self)
@@ -627,24 +624,7 @@ namespace Ara3D
         /// </summary>
         public static IntPtr PinnedArrayEnd(this Array self)
             => Marshal.UnsafeAddrOfPinnedArrayElement(self, self.Length);        
-
-        /// <summary>
-        /// Uses marshalling to converts an array of structs to an array of bytes. 
-        /// </summary>
-        public static byte[] ToBytes(this Array self)
-        {
-            if (self == null) return new byte[0];
-            using (var pin = self.Pin())
-                return pin.ToBytes();
-        }
-
-        /// <summary>
-        /// Provides access to raw memory as an unmanaged memory stream.
-        /// https://docs.microsoft.com/en-us/dotnet/api/system.io.unmanagedmemorystream?view=netframework-4.7.2
-        /// </summary>
-        public static UnmanagedMemoryStream ToMemoryStream(this IBytes self)
-            => new UnmanagedMemoryStream(self.Ptr.ToBytePtr(), self.ByteCount);        
-
+        
         /// <summary>
         /// Provides access to a byte array as a stream.
         /// https://docs.microsoft.com/en-us/dotnet/api/system.io.memorystream?view=netframework-4.7.2
@@ -666,37 +646,16 @@ namespace Ara3D
         }
 
         /// <summary>
-        /// Writes raw bytes to the stream by creating a memory stream around it. 
-        /// </summary>
-        public static void Write(this BinaryWriter self, IBytes bytes)
-            => self.Write(bytes.ToBytes());
-
-        /// <summary>
         /// Writes a struct to a stream without any size
         /// </summary>
         public static void Write<T>(this BinaryWriter self, T value) where T : struct
-        {
-            using (var pin = value.Pin())
-                self.Write(pin);
-        }
+            => self.Write(StructToBytes(value));
 
         /// <summary>
         /// Writes an array of structs to a stream without any count
         /// </summary>
-        public static void Write<T>(this BinaryWriter self, T[] value) where T : struct
-        {
-            using (var pin = value.Pin())
-                self.Write(pin);
-        }
-
-        /// <summary>
-        /// Given an array of blittable types writes the contents out as a raw array. 
-        /// </summary>
-        public static void Write(this BinaryWriter self, Array xs)
-        {
-            using (var pin = xs.Pin())
-                self.Write(pin);
-        }
+        public static void Write<T>(this BinaryWriter self, T[] values) where T : struct
+            => Array.ForEach(values, self.Write);
 
         /// <summary>
         /// Returns true if the type self is an instance of the given generic type
@@ -920,13 +879,25 @@ namespace Ara3D
             => bytes.ToStructs<T>()[0];        
 
         public static T ToStruct<T>(this Span<byte> span) where T : struct
-            => span.ToStructs<T>()[0];        
+            => span.ToStructs<T>()[0];
+
+        public static Memory<T> ToMemory<T>(this Span<T> span)
+            => new Memory<T>(span.ToArray());
 
         public static Span<T> Cast<T>(this Span<byte> span) where T : struct
             => MemoryMarshal.Cast<byte, T>(span);        
 
-        public static Span<byte> AsBytes<T>(this Span<T> span) where T : struct
-            => MemoryMarshal.AsBytes(span);        
+        public static Span<byte> AsByteSpan<T>(this Span<T> span) where T : struct
+            => MemoryMarshal.AsBytes(span);
+
+        public static Span<byte> AsByteSpan<T>(this Memory<T> memory) where T : struct
+            => memory.Span.AsByteSpan();
+
+        public static byte[] ToBytes<T>(this Span<T> span) where T : struct
+            => span.AsByteSpan().ToArray();
+
+        public static byte[] ToBytes<T>(this Memory<T> memory) where T : struct
+            => memory.Span.ToBytes();
 
         public static Memory<T> ToMemory<T>(this T[] data) where T : struct
             => new Memory<T>(data);        
