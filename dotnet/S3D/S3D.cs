@@ -17,9 +17,6 @@ namespace Ara3D
 
     public class Document : IScene
     {
-        public IBFast MainContainer;
-        public IBFast GeometryContainer;
-        public IBFast AssetContainer;
         public IArray<ISurface> Surfaces { get; }
         public IArray<IGeometry> Geometries { get; }
         public ISceneNode Root { get; }

@@ -4,29 +4,20 @@
     Usage licensed under terms of MIT License
 
     The BAST format is a simple, generic, and efficient representation of arrays of binary array data.     
+
+    From a C# stand-point it is a method of concatenating an array of byte arrays in such 
+    a way it can be read and loaded efficiently from disk, or over a network.  
 */
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-// The BFast is a data format for arrays of binary data. 
 namespace Ara3D
 {
-    /// <summary>
-    /// The programmatic interface of a BFast data structure. A container of binary arrays of data.
-    /// </summary>
-    public interface IBFast
-    {
-        FileHeader Header { get; }
-        Range[] Ranges { get; }
-        Memory<byte> GetBuffer(int n);
-    }
-
     public static class BFastConstants
     {
         public const ushort Magic = 0xBFA5;
@@ -77,222 +68,167 @@ namespace Ara3D
     };
 
     /// <summary>
-    /// This is the base class of various BFast implementations, whether they are MemoryMappedFiles or in memory implementations.
-    /// </summary>
-    public class BFastBaseClass
-    {
-        public FileHeader _header;
-        public Range[] _ranges;
-
-        public FileHeader Header => _header;
-        public Range[] Ranges => _ranges;
-
-        public void ValidateHeader()
-        {
-            // Check each value in the header
-            if (Header.Magic != BFastConstants.SameEndian && Header.Magic != BFastConstants.SwappedEndian)
-                throw new Exception($"Invalid magic number {Header.Magic}");
-
-            if (Header.DataStart < FileHeader.Size)
-                throw new Exception($"Data start {Header.DataStart} cannot be before the file header size {FileHeader.Size}");
-
-            if (Header.DataStart > Header.DataEnd)
-                throw new Exception($"Data start {Header.DataStart} cannot be after the data end {Header.DataEnd}");
-
-            if (Header.NumArrays < 0)
-                throw new Exception($"Number of arrays {Header.NumArrays} is not a positive number");
-
-            if (Header.RangesEnd > Header.DataStart)
-                throw new Exception($"Computed arrays ranges end must be less than the start of data {Header.DataStart}");
-        }
-
-        public void ValidateRanges()
-        {
-            if (Ranges == null)
-                throw new Exception("Ranges must not be null");
-
-            var min = Header.DataStart;
-            var max = Header.DataEnd;
-
-            for (var i = 0; i < _ranges.Length; ++i)
-            {
-                var begin = _ranges[i].Begin;
-                var end = _ranges[i].End;
-                if (begin < min || begin > max)
-                    throw new Exception($"Array offset begin {begin} is not in valid span of {min} to {max}");
-                if (i > 0)
-                    if (begin < _ranges[i - 1].End)
-                        throw new Exception($"Array offset begin {begin} is overlapping with previous array {_ranges[i - 1].End}");
-                if (end < begin || end > max)
-                    throw new Exception($"Array offset end {end} is not in valid span of {begin} to {max}");
-            }
-        }
-    }
-
-    /// <summary>
     /// Wraps an array of byte buffers encoding a BFast structure and provides validation and safe access to the memory. 
     /// The BFAST file/data format is structured as follows:
     ///   * File header   - Fixed size file descriptor
     ///   * Ranges        - An array of pairs of offsets that point to the begin and end of each data arrays
     ///   * Array data    - All of the array data is contained in this section.
     /// </summary>
-    public class BFast : BFastBaseClass, IBFast
+    public static class BFast
     {
-        public readonly IList<Memory<byte>> Buffers;
-
-        /// <summary>
-        /// Creates a BFast structure from the data in memory. 
-        /// </summary>
-        public BFast(byte[] data)
-            : this(new Memory<byte>(data))
-        { }
-
         public const int Alignment = 32;
 
         public static long ComputeNextAlignment(long n)
-        {
-            if (IsAligned(n))
-                return n;
-            return n + Alignment - (n % Alignment);
-        }
+            => IsAligned(n) ? n : n + Alignment - (n % Alignment);        
 
         public static long ComputePadding(long n)
-        {
-            return ComputeNextAlignment(n) - n;
-        }
+            => ComputeNextAlignment(n) - n;        
 
         public static bool IsAligned(long n)
-        {
-            return n % Alignment == 0;
-        }
-
-        public BFast(IEnumerable<Memory<byte>> buffers)
-            : this(buffers.ToList())
-        {  }
-
-        public BFast(IList<Memory<byte>> buffers)
-        {
-            Buffers = buffers;
-
-            // Construct the header
-            _header.Magic = BFastConstants.Magic;
-            _header.NumArrays = buffers.Count;
-            _header.DataStart = ComputeNextAlignment(Header.RangesEnd);
-            // DataEnd is computed after iterating over all buffers
-
-            // Allocate the data for the ranges
-            _ranges = new Range[_header.NumArrays];
-
-            // Compute the offsets for the data buffers
-            var curIndex = Header.DataStart;
-            for (var i = 0; i < buffers.Count; ++i)
-            {
-                Debug.Assert(IsAligned(curIndex));
-
-                _ranges[i].Begin = curIndex;
-                curIndex += buffers[i].Length;
-                _ranges[i].End = curIndex;
-                curIndex = ComputeNextAlignment(curIndex);
-
-                Debug.Assert(_ranges[i].Count == buffers[i].Length);
-            }
-
-            // Finish with the header
-            _header.DataEnd = curIndex;
-
-            // Check that everything adds up 
-            ValidateHeader();
-            ValidateRanges();
-        }
-
-        /// <summary>
-        /// Creates a BFast structure from the data in memory.
-        /// This constructor assumed no more than 2GB of memory.
-        /// </summary>
-        public BFast(Memory<byte> memory)
-        {
-            // Assure that the data is of sufficient size to get the header 
-            if (FileHeader.Size > memory.Length)
-                throw new Exception($"Data length ({memory.Length}) is smaller than size of FileHeader ({FileHeader.Size})");
-
-            // Get the header
-            _header = memory.Slice(0, (int) FileHeader.Size).Span.ToStruct<FileHeader>();
-            ValidateHeader();
-
-            // Get the ranges 
-            _ranges = memory.Slice(FileHeader.Size, Range.Size * (int) Header.NumArrays).Span.ToStructs<Range>();
-            ValidateRanges();
-        }
-
-        public Memory<byte> GetBuffer(int n)
-            => Buffers[n];
-    }
-
-    public static class BFastExtensions
-    {
-        public static int NumBuffers(this IBFast bf) => (int)bf.Header.NumArrays;
-
-        public static IEnumerable<Memory<Byte>> GetBuffers(this IBFast bf)
-        {
-            for (var i = 0; i < bf.NumBuffers(); ++i)
-                yield return bf.GetBuffer(i);
-        }
-
-        public static BFast AsBFast(this IEnumerable<byte[]> buffers)
-            => new BFast(buffers.Select(b => new Memory<byte>(b)).ToList());
+            => n % Alignment == 0;
 
         public static void WritePadding(BinaryWriter bw)
         {
-            var padding = BFast.ComputePadding(bw.BaseStream.Position);
+            var padding = ComputePadding(bw.BaseStream.Position);
             for (var i = 0; i < padding; ++i)
                 bw.Write((byte) 0);
         }
 
-        public static Stream Write(this IBFast bf, Stream stream)
+        public static FileHeader GetHeader(Memory<byte> bytes)
         {
-            using (var bw = new BinaryWriter(stream))
-                bf.Write(bw);
-            return stream;
+            // Assure that the data is of sufficient size to get the header 
+            if (FileHeader.Size > bytes.Length)
+                throw new Exception($"Data length ({bytes.Length}) is smaller than size of FileHeader ({FileHeader.Size})");
+
+            // Get the header
+            var header = bytes.Slice(0, FileHeader.Size).Span.ToStruct<FileHeader>();
+            ValidateHeader(header);
+            return header;
         }
 
-        public static BinaryWriter Write(this IBFast bf, BinaryWriter bw)
+        public static Range[] GetRanges(FileHeader header, Memory<byte> bytes)
         {
-            bw.Write(bf.Header);
+            var ranges = bytes.Slice(FileHeader.Size, Range.Size * (int)header.NumArrays).Span.ToStructs<Range>();
+            ValidateRanges(header, ranges);
+            return ranges;
+        }
+
+        public static IList<Memory<byte>> LoadBFast(this byte[] bytes)
+            => new Memory<byte>(bytes).LoadBFast();        
+
+        public static IList<Memory<byte>> LoadBFast(this Memory<byte> bytes)
+        {
+            var header = GetHeader(bytes);
+            var ranges = GetRanges(header, bytes);
+            return ranges.Select(r => bytes.Slice((int)r.Begin, (int)r.Count)).ToList();
+        }
+
+        public static BinaryWriter Write(BinaryWriter bw, FileHeader header, Range[] ranges, IList<Memory<byte>> buffers)
+        {
+            bw.Write(header);
             WritePadding(bw);
-            foreach (var r in bf.Ranges)
+            foreach (var r in ranges)
                 bw.Write(r);
             WritePadding(bw);
-            foreach (var b in bf.GetBuffers())
+            foreach (var b in buffers)
             {
-                bw.Write(b);
                 WritePadding(bw);
+                bw.Write(b.ToBytes());
             }
-
             return bw;
         }
 
-        public static string WriteToFile(this IBFast bf, string path)
+        public static byte[] ToBFastBytes(this IEnumerable<byte[]> buffers)
+            => ToBFastBytes(buffers.Select(b => new Memory<byte>(b)));
+
+        public static byte[] ToBFastBytes(this IEnumerable<Memory<byte>> buffers)
+            => Write(new MemoryStream(), buffers.ToList()).ToArray();
+
+        public static void ToBFastFile(this IEnumerable<Memory<byte>> buffers, string filePath)
+            => Write(File.OpenWrite(filePath), buffers.ToList());
+
+        public static T Write<T>(T stream, IList<Memory<byte>> buffers) where T: Stream
         {
-            using (var f = File.OpenWrite(path))
-                bf.Write(f);
-            return path;
+            var header = new FileHeader();
+            header.Magic = BFastConstants.Magic;
+            header.NumArrays = buffers.Count;
+            header.DataStart = ComputeNextAlignment(header.RangesEnd);
+
+            // Allocate the data for the ranges
+            var ranges = new Range[header.NumArrays];
+
+            // Compute the offsets for the data buffers
+            var curIndex = header.DataStart;
+            for (var i = 0; i < buffers.Count; ++i)
+            {
+                Debug.Assert(IsAligned(curIndex));
+
+                ranges[i].Begin = curIndex;
+                curIndex += buffers[i].Length;
+                ranges[i].End = curIndex;
+                curIndex = ComputeNextAlignment(curIndex);
+
+                Debug.Assert(ranges[i].Count == buffers[i].Length);
+            }
+
+            // Finish with the header
+            header.DataEnd = curIndex;
+
+            // Check that everything adds up 
+            ValidateHeader(header);
+            ValidateRanges(header, ranges);
+
+            // Write the data 
+            using (var bw = new BinaryWriter(stream))
+                Write(bw, header, ranges, buffers);
+
+            return stream;
         }
 
-        public static byte[] ToBytes(this IBFast bf)
+        /// <summary>
+        /// Checks that the header values are sensible, and throws an exception otherwise.
+        /// </summary>
+        public static void ValidateHeader(FileHeader header)
         {
-            using (var mem = new MemoryStream()) {
-                bf.Write(mem);
-                return mem.ToArray();
+            if (header.Magic != BFastConstants.SameEndian && header.Magic != BFastConstants.SwappedEndian)
+                throw new Exception($"Invalid magic number {header.Magic}");
+
+            if (header.DataStart < FileHeader.Size)
+                throw new Exception($"Data start {header.DataStart} cannot be before the file header size {FileHeader.Size}");
+
+            if (header.DataStart > header.DataEnd)
+                throw new Exception($"Data start {header.DataStart} cannot be after the data end {header.DataEnd}");
+
+            if (header.NumArrays < 0)
+                throw new Exception($"Number of arrays {header.NumArrays} is not a positive number");
+
+            if (header.RangesEnd > header.DataStart)
+                throw new Exception($"Computed arrays ranges end must be less than the start of data {header.DataStart}");
+        }
+
+        /// <summary>
+        /// Checks that the range values are sensible, and throws an exception otherwise.
+        /// </summary>
+        public static void ValidateRanges(FileHeader header, Range[] ranges)
+        {
+            if (ranges == null)
+                throw new Exception("Ranges must not be null");
+
+            var min = header.DataStart;
+            var max = header.DataEnd;
+
+            for (var i = 0; i < ranges.Length; ++i)
+            {
+                var begin = ranges[i].Begin;
+                var end = ranges[i].End;
+                if (begin < min || begin > max)
+                    throw new Exception($"Array offset begin {begin} is not in valid span of {min} to {max}");
+                if (i > 0)
+                    if (begin < ranges[i - 1].End)
+                        throw new Exception($"Array offset begin {begin} is overlapping with previous array {ranges[i - 1].End}");
+                if (end < begin || end > max)
+                    throw new Exception($"Array offset end {end} is not in valid span of {begin} to {max}");
             }
         }
-
-        public static BFast AsBFast(this byte[] bytes)
-            => new BFast(bytes);
-
-        public static BFast ReadBFast(string file)
-            => File.ReadAllBytes(file).AsBFast();
-
-        public static void ReadBFast(Stream stream)
-            => stream.ReadAllBytes().AsBFast();
     }
 }

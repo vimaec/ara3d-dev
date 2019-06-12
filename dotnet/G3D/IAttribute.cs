@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace Ara3D
+﻿namespace Ara3D
 {
     public interface IAttribute
     {

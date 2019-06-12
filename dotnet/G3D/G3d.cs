@@ -89,11 +89,6 @@ $@"{{
 
         public string Header { get; }
 
-        /// <summary>
-        /// Optional BFast buffer
-        /// </summary>
-        public readonly BFast Buffer;
-
         private readonly IAttribute m_vertexAttribute;
         private readonly IAttribute m_indexAttribute;
         private readonly IAttribute m_faceSizeAttribute;
@@ -101,12 +96,11 @@ $@"{{
         private readonly IAttribute m_materialIdAttribute;
 
         public G3D(params IAttribute[] attributes)
-            : this(attributes, null, null)
+            : this(attributes, null)
         { }
 
-        public G3D(IEnumerable<IAttribute> attributes, BFast buffer = null, string header = null)
+        public G3D(IEnumerable<IAttribute> attributes, string header = null, bool validate = false)
         {
-            Buffer = buffer;
             Header = header;
             Attributes = attributes;
 
@@ -122,9 +116,8 @@ $@"{{
             if (m_vertexAttribute == null)
                 throw new Exception("Vertex attribute is not present");
 
-            // Check that everything is kosher
-            // TODO: this is a long process, only do it in specific circumstances.
-            //this.Validate();
+            if (validate)
+                this.Validate();
         }
 
         private static void _AssignIfPossible(IAttribute attr, ref IAttribute target, AttributeType at)
@@ -137,29 +130,29 @@ $@"{{
             }
         }
 
-        public static G3D Create(BFast bfast)
+        public static G3D Create(IList<Memory<byte>> buffers)
         {
-            if (bfast.Buffers.Count < 2)
+            if (buffers.Count < 2)
                 throw new Exception("Expected at least two data buffers in file: header, and attribute descriptor array");                
 
-            var header = bfast.Buffers[0].ToBytes().ToUtf8();
-            var descriptors = bfast.Buffers[1].Span.ToStructs<AttributeDescriptor>().ToArray();
-            var buffers = bfast.Buffers.Skip(2).ToArray();
-            if (descriptors.Length != buffers.Length)
+            var header = buffers[0].ToBytes().ToUtf8();
+            var descriptors = buffers[1].Span.ToStructs<AttributeDescriptor>().ToArray();
+            buffers = buffers.Skip(2).ToList();
+            if (descriptors.Length != buffers.Count)
                 throw new Exception("Incorrect number of descriptors");
 
             // TODO: this guy is going to be hard to process 
             // I have raw bytes, and I have to cast it to the correct type.
             // That correct type depends on the type flag stored in the descriptor 
-            return new G3D(buffers.Zip(descriptors, G3DExtensions.ToAttribute), bfast, header);
+            return new G3D(buffers.Zip(descriptors, G3DExtensions.ToAttribute), header);
         }
 
         // TODO: all of these copies make me die a little bit inside
         public static G3D Create(byte[] bytes)
             => Create(new Memory<byte>(bytes));
 
-        public static G3D Create(Memory<byte> memory)
-            => Create(new BFast(memory));
+        public static G3D Create(Memory<byte> bytes)
+            => Create(BFast.LoadBFast(bytes));
 
         public static G3D ReadFile(string filePath)
             => Create(File.ReadAllBytes(filePath));

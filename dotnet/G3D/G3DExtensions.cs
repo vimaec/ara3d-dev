@@ -228,10 +228,7 @@ namespace Ara3D
         public static G3D ReadFromStream(Stream stream)
             => G3D.Create(stream.ReadAllBytes());
 
-        public static G3D ToG3D(this BFast bfast)
-            => G3D.Create(bfast);
-        
-        public static BFast ToBFast(this IG3D g3D)
+        public static IList<Memory<byte>> ToBuffers(this IG3D g3D)
         {
             var buffers = new List<Memory<byte>>();
             buffers.Add(G3D.DefaultHeader.ToBytesAscii().ToMemory());
@@ -239,14 +236,14 @@ namespace Ara3D
             buffers.Add(descriptors.ToBytes());
             foreach (var attr in g3D.Attributes)
                 buffers.Add(attr.Bytes);
-            return new BFast(buffers);
+            return buffers;
         }
              
-        public static string WriteG3D(this IG3D g3D, string filePath) 
-            => g3D.ToBFast().WriteToFile(filePath);
+        public static void WriteG3D(this IG3D g3D, string filePath) 
+            => g3D.ToBuffers().ToBFastFile(filePath);
             
-        public static byte[] ToBytes(this IG3D g3d)
-            => g3d.ToBFast().ToBytes();
+        public static byte[] ToBFast(this IG3D g3d)
+            => g3d.ToBuffers().ToBFastBytes();
 
         public static IG3D ToG3D(this IEnumerable<IAttribute> attributes)
             => new G3D(attributes.WhereNotNull());
@@ -262,9 +259,6 @@ namespace Ara3D
 
         public static IG3D ToG3D(int sidesPerFaces, Vector3[] vertices, int[] indices = null, Vector2[] uvs = null)
             => ToG3D(sidesPerFaces, vertices.ToVertexAttribute(), indices?.ToIndexAttribute(), uvs?.ToUvAttribute());
-
-        public static BFast ToBFast(this IEnumerable<IAttribute> attributes)
-            => attributes.ToG3D().ToBFast();
 
         public static bool IsSameAttribute(this AttributeDescriptor desc, AttributeDescriptor other)
             => desc.AttributeType == other.AttributeType && desc.Association == other.Association && desc.AttributeTypeIndex == other.AttributeTypeIndex;

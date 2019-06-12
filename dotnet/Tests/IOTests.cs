@@ -100,6 +100,7 @@ namespace Ara3D.Tests
             Assert.AreEqual(12, indexBuffer.Count);
             var g = g3d.ToIGeometry();
             CheckTestTetrahedron(g);
+            /*
             var b = g.ToBFast();
             var g2 = b.ToG3D();
             CheckTestTetrahedron(g2.ToIGeometry());
@@ -107,6 +108,7 @@ namespace Ara3D.Tests
             g.WriteG3D(tmpPath);
             var g3 = G3DExtensions.ReadFromFile(tmpPath);
             CheckTestTetrahedron(g3.ToIGeometry());
+            */
         }
 
         public static void CompareDMesh(DMesh3 m, IGeometry g, double tolerance)
