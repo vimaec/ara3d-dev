@@ -5,41 +5,55 @@ namespace FbxClrWrapper
 {
 	FBXMeshDataInternal::FBXMeshDataInternal(FBXMeshData^ SrcData)
 	{
-		mIndices.resize(SrcData->mInds->Count);
-		mVertices.resize(SrcData->mVerts->Count);
-		mFaceSize.resize(SrcData->mFcSz->Count);
+		mIndices.resize(SrcData->mIndices->Count);
+		mVertices.resize(SrcData->mVertices->Count);
+		mFaceSize.resize(SrcData->mFaceSize->Count);
 
-		for (int i = 0; i < SrcData->mInds->Count; i++)
+		for (int i = 0; i < SrcData->mIndices->Count; i++)
 		{
-			mIndices[i] = SrcData->mInds[i];
+			mIndices[i] = SrcData->mIndices[i];
 		}
-		for (int i = 0; i < SrcData->mVerts->Count; i++)
+		for (int i = 0; i < SrcData->mVertices->Count; i++)
 		{
-			mVertices[i] = SrcData->mVerts[i];
+			mVertices[i] = SrcData->mVertices[i];
 		}
-		for (int i = 0; i < SrcData->mFcSz->Count; i++)
+		for (int i = 0; i < SrcData->mFaceSize->Count; i++)
 		{
-			mFaceSize[i] = SrcData->mFcSz[i];
+			mFaceSize[i] = SrcData->mFaceSize[i];
 		}
 	}
 
+	ref class cLookup
+	{
+	public:
+		FBXMeshDataInternal* mSrcData;
+		cLookup(FBXMeshDataInternal& SrcData) :
+			mSrcData (&SrcData)
+		{}
+
+		int32_t IndFunc(int n)
+		{
+			return mSrcData->mIndices[n];
+		}
+		float VertFunc(int n)
+		{
+			return mSrcData->mVertices[n];
+		}
+		int32_t FaceSizeFunc(int n)
+		{
+			return mSrcData->mFaceSize[n];
+		}
+	};
+
+	delegate int32_t FunctionalArrayDelegate(int n);
+
 	FBXMeshData::FBXMeshData(FBXMeshDataInternal& SrcData)
 	{
-		mIndices = gcnew array<int32_t>(SrcData.mIndices.size());
-		mVertices = gcnew array<float>(SrcData.mVertices.size());
-		mFaceSize = gcnew array<int>(SrcData.mFaceSize.size());
-		for (size_t i = 0; i < SrcData.mIndices.size(); i++)
-		{
-			mIndices[i] = SrcData.mIndices[i];
-		}
-		for (size_t i = 0; i < SrcData.mVertices.size(); i++)
-		{
-			mVertices[i] = SrcData.mVertices[i];
-		}
-		for (size_t i = 0; i < SrcData.mFaceSize.size(); i++)
-		{
-			mFaceSize[i] = SrcData.mFaceSize[i];
-		}
+		cLookup^ l = gcnew cLookup(SrcData);
+
+		mIndices = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mIndices.size(), gcnew System::Func<int, int32_t>(l, &cLookup::IndFunc));
+		mVertices = gcnew Ara3D::FunctionalArray<float>(SrcData.mVertices.size(), gcnew System::Func<int, float>(l, &cLookup::VertFunc));
+		mFaceSize = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mFaceSize.size(), gcnew System::Func<int, int32_t>(l, &cLookup::FaceSizeFunc));
 	}
 
 }

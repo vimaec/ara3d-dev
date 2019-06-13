@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FbxExtensions.cs" />
     <Compile Include="FbxImporter.cs" />
     <Compile Include="FbxImporterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

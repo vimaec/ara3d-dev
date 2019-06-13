@@ -31,11 +31,26 @@ namespace FbxClrWrapper
 		mSceneData = new FBXSceneDataInternal();
 	}
 
-	void FBXLoader::ShutDown()
+	void FBXLoader::ShutDownAPI()
+	{
+		if (mSdkManager != nullptr)
+		{
+			mSdkManager->Destroy();
+		}
+
+		mSdkManager = nullptr;
+	}
+
+	void FBXLoader::DestroyData()
 	{
 		delete mSceneData;
-		mScene->Destroy();
-		mSdkManager->Destroy();
+		mSceneData = nullptr;
+
+		if (mScene != nullptr)
+		{
+			mScene->Destroy();
+		}
+
 		mSceneData_ = nullptr;
 	}
 

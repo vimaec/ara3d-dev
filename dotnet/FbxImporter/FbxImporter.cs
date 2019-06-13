@@ -3,18 +3,12 @@ using System.Collections.Generic;
 
 namespace Ara3D
 {
-    public static class FbxImporter
+
+    public class FbxImporter
     {
-        public static G3D ToG3D(this FBXMeshData mesh)
-            => new G3D(mesh.mFaceSize.ToFaceSizeAttribute(Association.assoc_face), mesh.mVertices.ToVertexAttribute(), mesh.mIndices.ToIndexAttribute());
+        FBXLoader fbxLoader = new FBXLoader();
 
-        public static IGeometry ToIGeometry(this FBXMeshData mesh)
-            => mesh.ToG3D().ToIGeometry();
-
-        public static IArray<IGeometry> CreateIGeometyArray(this IEnumerable<FBXMeshData> meshes)
-            => meshes.ToIArray().Select(ToIGeometry);
-
-        public static IArray<ISceneNode> CreateISceneNodeArray(FBXSceneData sceneData, IArray<IGeometry> geometries)
+        public IArray<ISceneNode> CreateISceneNodeArray(FBXSceneData sceneData, IArray<IGeometry> geometries)
         {
             var nodeArray = new ISceneNode[sceneData.mNodeNameList.Length];
 
@@ -65,7 +59,7 @@ namespace Ara3D
             return nodeArray.ToIArray();
         }
 
-        private static void CreateFBXMeshList(IArray<IGeometry> Geometries, ref FBXSceneData SceneData)
+        private void CreateFBXMeshList(IArray<IGeometry> Geometries, ref FBXSceneData SceneData)
         {
             var meshList = new List<FBXMeshData>();
             var meshIdList = new List<string>();
@@ -75,9 +69,9 @@ namespace Ara3D
                 var mesh = new FBXMeshData();
                 var geometry = Geometries[geometryIndex];
 
-                mesh.mInds = geometry.Indices;
-                mesh.mVerts = geometry.Vertices.ToFloats();
-                mesh.mFcSz = geometry.FaceSizes;
+                mesh.mIndices = geometry.Indices;
+                mesh.mVertices = geometry.Vertices.ToFloats();
+                mesh.mFaceSize = geometry.FaceSizes;
 
                 meshList.Add(mesh);
                 meshIdList.Add("<no name>");
@@ -87,7 +81,7 @@ namespace Ara3D
             SceneData.mMeshIdList = meshIdList.ToArray();
         }
         
-        private static void CreateFBXNodes(IArray<ISceneNode> Nodes, IArray<IGeometry> Geometries, ref FBXSceneData SceneData)
+        private void CreateFBXNodes(IArray<ISceneNode> Nodes, IArray<IGeometry> Geometries, ref FBXSceneData SceneData)
         {
             var nodeNameList = new List<string>();
             var nodeParentList = new List<int>();
@@ -128,7 +122,7 @@ namespace Ara3D
             SceneData.mNodeMeshIndexList = nodeMeshIndexList.ToArray();
         }
 
-        private static void CreateFBXNodesAndMeshes(IEnumerable<ISceneNode> Nodes, ref FBXSceneData SceneData)
+        private void CreateFBXNodesAndMeshes(IEnumerable<ISceneNode> Nodes, ref FBXSceneData SceneData)
         {
             var nodeNameList = new List<string>();
             var nodeParentList = new List<int>();
@@ -161,9 +155,9 @@ namespace Ara3D
                     {
                         var mesh = new FBXMeshData();
 
-                        mesh.mInds = node.Geometry.Indices;
-                        mesh.mVerts = node.Geometry.Vertices.ToFloats();
-                        mesh.mFcSz = node.Geometry.FaceSizes;
+                        mesh.mIndices = node.Geometry.Indices;
+                        mesh.mVertices = node.Geometry.Vertices.ToFloats();
+                        mesh.mFaceSize = node.Geometry.FaceSizes;
 
                         var meshIndex = meshList.Count;
 
@@ -194,42 +188,42 @@ namespace Ara3D
             SceneData.mMeshIdList = meshIdList.ToArray();
         }
 
-        public static IScene LoadFBX(string FBXFileName)
+        public IScene LoadFBX(string FBXFileName)
         {
-            FBXLoader.Initialize();
-            if (FBXLoader.LoadFBX(FBXFileName) >= 0)
+            fbxLoader.Initialize();
+            if (fbxLoader.LoadFBX(FBXFileName) >= 0)
             {
-                var sceneData = FBXLoader.GetSceneData();
-                FBXLoader.ShutDown();
+                var sceneData = fbxLoader.GetSceneData();
+                fbxLoader.ShutDownAPI();
 
-                var geometryArray = CreateIGeometyArray(sceneData.mMeshList);
+                var geometryArray = sceneData.mMeshList.CreateIGeometyArray();
                 var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
 
                 var scene = new Scene(new SceneProperties(), sceneNodeArray[0]);
                 return scene;
             }
 
-            FBXLoader.ShutDown();
+            fbxLoader.ShutDownAPI();
             throw new System.Exception("Failed to load FBX File");
         }
 
-        public static void SaveFBX(IScene Scene, string FBXFileName)
+        public void SaveFBX(IScene Scene, string FBXFileName)
         {
-            FBXLoader.Initialize();
+            fbxLoader.Initialize();
 
             var sceneData = new FBXSceneData();
 //            CreateFBXMeshList(Scene.Geometries, ref sceneData);
 //            CreateFBXNodes(Scene.Nodes, Scene.Geometries, ref sceneData);
             CreateFBXNodesAndMeshes(Scene.AllNodes(), ref sceneData);
-            FBXLoader.SetSceneData(sceneData);
+            fbxLoader.SetSceneData(sceneData);
 
-            if (FBXLoader.SaveFBX(FBXFileName) >= 0)
+            if (fbxLoader.SaveFBX(FBXFileName) >= 0)
             {
-                FBXLoader.ShutDown();
+                fbxLoader.ShutDownAPI();
                 return;
             }
 
-            FBXLoader.ShutDown();
+            fbxLoader.ShutDownAPI();
             throw new System.Exception("Failed to save FBX File");
         }
     }

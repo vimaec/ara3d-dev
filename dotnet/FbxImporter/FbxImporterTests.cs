@@ -24,10 +24,13 @@ namespace Ara3D
             //            scene.ToIGeometry().WriteObj(outputFilePath);
 
             var scene = CreateTextIScene();
-            FbxImporter.SaveFBX(scene, @"test.fbx");
-            var scene2 = FbxImporter.LoadFBX(@"test.fbx");
+            FbxImporter exporter = new FbxImporter();
+            exporter.SaveFBX(scene, @"test.fbx");
 
-            Assert.IsTrue(scene == scene2);
+            FbxImporter importer = new FbxImporter();
+            var scene2 = importer.LoadFBX(@"test.fbx");
+
+            CompareScenes(scene, scene2);
         }
 
         public static Properties CreateNodeProperties(string Name)
@@ -58,6 +61,57 @@ namespace Ara3D
             rootNode._AddChild(child2);
 
             return new Scene(new SceneProperties(), rootNode);
+        }
+
+        public static void CompareScenes(IScene Scene1, IScene Scene2)
+        {
+            CompareNodes(Scene1.Root, Scene2.Root);
+        }
+
+        public static void CompareNodes(ISceneNode Node1, ISceneNode Node2)
+        {
+            Assert.IsTrue(Node1.GetName() == Node2.GetName());
+            Assert.IsTrue(Node1.Children.Count == Node2.Children.Count);
+
+            var children1 = Node1.Children.ToArray();
+            var children2 = Node2.Children.ToArray();
+
+            Array.Sort(children1, (x, y) => x.GetName().CompareTo(y.GetName()));
+            Array.Sort(children2, (x, y) => x.GetName().CompareTo(y.GetName()));
+
+            for (int i = 0; i < children1.Length; i++)
+            {
+                CompareNodes(children1[i], children2[i]);
+                CompareGeometries(Node1.Geometry, Node2.Geometry);
+            }
+        }
+
+        public static void CompareGeometries(IGeometry Geometry1, IGeometry Geometry2)
+        {
+            if (Geometry1 == null || Geometry2 == null)
+            {
+                Assert.IsTrue(Geometry1 == null && Geometry2 == null);
+                return;
+            }
+
+            Assert.IsTrue(Geometry1.Indices.Count == Geometry2.Indices.Count);
+            Assert.IsTrue(Geometry1.FaceSizes.Count == Geometry2.FaceSizes.Count);
+            Assert.IsTrue(Geometry1.Vertices.Count == Geometry2.Vertices.Count);
+            
+            for (int i = 0; i < Geometry1.Indices.Count; i++)
+            {
+                Assert.IsTrue(Geometry1.Indices[i] == Geometry2.Indices[i]);
+            }
+
+            for (int i = 0; i < Geometry1.Vertices.Count; i++)
+            {
+                Assert.IsTrue(Geometry1.Vertices[i] == Geometry2.Vertices[i]);
+            }
+
+            for (int i = 0; i < Geometry1.FaceSizes.Count; i++)
+            {
+                Assert.IsTrue(Geometry1.FaceSizes[i] == Geometry2.FaceSizes[i]);
+            }
         }
     }
 }

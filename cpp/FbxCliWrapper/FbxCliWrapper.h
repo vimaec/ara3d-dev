@@ -14,30 +14,38 @@ namespace FbxClrWrapper
 	public ref class FBXLoader
 	{
 	private:
-		static FbxManager* mSdkManager = nullptr;
-		static FbxScene* mScene = nullptr;
-		static FBXSceneDataInternal *mSceneData = nullptr;
-		static FBXSceneData ^mSceneData_ = nullptr;
+		FbxManager* mSdkManager = nullptr;
+		FbxScene* mScene = nullptr;
+		FBXSceneDataInternal *mSceneData = nullptr;
+		FBXSceneData ^mSceneData_ = nullptr;
 
 	public:
-		static void Initialize();
-		static void ShutDown();
-		static int LoadFBX(String^ FileName);
-		static int SaveFBX(String^ FileName);
-		static FBXSceneData ^ GetSceneData() { return mSceneData_; }
-		static void SetSceneData(FBXSceneData^ SceneData) { mSceneData_ = SceneData; }
+		~FBXLoader()
+		{
+			ShutDownAPI();
+			DestroyData();
+		}
+
+	public:
+		void Initialize();
+		void ShutDownAPI();
+		void DestroyData();
+		int LoadFBX(String^ FileName);
+		int SaveFBX(String^ FileName);
+		FBXSceneData ^ GetSceneData() { return mSceneData_; }
+		void SetSceneData(FBXSceneData^ SceneData) { mSceneData_ = SceneData; }
 
 	private:
-		static bool TransformDataToCLI();
-		static bool TransformDataFromCLI();
+		bool TransformDataToCLI();
+		bool TransformDataFromCLI();
 
-		static void InitializeSdkObjects();
-		static bool LoadScene(const char* pFilename);
-		static bool SaveScene(const char* pFilename);
-		static void ProcessFBXNode(FbxNode* pNode, int ParentIndex);
-		static void ExportNodes();
-		static int ExtractFBXMeshData(FbxMesh* pMesh);
-		static void CreateFBXMeshList(std::vector<FbxMesh*>& MeshList);
-		static void CreateFBXNodes(std::vector<FbxMesh*>& MeshList);
+		void InitializeSdkObjects();
+		bool LoadScene(const char* pFilename);
+		bool SaveScene(const char* pFilename);
+		void ProcessFBXNode(FbxNode* pNode, int ParentIndex);
+		void ExportNodes();
+		int ExtractFBXMeshData(FbxMesh* pMesh);
+		void CreateFBXMeshList(std::vector<FbxMesh*>& MeshList);
+		void CreateFBXNodes(std::vector<FbxMesh*>& MeshList);
 	};
 }

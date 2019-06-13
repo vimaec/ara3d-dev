@@ -23,15 +23,9 @@ namespace FbxClrWrapper
 	public ref class FBXMeshData
 	{
 	public:
-
-		// TODO: try change everything over to IArray
-		array<int32_t>^ mIndices;
-		array<float>^ mVertices;
-		array<int>^ mFaceSize;
-
-		Ara3D::IArray<int32_t> ^ mInds;
-		Ara3D::IArray<float>^ mVerts;
-		Ara3D::IArray<int>^ mFcSz;
+		Ara3D::IArray<int32_t> ^ mIndices;
+		Ara3D::IArray<float>^ mVertices;
+		Ara3D::IArray<int>^ mFaceSize;
 
 	public:
 		FBXMeshData(FBXMeshDataInternal& SrcData);
