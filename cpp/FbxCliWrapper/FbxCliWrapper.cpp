@@ -134,6 +134,12 @@ namespace FbxClrWrapper
 		// Export the scene to the file.
 		bool result = lExporter->Export(mScene);
 
+		if (!result)
+		{
+			auto status = lExporter->GetStatus();
+			printf("Error: %s", status.GetErrorString());
+		}
+
 		// Destroy the exporter.
 		lExporter->Destroy();
 

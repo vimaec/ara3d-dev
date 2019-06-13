@@ -11,9 +11,6 @@
 
 namespace FbxClrWrapper
 {
-	#define _CPP_ true
-	#include "../../dotnet/G3D/Constants.cs"
-
 	public ref class FBXLoader
 	{
 	private:

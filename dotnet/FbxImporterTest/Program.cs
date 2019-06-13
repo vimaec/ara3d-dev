@@ -8,6 +8,8 @@ namespace Ara3D
     {
         public static void Main(string[] args)
         {
+            FbxImporterTests.TestFbxImporter("", "");
+
             //var filePath = @"E:\VimAecDev\vims\Models\sketchup-automation\bob.fbx";
             //var filePath = @"E:\VimAecDev\vims\Models\sketchup-automation\R.Tamu.Baru.fbx";
             var filePath = @"E:\VimAecDev\vims\Models\CDiggins_313401_S_v19.fbx";
