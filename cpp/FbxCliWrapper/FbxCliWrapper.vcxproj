@@ -132,14 +132,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FbxCliReader.h" />
     <ClInclude Include="FbxCliWrapper.h" />
+    <ClInclude Include="FbxCliWriter.h" />
     <ClInclude Include="FBXMeshData.h" />
     <ClInclude Include="FBXSceneData.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="FbxCliReader.cpp" />
     <ClCompile Include="FbxCliWrapper.cpp" />
+    <ClCompile Include="FbxCliWriter.cpp" />
     <ClCompile Include="FBXMeshData.cpp" />
     <ClCompile Include="FBXSceneData.cpp" />
   </ItemGroup>

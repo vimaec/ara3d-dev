@@ -24,7 +24,7 @@ namespace Ara3D
             //            scene.ToIGeometry().WriteObj(outputFilePath);
 
             var scene = CreateTextIScene();
-            FbxImporter exporter = new FbxImporter();
+            FbxExporter exporter = new FbxExporter();
             exporter.SaveFBX(scene, @"test.fbx");
 
             FbxImporter importer = new FbxImporter();

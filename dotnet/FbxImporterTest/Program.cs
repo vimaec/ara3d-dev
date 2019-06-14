@@ -19,7 +19,7 @@ namespace Ara3D
             var filePath = @"E:\VimAecDev\vims\Models\axis_tripod.FBX";
 
             FbxImporter importer = new FbxImporter();
-            FbxImporter exporter = new FbxImporter();
+            FbxExporter exporter = new FbxExporter();
 
 
             var scene = importer.LoadFBX(filePath);

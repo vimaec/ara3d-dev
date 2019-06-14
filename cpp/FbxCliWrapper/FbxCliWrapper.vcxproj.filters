@@ -23,6 +23,12 @@
     <ClInclude Include="Resource.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="FbxCliReader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FbxCliWriter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FbxCliWrapper.cpp">
@@ -35,6 +41,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FBXMeshData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FbxCliReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FbxCliWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

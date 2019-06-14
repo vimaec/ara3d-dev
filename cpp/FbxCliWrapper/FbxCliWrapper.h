@@ -11,16 +11,16 @@
 
 namespace FbxClrWrapper
 {
-	public ref class FBXLoader
+	public ref class FbxCliBase
 	{
-	private:
+	protected:
 		FbxManager* mSdkManager = nullptr;
 		FbxScene* mScene = nullptr;
 		FBXSceneDataInternal *mSceneData = nullptr;
 		FBXSceneData ^mSceneData_ = nullptr;
 
 	public:
-		~FBXLoader()
+		~FbxCliBase()
 		{
 			ShutDownAPI();
 			DestroyData();
@@ -30,22 +30,13 @@ namespace FbxClrWrapper
 		void Initialize();
 		void ShutDownAPI();
 		void DestroyData();
-		int LoadFBX(String^ FileName);
-		int SaveFBX(String^ FileName);
+	
 		FBXSceneData ^ GetSceneData() { return mSceneData_; }
 		void SetSceneData(FBXSceneData^ SceneData) { mSceneData_ = SceneData; }
 
-	private:
+	protected:
 		bool TransformDataToCLI();
 		bool TransformDataFromCLI();
-
 		void InitializeSdkObjects();
-		bool LoadScene(const char* pFilename);
-		bool SaveScene(const char* pFilename);
-		void ProcessFBXNode(FbxNode* pNode, int ParentIndex);
-		void ExportNodes();
-		int ExtractFBXMeshData(FbxMesh* pMesh);
-		void CreateFBXMeshList(std::vector<FbxMesh*>& MeshList);
-		void CreateFBXNodes(std::vector<FbxMesh*>& MeshList);
 	};
 }

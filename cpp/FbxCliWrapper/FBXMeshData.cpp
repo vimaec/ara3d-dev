@@ -45,15 +45,13 @@ namespace FbxClrWrapper
 		}
 	};
 
-	delegate int32_t FunctionalArrayDelegate(int n);
-
 	FBXMeshData::FBXMeshData(FBXMeshDataInternal& SrcData)
 	{
-		cLookup^ l = gcnew cLookup(SrcData);
+		auto lookup = gcnew cLookup(SrcData);
 
-		mIndices = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mIndices.size(), gcnew System::Func<int, int32_t>(l, &cLookup::IndFunc));
-		mVertices = gcnew Ara3D::FunctionalArray<float>(SrcData.mVertices.size(), gcnew System::Func<int, float>(l, &cLookup::VertFunc));
-		mFaceSize = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mFaceSize.size(), gcnew System::Func<int, int32_t>(l, &cLookup::FaceSizeFunc));
+		mIndices = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mIndices.size(), gcnew System::Func<int, int32_t>(lookup, &cLookup::IndFunc));
+		mVertices = gcnew Ara3D::FunctionalArray<float>(SrcData.mVertices.size(), gcnew System::Func<int, float>(lookup, &cLookup::VertFunc));
+		mFaceSize = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mFaceSize.size(), gcnew System::Func<int, int32_t>(lookup, &cLookup::FaceSizeFunc));
 	}
 
 }
