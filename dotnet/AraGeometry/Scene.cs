@@ -6,17 +6,12 @@ namespace Ara3D
 {
     public class PropertiesLookup : LookupFromDictionary<int, IProperties>, IPropertiesLookup
     {
-        public PropertiesLookup(Dictionary<int, IProperties> d)
-            : base(d)
+        public PropertiesLookup(Dictionary<int, IProperties> d = null)
+            : base(d ?? new Dictionary<int, IProperties>())
         { }
-    }
 
-    public class SceneProperties : LookupFromDictionary<string, ILookup<int, string>>, ISceneProperties
-    {
-        public SceneProperties()
-            : base(new Dictionary<string, ILookup<int, string>>())
-        { }
-    }
+        public static PropertiesLookup Empty = new PropertiesLookup();
+    }   
 
     public class SceneNode : ISceneNode
     {
@@ -58,14 +53,14 @@ namespace Ara3D
 
     public class Scene : IScene
     {
-        public Scene(ISceneProperties properties, ISceneNode root)
+        public Scene(ISceneNode root, ILookup<string, IPropertiesLookup> properties)
         {
             Root = root;
-            Properties = properties;
+            AllProperties = properties;
         }
 
         public ISceneNode Root { get; }
-        public ISceneProperties Properties { get; }
+        public ILookup<string, IPropertiesLookup> AllProperties { get; }
     }
 
     public class Properties : LookupFromDictionary<string, string>, IProperties

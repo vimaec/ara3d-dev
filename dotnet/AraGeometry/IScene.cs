@@ -1,13 +1,44 @@
-﻿namespace Ara3D
+﻿using System;
+using System.Collections.Generic;
+
+namespace Ara3D
 {
     /// <summary>
+    /// A surface or smoothing group is a set of polygons in a mesh that represent a portion of a mesh, usually contiguous.
+    /// In Revit this is called a "Face". This might be identified as a smoothing group in 3ds Max. 
+    /// https://en.wikipedia.org/wiki/Polygon_mesh. A surface will have the same material id. 
+    /// </summary>
+    public interface ISurface
+    {
+        int ObjectId { get; }
+        int MaterialId { get; }
+    }
+
+    /// <summary>
     /// An IScene is a generic representation of a 3D scene graph and associated meta-data.
-    /// TODO: the properties lookups are going to be really slow and painful. 
     /// </summary>
     public interface IScene
     {
         ISceneNode Root { get; }
-        ISceneProperties Properties { get; }
+        ILookup<string, IPropertiesLookup> AllProperties { get; }
+    }
+
+    /// <summary>
+    /// This is the next generation of scene graphs
+    /// </summary>
+    public interface IScene2 : IScene
+    {
+        ISceneNode[] Nodes { get; }
+        IGeometry[] Geometries { get; }
+        Memory<byte>[] Assets { get; }
+        ISurface[] Surfaces { get; }
+
+        IPropertiesLookup MaterialProperties { get; }
+        IPropertiesLookup AssetProperties { get; }
+        IPropertiesLookup SurfaceProperties { get; }
+        IPropertiesLookup NodeProperties { get; }
+        IPropertiesLookup GeometryProperties { get; }
+        IPropertiesLookup ObjectProperties { get; }
     }
 
     /// <summary>
@@ -23,16 +54,6 @@
         IArray<ISceneNode> Children { get; }
         IProperties Properties { get; }
     }
-
-    /// <summary>
-    /// For different types of objects in the scene (e.g. nodes, face groups, elements, etc.)
-    /// there are individual property sets. A property set might just be name, or something else.
-    /// Some property sets have a schema, meaning that the keys are guaranteed to be there and have a
-    /// specific types. Some are unstructured string pairs.
-    /// It is unclear whether I should store analyses in this as well.
-    /// </summary>
-    public interface ISceneProperties : ILookup<string, ILookup<int, string>>
-    { }
 
     /// <summary>
     /// A property set is a mapping from an ID to a set of properties. 

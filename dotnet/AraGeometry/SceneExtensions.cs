@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Ara3D
@@ -92,12 +93,14 @@ namespace Ara3D
         /// </summary>
         public static IScene ToScene(this IEnumerable<ISceneNode> nodes)
         {
-            var props = nodes.FirstOrDefault()?.Scene?.Properties;
+            var scene = nodes.FirstOrDefault()?.Scene;
+            var props = scene?.AllProperties;
+            Debug.Assert(nodes.All(n => n.Scene == scene));
 
             var newNodes = new List<ISceneNode> {new SceneNode(null)};
             var geometries = new HashSet<IGeometry>();
             var root = newNodes[0];
-            var tmp = new Dictionary<ISceneNode, SceneNode>();
+            var d = new Dictionary<ISceneNode, SceneNode>();
 
             // Create a new scene node for each node passed in
             foreach (var n in nodes)
@@ -106,13 +109,13 @@ namespace Ara3D
                     continue;
 
                 var g = n.Geometry;
-                var r = new SceneNode(n.Properties, g, n.Transform);
+                var tmp = new SceneNode(n.Properties, g, n.Transform);
                 geometries.Add(g);
-                newNodes.Add(r);
-                tmp.Add(n, r);
+                newNodes.Add(tmp);
+                d.Add(n, tmp);
             }
 
-            foreach (var kv in tmp)
+            foreach (var kv in d)
             {
                 var originalNode = kv.Key;
                 var createdNode = kv.Value;
@@ -121,9 +124,9 @@ namespace Ara3D
                 var p = originalNode.Parent;
                 while (p != null)
                 {
-                    if (tmp.ContainsKey(p))
+                    if (d.ContainsKey(p))
                     {
-                        tmp[p]._AddChild(createdNode);
+                        d[p]._AddChild(createdNode);
                         break;
                     }
 
@@ -135,17 +138,17 @@ namespace Ara3D
                     (root as SceneNode)._AddChild(createdNode);
             }
 
-            var scene = new Scene(props, newNodes[0]);
+            var r = new Scene(newNodes[0], props);
 
             var id = 0;
             foreach (var n in newNodes)
             {
                 var sn = n as SceneNode;
                 sn.Id = id++;
-                sn.Scene = scene;
+                sn.Scene = r;
             }
 
-            return scene;
+            return r;
         }
 
         public static IScene Filter(this IScene scene, Func<ISceneNode, bool> func)
@@ -154,8 +157,8 @@ namespace Ara3D
         public static int NumNodes(this IScene scene)
             => scene.AllNodes().Count();
 
-        public static IScene SetProperties(this IScene scene, ISceneProperties properties)
-            => new Scene(properties, scene.Root);
+        public static IScene SetProperties(this IScene scene, ILookup<string, IPropertiesLookup> properties)
+            => new Scene(scene.Root, properties);
 
         public static Dictionary<IGeometry, int> GeometryCounts(this IScene scene)
             => scene.AllNodes().CountInstances(x => x.Geometry);

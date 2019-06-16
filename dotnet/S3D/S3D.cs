@@ -2,6 +2,23 @@
     S3D - 3D Scene data format
     Copyright 2018, Ara 3D, Inc.
     Usage licensed under terms of MIT License
+
+    The S3D data format is based on the BFAST format. The first BFAST array contains the names of each of the buffers. 
+    The buffers are named as follows, and can occur in any order. 
+
+    * meta.json - File meta-information. Basic information about the file author and version as a JSON object. 
+    * nodes.array - A binary array of serializable node structures. 
+    * geometries.bfast - A BFAST containing geometry representations
+    * surfaces.array - An array serializable surfaces 
+    * properties.bfast - A BFAST containing named property tables. The following are expected named tables, but more can be present. A property table i
+        * material
+        * scene
+        * surface
+        * node
+        * geometry
+        * object
+    * strings.data - An array of all of the strings used in the properties tables.
+    * assets.bfast - Binary assets in a named BFAST
 */
 
 using System;
@@ -9,47 +26,73 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Ara3D
-{
-    public class CommonSceneProperties
+{    
+    public class S3D : IScene
     {
+        public S3D(SerializableNode[] nodes, G3D[] geometries, SerializableSurface[] surfaces, Memory<byte>[] assets, ILookup<string, ILookup<int, IProperties>> properties, string[] strings)
+        {
 
-    }
+        }
 
-    public class Document : IScene
-    {
-        public IArray<ISurface> Surfaces { get; }
-        public IArray<IGeometry> Geometries { get; }
+        public S3D(ILookup<string, string> meta, ISceneNode root, ISceneNode[] nodes, IGeometry[] geometries, ISurface[] surfaces, Memory<byte>[] assets, 
+            ILookup<string, IPropertiesLookup> properties, string[] strings)
+        {
+            Root = root;
+            Nodes = nodes;
+            Geometries = geometries;
+            Surfaces = surfaces;
+            Assets = assets;
+            AllProperties = properties;
+            Strings = strings;
+
+            MaterialProperties = AllProperties.GetOrDefault("Material") ?? PropertiesLookup.Empty;
+            SceneProperties = AllProperties.GetOrDefault("Scene") ?? PropertiesLookup.Empty;
+            SurfaceProperties = AllProperties.GetOrDefault("Surface") ?? PropertiesLookup.Empty;
+            NodeProperties = AllProperties.GetOrDefault("Node") ?? PropertiesLookup.Empty;
+            GeometryProperties = AllProperties.GetOrDefault("Geometry") ?? PropertiesLookup.Empty;
+            ObjectProperties = AllProperties.GetOrDefault("Object") ?? PropertiesLookup.Empty;            
+
+            // TODO: validate the material IDs, surface IDs, etc. 
+        }
+
+        public ILookup<string, string> Meta { get; }
         public ISceneNode Root { get; }
-        public List<string> Strings { get; }
+        public ISceneNode[] Nodes { get; }
+        public IGeometry[] Geometries { get; }
+        public ISurface[] Surfaces { get; }
+        public Memory<byte>[] Assets { get; }
 
-        public ISceneProperties Properties { get; }
+        public string[] Strings { get; }
 
-        /*
+        public ILookup<string, IPropertiesLookup> AllProperties { get; }
+
         public IPropertiesLookup MaterialProperties { get; }
         public IPropertiesLookup SceneProperties { get; }
         public IPropertiesLookup SurfaceProperties { get; }
         public IPropertiesLookup NodeProperties { get; }
         public IPropertiesLookup GeometryProperties { get; }
         public IPropertiesLookup ObjectProperties { get; }
-        */
-
-        // What about Family / Phase / Rooms and other things. 
     }
 
-    public class SerializableDocument
+    public static class S3DExtension
     {
-    }
+        public static void Write(IScene2 scene, string filePath)
+        {
+            // Converts the thing
+            // Creates a BFAST with a manifest 
+            // Geometry
 
-    /// <summary>
-    /// A surface or smoothing group is a set of polygons in a mesh that represent a portion of a mesh, usually contiguous.
-    /// In Revit this is called a "Face". This might be identified as a smoothing group in 3ds Max. 
-    /// https://en.wikipedia.org/wiki/Polygon_mesh. A surface will have the same material id. 
-    /// </summary>
-    public interface ISurface
-    {
-        int SurfaceId { get; }
-        int ObjectId { get; }
-        int MaterialId { get; }
+            // We have assets 
+
+            // A section for all of the properties 
+
+            // File
+        }
+
+        public static IScene2 Read(string filePath)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -68,7 +111,11 @@ namespace Ara3D
         public int ObjectId;
     }
 
-    public static class S3D
+    [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class SerializableProperty
     {
+        public int ItemId;
+        public int KeyId;
+        public int ValueId;
     }
 }
