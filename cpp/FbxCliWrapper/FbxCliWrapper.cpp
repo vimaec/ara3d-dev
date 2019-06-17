@@ -28,11 +28,17 @@ namespace FbxClrWrapper
 
 	void FbxCliBase::ShutDownAPI()
 	{
+		if (mScene != nullptr)
+		{
+			mScene->Destroy();
+		}
+
 		if (mSdkManager != nullptr)
 		{
 			mSdkManager->Destroy();
 		}
 
+		mScene = nullptr;
 		mSdkManager = nullptr;
 	}
 
@@ -40,12 +46,6 @@ namespace FbxClrWrapper
 	{
 		delete mSceneData;
 		mSceneData = nullptr;
-
-		if (mScene != nullptr)
-		{
-			mScene->Destroy();
-		}
-
 		mSceneData_ = nullptr;
 	}
 

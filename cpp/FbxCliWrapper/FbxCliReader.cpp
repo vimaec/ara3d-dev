@@ -166,37 +166,42 @@ namespace FbxClrWrapper
 		FbxVector4* pVertices = pMesh->GetControlPoints();
 		int iNumVertices = pMesh->GetControlPointsCount();
 
-		FBXMeshDataInternal mesh;
+		FBXMeshDataInternal* internalMesh = new FBXMeshDataInternal();
 
 		int maxIndex = 0;
 
 		for (int p = 0; p < pMesh->mPolygonVertices.Size(); p++)
 		{
 			int index = pMesh->mPolygonVertices[p];
-			mesh.mIndices.push_back(index);
+			internalMesh->mIndices.push_back(index);
 			maxIndex = maxIndex > index ? maxIndex : index;
 		}
 
 		for (int p = 0; p < pMesh->mPolygons.Size(); p++)
 		{
-			mesh.mFaceSize.push_back(pMesh->mPolygons[p].mSize);
+			internalMesh->mFaceSize.push_back(pMesh->mPolygons[p].mSize);
 		}
 
-		assert(pMesh->mPolygonVertices.Size() == mesh.mIndices.size());
+		assert(pMesh->mPolygonVertices.Size() == internalMesh->mIndices.size());
 		assert(maxIndex < iNumVertices);
 
 		for (int k = 0; k < iNumVertices; k++)
 		{
-			float x = (float)pVertices[k].mData[0];
-			float y = (float)pVertices[k].mData[1];
-			float z = (float)pVertices[k].mData[2];
-			mesh.mVertices.push_back(x);
-			mesh.mVertices.push_back(y);
-			mesh.mVertices.push_back(z);
+			float x = pVertices[k].mData[0];
+			float y = pVertices[k].mData[1];
+			float z = pVertices[k].mData[2];
+			internalMesh->mVertices.push_back(x);
+			internalMesh->mVertices.push_back(y);
+			internalMesh->mVertices.push_back(z);
 		}
 
+	/*	GetElementInfo(pMesh->GetElementSmoothing(), internalMesh->mSmoothingGroupAttribute);
+		GetElementInfo(pMesh->GetElementNormal(), internalMesh->mNormalsAttribute);
+		GetElementInfo(pMesh->GetElementBinormal(), internalMesh->mBinormalsAttribute);
+		GetElementInfo(pMesh->GetElementTangent(), internalMesh->mTangentsAttribute);*/
+
 		int meshIndex = (int)mSceneData->mMeshList.size();
-		mSceneData->mMeshList.push_back(mesh);
+		mSceneData->mMeshList.push_back(internalMesh);
 		mSceneData->mMeshIdList.push_back(pMesh->GetName());
 
 		mSceneData->mMeshMap[pMesh] = meshIndex;

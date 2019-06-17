@@ -148,34 +148,34 @@ namespace FbxClrWrapper
 		{
 			// Create a mesh.
 			FbxMesh* lMesh = FbxMesh::Create(mScene, mSceneData->mMeshIdList[meshIndex].c_str());
-			auto mesh = mSceneData->mMeshList[meshIndex];
+			auto internalMesh = mSceneData->mMeshList[meshIndex];
 
 			// Initialize the control point array of the mesh.
-			lMesh->InitControlPoints((int)mesh.mVertices.size());
+			lMesh->InitControlPoints((int)internalMesh->mVertices.size());
 			FbxVector4* lControlPoints = lMesh->GetControlPoints();
 
-			for (int vertexIndex = 0; vertexIndex < mesh.mVertices.size() / 3; vertexIndex++)
+			for (int vertexIndex = 0; vertexIndex < internalMesh->mVertices.size() / 3; vertexIndex++)
 			{
-				lControlPoints[vertexIndex].mData[0] = mesh.mVertices[vertexIndex * 3 + 0];
-				lControlPoints[vertexIndex].mData[1] = mesh.mVertices[vertexIndex * 3 + 1];
-				lControlPoints[vertexIndex].mData[2] = mesh.mVertices[vertexIndex * 3 + 2];
+				lControlPoints[vertexIndex].mData[0] = internalMesh->mVertices[vertexIndex * 3 + 0];
+				lControlPoints[vertexIndex].mData[1] = internalMesh->mVertices[vertexIndex * 3 + 1];
+				lControlPoints[vertexIndex].mData[2] = internalMesh->mVertices[vertexIndex * 3 + 2];
 			}
 
-			lMesh->ReservePolygonVertexCount((int)mesh.mIndices.size());
-			for (int p = 0; p < mesh.mIndices.size(); p++)
+			lMesh->ReservePolygonVertexCount((int)internalMesh->mIndices.size());
+			for (int p = 0; p < internalMesh->mIndices.size(); p++)
 			{
-				int index = mesh.mIndices[p];
+				int index = internalMesh->mIndices[p];
 				lMesh->mPolygonVertices[p] = index;
 			}
 
 			int globalVertexIndex = 0;
-			for (int polygonIndex = 0; polygonIndex < mesh.mFaceSize.size(); polygonIndex++)
+			for (int polygonIndex = 0; polygonIndex < internalMesh->mFaceSize.size(); polygonIndex++)
 			{
 				lMesh->BeginPolygon();
-				int faceSize = mesh.mFaceSize[polygonIndex];
+				int faceSize = internalMesh->mFaceSize[polygonIndex];
 				for (int vertexIndex = 0; vertexIndex < faceSize; vertexIndex++)
 				{
-					lMesh->AddPolygon(mesh.mIndices[globalVertexIndex + vertexIndex]);
+					lMesh->AddPolygon(internalMesh->mIndices[globalVertexIndex + vertexIndex]);
 				}
 				lMesh->EndPolygon();
 

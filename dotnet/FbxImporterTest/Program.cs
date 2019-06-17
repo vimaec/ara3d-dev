@@ -8,7 +8,7 @@ namespace Ara3D
     {
         public static void Main(string[] args)
         {
-            FbxImporterTests.TestFbxImporter("", "");
+            //FbxImporterTests.TestFbxImporter("", "");
 
             //var filePath = @"E:\VimAecDev\vims\Models\sketchup-automation\bob.fbx";
             //var filePath = @"E:\VimAecDev\vims\Models\sketchup-automation\R.Tamu.Baru.fbx";
@@ -17,6 +17,7 @@ namespace Ara3D
             //var filePath = @"E:\VimAecDev\vims\Models\MobilityPavilion_mdl.fbx";
             //var filePath = @"E:\VimAecDev\vims\Models\pentagon_prism.FBX";
             var filePath = @"E:\VimAecDev\vims\Models\axis_tripod.FBX";
+            //var filePath = @"E:\VimAecDev\vims\Models\HI1901-B-SBR.FBX";
 
             FbxImporter importer = new FbxImporter();
             FbxExporter exporter = new FbxExporter();
@@ -24,6 +25,9 @@ namespace Ara3D
 
             var scene = importer.LoadFBX(filePath);
             exporter.SaveFBX(scene, @"E:\VimAecDev\vims\Models\test.fbx");
+
+            importer.DestroyData();
+            exporter.DestroyData();
         }
     }
 }

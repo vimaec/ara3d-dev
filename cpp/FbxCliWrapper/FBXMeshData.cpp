@@ -23,35 +23,37 @@ namespace FbxClrWrapper
 		}
 	}
 
-	ref class cLookup
+	template <typename tData>
+	ref class ArrayDataLookup
 	{
 	public:
-		FBXMeshDataInternal* mSrcData;
-		cLookup(FBXMeshDataInternal& SrcData) :
-			mSrcData (&SrcData)
+		std::vector<tData>& mArray;
+
+		ArrayDataLookup(std::vector<tData>& Array) :
+			mArray(Array)
 		{}
 
-		int32_t IndFunc(int n)
+		tData Lookup(int n)
 		{
-			return mSrcData->mIndices[n];
-		}
-		float VertFunc(int n)
-		{
-			return mSrcData->mVertices[n];
-		}
-		int32_t FaceSizeFunc(int n)
-		{
-			return mSrcData->mFaceSize[n];
+			return mArray[n];
 		}
 	};
 
-	FBXMeshData::FBXMeshData(FBXMeshDataInternal& SrcData)
+	template <typename tData>
+	Ara3D::FunctionalArray<tData>^ CreateFunctionalArray(std::vector<tData>& Array)
 	{
-		auto lookup = gcnew cLookup(SrcData);
+		auto lookup = gcnew ArrayDataLookup<tData>(Array);
+		return gcnew Ara3D::FunctionalArray<tData>((int)Array.size(), gcnew System::Func<int, tData>(lookup, &ArrayDataLookup<tData>::Lookup));
+	}
 
-		mIndices = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mIndices.size(), gcnew System::Func<int, int32_t>(lookup, &cLookup::IndFunc));
-		mVertices = gcnew Ara3D::FunctionalArray<float>(SrcData.mVertices.size(), gcnew System::Func<int, float>(lookup, &cLookup::VertFunc));
-		mFaceSize = gcnew Ara3D::FunctionalArray<int32_t>(SrcData.mFaceSize.size(), gcnew System::Func<int, int32_t>(lookup, &cLookup::FaceSizeFunc));
+	FBXMeshData::FBXMeshData(FBXMeshDataInternal* SrcData)
+	{
+		mIndices = 	CreateFunctionalArray(SrcData->mIndices);
+		mVertices =	CreateFunctionalArray(SrcData->mVertices);
+		mFaceSize =	CreateFunctionalArray(SrcData->mFaceSize);
+
+		auto normalsArray = CreateFunctionalArray(SrcData->mNormalsAttribute.mDataArray);
+		mNormalsAttribute = Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
 	}
 
 }

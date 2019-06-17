@@ -61,6 +61,8 @@ namespace Ara3D
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex, 0, 3);
         public static IAttribute ToVertexAttribute(this IArray<float> data)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex, 0, 3);
+        public static IAttribute ToVertexAttribute(this IArray<double> data)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex, 0, 3);
 
         public static IAttribute ToVertexAttribute(this IArray<Vector3> data)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex);
@@ -118,6 +120,10 @@ namespace Ara3D
 
         public static IAttribute ToVertexNormalAttribute(this IArray<Vector3> data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
+        public static IAttribute ToVertexNormalAttribute(this IArray<float> data, int index = 0)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index, 3);
+        public static IAttribute ToVertexNormalAttribute(this IArray<double> data, int index = 0)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index, 3);
 
         public static IAttribute ToInstanceTransformAttribute(this IArray<Matrix4x4> data, int index = 0)
             => data.ToAttribute(Association.assoc_instance, AttributeType.attr_instance_transform, index);

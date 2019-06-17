@@ -154,6 +154,12 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Math3D\src\Ara3D.Math3D.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dotnet\G3D\Ara3D.G3D.csproj">
+      <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dotnet\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
     </ProjectReference>

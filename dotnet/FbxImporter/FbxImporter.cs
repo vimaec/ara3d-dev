@@ -8,6 +8,11 @@ namespace Ara3D
     {
         FbxCliReader fbxReader = new FbxCliReader();
 
+        public void DestroyData()
+        {
+            fbxReader.DestroyData();
+        }
+
         public IArray<ISceneNode> CreateISceneNodeArray(FBXSceneData sceneData, IArray<IGeometry> geometries)
         {
             var nodeArray = new ISceneNode[sceneData.mNodeNameList.Length];

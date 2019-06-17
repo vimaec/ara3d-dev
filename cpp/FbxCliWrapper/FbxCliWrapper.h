@@ -38,5 +38,19 @@ namespace FbxClrWrapper
 		bool TransformDataToCLI();
 		bool TransformDataFromCLI();
 		void InitializeSdkObjects();
+
+		Ara3D::Association FbxMappingModeToAra3DAssociation(FbxLayerElement::EMappingMode MappingMode)
+		{
+			Ara3D::Association associationTable[] = {
+				Ara3D::Association::assoc_none,		// eNone,
+				Ara3D::Association::assoc_vertex,	// eByControlPoint,
+				Ara3D::Association::assoc_corner,	// eByPolygonVertex,
+				Ara3D::Association::assoc_face,		// eByPolygon,
+				Ara3D::Association::assoc_edge,		// eByEdge,
+				Ara3D::Association::assoc_group,	// eAllSame
+			};
+
+			return associationTable[MappingMode];
+		}
 	};
 }

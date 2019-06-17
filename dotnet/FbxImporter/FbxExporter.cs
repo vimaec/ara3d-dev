@@ -7,6 +7,10 @@ namespace Ara3D
     public class FbxExporter
     {
         FbxCliWriter fbxWriter = new FbxCliWriter();
+        public void DestroyData()
+        {
+            fbxWriter.DestroyData();
+        }
 
         private void CreateFBXNodesAndMeshes(IEnumerable<ISceneNode> Nodes, ref FBXSceneData SceneData)
         {
