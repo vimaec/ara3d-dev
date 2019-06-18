@@ -8,7 +8,7 @@
 
 #include "FBXMeshData.h"
 #include "FBXSceneData.h"
-#include "FbxCliWrapper.h"
+#include "FbxCliBase.h"
 
 namespace FbxClrWrapper
 {

@@ -195,10 +195,10 @@ namespace FbxClrWrapper
 			internalMesh->mVertices.push_back(z);
 		}
 
-	/*	GetElementInfo(pMesh->GetElementSmoothing(), internalMesh->mSmoothingGroupAttribute);
+		GetElementInfo(pMesh->GetElementSmoothing(), internalMesh->mSmoothingGroupAttribute);
 		GetElementInfo(pMesh->GetElementNormal(), internalMesh->mNormalsAttribute);
 		GetElementInfo(pMesh->GetElementBinormal(), internalMesh->mBinormalsAttribute);
-		GetElementInfo(pMesh->GetElementTangent(), internalMesh->mTangentsAttribute);*/
+		GetElementInfo(pMesh->GetElementTangent(), internalMesh->mTangentsAttribute);
 
 		int meshIndex = (int)mSceneData->mMeshList.size();
 		mSceneData->mMeshList.push_back(internalMesh);

@@ -52,8 +52,15 @@ namespace FbxClrWrapper
 		mVertices =	CreateFunctionalArray(SrcData->mVertices);
 		mFaceSize =	CreateFunctionalArray(SrcData->mFaceSize);
 
+		auto smoothingGroupArray = CreateFunctionalArray(SrcData->mSmoothingGroupAttribute.mDataArray);
 		auto normalsArray = CreateFunctionalArray(SrcData->mNormalsAttribute.mDataArray);
-		mNormalsAttribute = Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
+		auto tangentsArray = CreateFunctionalArray(SrcData->mTangentsAttribute.mDataArray);
+		auto binormalsArray = CreateFunctionalArray(SrcData->mBinormalsAttribute.mDataArray);
+
+//		mSmoothingGroupAttribute	= Ara3D::G3DExtensions::(normalsArray, 0);
+		mNormalsAttribute			= Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
+		mTangentsAttribute			= Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
+		mBinormalsAttribute			= Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
 	}
 
 }

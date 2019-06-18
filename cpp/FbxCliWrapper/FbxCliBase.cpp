@@ -1,4 +1,4 @@
-#include "FbxCliWrapper.h"
+#include "FbxCliBase.h"
 #include <assert.h>
 
 #ifdef _WIN64

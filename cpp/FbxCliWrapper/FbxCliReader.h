@@ -8,7 +8,7 @@
 
 #include "FBXMeshData.h"
 #include "FBXSceneData.h"
-#include "FbxCliWrapper.h"
+#include "FbxCliBase.h"
 
 namespace FbxClrWrapper
 {
@@ -49,8 +49,8 @@ namespace FbxClrWrapper
 		{
 			Attribute.mAssociation = FbxMappingModeToAra3DAssociation(Element->GetMappingMode());
 
-			auto indexArray = Element->GetIndexArray();
-			auto dataArray = Element->GetDirectArray();
+			auto& indexArray = Element->GetIndexArray();
+			auto& dataArray = Element->GetDirectArray();
 
 			for (int i = 0; i < indexArray.GetCount(); i++)
 			{
