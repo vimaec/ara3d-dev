@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ara3D
 {
@@ -10,6 +11,7 @@ namespace Ara3D
     {
         IArray<TKey> Keys { get; }
         IArray<TValue> Values { get; }
+        bool Contains(TKey key);
         TValue this[TKey key] { get; }
     }
 
@@ -17,6 +19,7 @@ namespace Ara3D
     {
         public IArray<TKey> Keys => LinqArray.Empty<TKey>();
         public IArray<TValue> Values => LinqArray.Empty<TValue>();
+        public bool Contains(TKey key) => false;
         public TValue this[TKey key] => default;
     }
 
@@ -24,9 +27,9 @@ namespace Ara3D
     {
         public IDictionary<TKey, TValue> Dictionary;
 
-        public LookupFromDictionary(IDictionary<TKey, TValue> d)
+        public LookupFromDictionary(IDictionary<TKey, TValue> d = null)
         {
-            Dictionary = d;
+            Dictionary = d ?? new Dictionary<TKey, TValue>();
             // TODO: sort?
             Keys = d.Keys.ToIArray();
             Values = d.Values.ToIArray();
@@ -34,8 +37,8 @@ namespace Ara3D
 
         public IArray<TKey> Keys { get; }
         public IArray<TValue> Values { get; }
-        public TValue this[TKey key] => Dictionary.ContainsKey(key) 
-            ? Dictionary[key] : default;
+        public TValue this[TKey key] => Contains(key) ? Dictionary[key] : default;
+        public bool Contains(TKey key) => Dictionary.ContainsKey(key);
     }
 
     public class LookupFromArray<TValue> : ILookup<int, TValue>
@@ -52,28 +55,18 @@ namespace Ara3D
         public IArray<int> Keys { get; }
         public IArray<TValue> Values { get; }
         public TValue this[int key] => array[key];
-    }
-
-    public class LookupFromKeysAndFunction<TKey, TValue> : ILookup<TKey, TValue>
-    {
-        private Func<TKey, TValue> _func;
-
-        public LookupFromKeysAndFunction(IArray<TKey> keys, Func<TKey, TValue> func)
-        {
-            _func = func;
-            Keys = keys;
-            Values = Keys.Select(func);
-        }
-
-        public IArray<TKey> Keys { get; }
-        public IArray<TValue> Values { get; }
-        public TValue this[TKey key] => _func(key);
+        public bool Contains(int key) => key >= 0 && key <= array.Count;
     }
 
     public static class LookupExtensions
     {
         public static ILookup<TKey, TValue> ToLookup<TKey, TValue>(this IDictionary<TKey, TValue> d)
             => new LookupFromDictionary<TKey,TValue>(d);
-    }
 
+        public static TValue GetOrDefault<TKey, TValue>(this ILookup<TKey, TValue> lookup, TKey key)
+            => lookup.Contains(key) ? lookup[key] : default;
+
+        public static IEnumerable<TValue> GetValues<TKey, TValue>(this ILookup<TKey, TValue> lookup)
+            => lookup.Keys.ToEnumerable().Select(k => lookup[k]);
+    }
 }

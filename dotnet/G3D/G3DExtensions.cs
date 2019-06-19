@@ -276,7 +276,7 @@ namespace Ara3D
         public static void WriteG3D(this IG3D g3D, string filePath) 
             => g3D.ToBuffers().ToBFastFile(filePath);
             
-        public static byte[] ToBFast(this IG3D g3d)
+        public static byte[] ToBytes(this IG3D g3d)
             => g3d.ToBuffers().ToBFastBytes();
 
         public static IG3D ToG3D(this IEnumerable<IAttribute> attributes)

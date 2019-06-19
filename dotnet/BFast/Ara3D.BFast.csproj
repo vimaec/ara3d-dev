@@ -42,26 +42,14 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BFast.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Buffers">
-      <Version>4.5.0</Version>
+    <PackageReference Include="System.Memory">
+      <Version>4.5.3</Version>
     </PackageReference>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>4.5.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Utilities\Ara3D.DotNetUtilities.csproj">
-      <Project>{25330241-4c82-4c17-8027-ff882b91640e}</Project>
-      <Name>Ara3D.DotNetUtilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

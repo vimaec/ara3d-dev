@@ -152,7 +152,7 @@ $@"{{
             => Create(new Memory<byte>(bytes));
 
         public static G3D Create(Memory<byte> bytes)
-            => Create(BFast.LoadBFast(bytes));
+            => Create(BFast.ToBFastBuffers(bytes));
 
         public static G3D ReadFile(string filePath)
             => Create(File.ReadAllBytes(filePath));
