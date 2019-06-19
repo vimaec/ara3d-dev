@@ -10,6 +10,7 @@ namespace Ara3D
     /// </summary>
     public interface ISurface
     {
+        int SurfaceId { get; }
         int ObjectId { get; }
         int MaterialId { get; }
     }

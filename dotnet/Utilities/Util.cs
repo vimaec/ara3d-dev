@@ -34,32 +34,32 @@ namespace Ara3D
         }
 
         public static string ToIdentifier(this string self)
-            => string.IsNullOrEmpty(self) ? "_" : self.ReplaceNonAlphaNumeric("_");        
+            => string.IsNullOrEmpty(self) ? "_" : self.ReplaceNonAlphaNumeric("_");
 
         public static string ReplaceNonAlphaNumeric(this string self, string replace)
-            => Regex.Replace(self, "[^a-zA-Z0-9]", replace);        
+            => Regex.Replace(self, "[^a-zA-Z0-9]", replace);
 
         // https://stackoverflow.com/questions/4959722/c-sharp-datatable-to-csv
 
         #region Writing CSV Data C# 
 
         public static string EscapeQuotes(this string self)
-            => self?.Replace("\"", "\"\"") ?? "";        
+            => self?.Replace("\"", "\"\"") ?? "";
 
         public static string Surround(this string self, string before, string after)
-            => $"{before}{self}{after}";        
+            => $"{before}{self}{after}";
 
         public static string Quoted(this string self, string quotes = "\"")
-            => self.Surround(quotes, quotes);        
+            => self.Surround(quotes, quotes);
 
         public static string QuotedCSVFieldIfNecessary(this string self)
             => (self == null) ? "" : self.Contains('"') || self.Contains(',') ? self.Quoted() : self;
-       
+
         public static string ToCsvField(this string self)
-            => self.EscapeQuotes().QuotedCSVFieldIfNecessary();        
+            => self.EscapeQuotes().QuotedCSVFieldIfNecessary();
 
         public static string ToCsvRow(this IEnumerable<string> self)
-            => string.Join(",", self.Select(ToCsvField));        
+            => string.Join(",", self.Select(ToCsvField));
 
         public static IEnumerable<string> ToCsvRows(this DataTable self)
         {
@@ -69,13 +69,13 @@ namespace Ara3D
         }
 
         public static void ToCsvFile(this DataTable self, string path)
-            => File.WriteAllLines(path, self.ToCsvRows());        
+            => File.WriteAllLines(path, self.ToCsvRows());
 
         public static void ToCsvFile<T>(this IEnumerable<T> self, string path)
-            => self.PropertiesToDataTable().ToCsvFile(path);        
+            => self.PropertiesToDataTable().ToCsvFile(path);
 
         public static void ToCsvFile<K, V>(this IDictionary<K, V> self, string path)
-            => self.PropertiesToDataTable().ToCsvFile(path);        
+            => self.PropertiesToDataTable().ToCsvFile(path);
 
         #endregion
 
@@ -90,13 +90,13 @@ namespace Ara3D
         }
 
         public static IEnumerable<T> Accumulate<T>(this IEnumerable<T> self, Func<T, T, T> f)
-            => self.Accumulate(default, f);        
+            => self.Accumulate(default, f);
 
         public static IEnumerable<double> PartialSums(this IEnumerable<double> self)
-            => self.Accumulate((x, y) => x + y);        
+            => self.Accumulate((x, y) => x + y);
 
         public static IEnumerable<int> PartialSums(this IEnumerable<int> self)
-            => self.Accumulate((x, y) => x + y);        
+            => self.Accumulate((x, y) => x + y);
 
         #endregion
 
@@ -175,20 +175,20 @@ namespace Ara3D
         public static Dictionary<string, Statistics> ColumnStatistics(this DataTable self)
             => self.Columns.OfType<DataColumn>().Where(IsNumericColumn).ToDictionary(
                 dc => dc.ColumnName,
-                dc => dc.ColumnValues<double>().Statistics());        
+                dc => dc.ColumnValues<double>().Statistics());
 
         /// <summary>
         /// Given a data table, computes stats for every column in the data table that can be converted into numbers.
         /// The result is returned as a datatable
         /// </summary>
         public static DataTable ColumnStatisticsAsTable(this DataTable self)
-            => ColumnStatistics(self).PropertiesOrFieldsToDataTable("statistic", false);        
+            => ColumnStatistics(self).PropertiesOrFieldsToDataTable("statistic", false);
 
         /// <summary>
         /// Returns true if a data column can be cast to doubles.
         /// </summary>
         public static bool IsNumericColumn(this DataColumn dc)
-            => dc.DataType.CanCastToDouble();        
+            => dc.DataType.CanCastToDouble();
 
         /// <summary>
         /// Generates a DataTable from all of the dictionaries provided 
@@ -226,13 +226,13 @@ namespace Ara3D
         /// https://stackoverflow.com/questions/2916583/how-to-get-a-specific-column-value-from-a-datatable
         /// </summary>
         public static IEnumerable<T> ColumnValues<T>(this DataColumn self)
-            => self.Table.Select().Select(dr => (T)Convert.ChangeType(dr[self], typeof(T)));        
+            => self.Table.Select().Select(dr => (T)Convert.ChangeType(dr[self], typeof(T)));
 
         public static string IfEmpty(this string self, string other)
-            => string.IsNullOrWhiteSpace(self) ? other : self;        
+            => string.IsNullOrWhiteSpace(self) ? other : self;
 
         public static string ElidedSubstring(this string self, int start, int length, int max)
-            => (length > max) ? self.Substring(start, max) + "..." : self.Substring(start, length);        
+            => (length > max) ? self.Substring(start, max) + "..." : self.Substring(start, length);
 
         public static IEnumerable<T> DifferentFromPrevious<T>(this IEnumerable<T> self)
         {
@@ -272,7 +272,7 @@ namespace Ara3D
         /// NOTE: will strip path information. 
         /// </summary>
         public static string AddTimeStamp(this string filePath)
-            => $"{Path.GetFileNameWithoutExtension(filePath)}-{GetTimeStamp()}{Path.GetExtension(filePath)}";        
+            => $"{Path.GetFileNameWithoutExtension(filePath)}-{GetTimeStamp()}{Path.GetExtension(filePath)}";
 
         public static string CopyToFolder(this string path, string dir, bool dontCreate = false)
         {
@@ -342,19 +342,19 @@ namespace Ara3D
         /// Creates a disposable pinned array that contains a pointer for unsafe access to the elements in memory.
         /// </summary>
         public static PinnedArray<T> Pin<T>(this T[] xs)
-            => new PinnedArray<T>(xs);        
+            => new PinnedArray<T>(xs);
 
         /// <summary>
         /// Creates a disposable pinned array that contains a pointer for unsafe access to the elements in memory. Use in a "using" block. 
         /// </summary>
         public static PinnedArray Pin(this Array xs)
-            => new PinnedArray(xs);        
+            => new PinnedArray(xs);
 
         /// <summary>
         /// Creates a disposable pinned struct that contains a pointer for unsafe access to the elements in memory. Use in a "using" block. 
         /// </summary>
         public static PinnedStruct<T> Pin<T>(this T x) where T : struct
-            => new PinnedStruct<T>(x);        
+            => new PinnedStruct<T>(x);
 
         /// <summary>
         /// Returns all instance fields, public and private.
@@ -362,7 +362,7 @@ namespace Ara3D
         /// <param name="self"></param>
         /// <returns></returns>
         public static IEnumerable<FieldInfo> GetAllFields(this Type self)
-            => self.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);        
+            => self.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         /// <summary>
         /// Returns true if the type is a "plain old data" type (is a struct type that contains no references).
@@ -370,7 +370,7 @@ namespace Ara3D
         /// arrays of them into buffers makes sense.
         /// </summary>
         public static bool ContainsNoReferences(this Type t)
-            => t.IsPrimitive || t.GetAllFields().Select(f => f.FieldType).All(ContainsNoReferences);        
+            => t.IsPrimitive || t.GetAllFields().Select(f => f.FieldType).All(ContainsNoReferences);
 
         /// <summary>
         /// Converts a struct or formatted class to a series of bytes 
@@ -388,7 +388,7 @@ namespace Ara3D
         /// <summary>
         /// Converts a struct or formatted class to a series of bytes 
         /// </summary>
-        public static byte[] ArrayToBytes<T>(T[] self) where T: struct
+        public static byte[] ArrayToBytes<T>(T[] self) where T : struct
         {
             if (self == null) return null;
             var n = Marshal.SizeOf<T>() * self.Length;
@@ -433,19 +433,19 @@ namespace Ara3D
         // https://stackoverflow.com/questions/50831091/how-to-determine-whether-two-ref-variables-refer-to-the-same-variable-even-if/50831776#50831776
         // https://stackoverflow.com/questions/4764573/why-is-typedreference-behind-the-scenes-its-so-fast-and-safe-almost-magical
 
-        public static IntPtr ToIntPtr<T>(T value) where T : struct 
+        public static IntPtr ToIntPtr<T>(T value) where T : struct
             => __makeref(value).ToIntPtr();
 
-        public static long Distance(this IntPtr a, IntPtr b) 
+        public static long Distance(this IntPtr a, IntPtr b)
             => Math.Abs(((byte*)b) - ((byte*)a));
 
-        public static IntPtr ToIntPtr(this TypedReference self) 
+        public static IntPtr ToIntPtr(this TypedReference self)
             => *(IntPtr*)&self;
 
-        public static byte* ToBytePtr(this IntPtr self) 
+        public static byte* ToBytePtr(this IntPtr self)
             => (byte*)self;
 
-        public static byte* ToBytePtr(this TypedReference self) 
+        public static byte* ToBytePtr(this TypedReference self)
             => self.ToIntPtr().ToBytePtr();
 
         /// <summary>
@@ -522,7 +522,7 @@ namespace Ara3D
         /// Returns the size of the managed type. 
         /// </summary>
         public static int SizeOf<T>()
-            => SizeOf(typeof(T));        
+            => SizeOf(typeof(T));
 
         /// <summary>
         /// Reinterprets the bytes of a value type as another value type. Warning this should only ever be called 
@@ -561,7 +561,7 @@ namespace Ara3D
         /// https://stackoverflow.com/questions/15975972/copy-data-from-from-intptr-to-intptr        
         /// </summary>
         public static void MemoryCopy(IntPtr source, IntPtr dest, long size)
-            => MemoryCopy(source.ToPointer(), dest.ToPointer(), size);        
+            => MemoryCopy(source.ToPointer(), dest.ToPointer(), size);
 
         /// <summary>
         /// Copies the specified number of bytes between memory locations.
@@ -569,14 +569,14 @@ namespace Ara3D
         /// https://stackoverflow.com/questions/15975972/copy-data-from-from-intptr-to-intptr        
         /// </summary>
         public static void MemoryCopy(void* source, void* dest, long size)
-            => Buffer.MemoryCopy(source, dest, size, size);        
+            => Buffer.MemoryCopy(source, dest, size, size);
 
         /// <summary>
         /// Returns true if we can pin the type and copy its data using memory 
         /// https://stackoverflow.com/questions/10574645/the-fastest-way-to-check-if-a-type-is-blittable
         /// </summary>
         public static bool IsBlittable<T>()
-            => IsBlittableCache<T>.Value;        
+            => IsBlittableCache<T>.Value;
 
         /// <summary>
         /// Returns true if we can pin the type and copy its data using memory 
@@ -611,26 +611,26 @@ namespace Ara3D
         /// Returns the number of bytes in an array that has been pinned by GCHandle
         /// </summary>
         public static long SizeOfPinnedArray(this Array self)
-            => self.PinnedArrayBegin().Distance(self.PinnedArrayEnd());        
+            => self.PinnedArrayBegin().Distance(self.PinnedArrayEnd());
 
         /// <summary>
         /// Returns the memory address of the beginning of an array pinned by GCHandle
         /// </summary>
         public static IntPtr PinnedArrayBegin(this Array self)
-            => Marshal.UnsafeAddrOfPinnedArrayElement(self, 0);        
+            => Marshal.UnsafeAddrOfPinnedArrayElement(self, 0);
 
         /// <summary>
         /// Returns the memory address of the end of an array pinned by GCHandle
         /// </summary>
         public static IntPtr PinnedArrayEnd(this Array self)
-            => Marshal.UnsafeAddrOfPinnedArrayElement(self, self.Length);        
-        
+            => Marshal.UnsafeAddrOfPinnedArrayElement(self, self.Length);
+
         /// <summary>
         /// Provides access to a byte array as a stream.
         /// https://docs.microsoft.com/en-us/dotnet/api/system.io.memorystream?view=netframework-4.7.2
         /// </summary>
         public static MemoryStream ToMemoryStream(this byte[] self)
-            => new MemoryStream(self);        
+            => new MemoryStream(self);
 
         /// <summary>
         /// Reads all bytes from a stream
@@ -661,38 +661,38 @@ namespace Ara3D
         /// Returns true if the type self is an instance of the given generic type
         /// </summary>
         public static bool InstanceOfGenericType(this Type self, Type genericType)
-            => self.IsGenericType && self.GetGenericTypeDefinition() == genericType;        
+            => self.IsGenericType && self.GetGenericTypeDefinition() == genericType;
 
         /// <summary>
         /// Returns true if the type self is an instance of the given generic interface, or implements the interface
         /// </summary>
         public static bool InstanceOfGenericInterface(this Type self, Type ifaceType)
             => self.InstanceOfGenericType(ifaceType)
-                   || self.GetInterfaces().Any(i => i.InstanceOfGenericType(ifaceType));        
+                   || self.GetInterfaces().Any(i => i.InstanceOfGenericType(ifaceType));
 
         /// <summary>
         /// Returns true if the type implements IList with a generic parmaeter.
         /// </summary>
         public static bool ImplementsIList(this Type t)
-            => t.InstanceOfGenericInterface(typeof(IList<>));        
+            => t.InstanceOfGenericInterface(typeof(IList<>));
 
         /// <summary>
         /// Returns true if the value is in between two values.
         /// </summary>
         public static bool Between(this long value, long min, long max)
-            => value >= min && value <= max;        
+            => value >= min && value <= max;
 
         /// <summary>
         /// Returns true if the value is in between two values.
         /// </summary>
         public static bool Between(this int value, long min, long max)
-            => value >= min && value <= max;        
+            => value >= min && value <= max;
 
         /// <summary>
         /// Returns true if the value is in between two values.
         /// </summary>
         public static bool Between(this float value, double min, double max)
-            => value >= min && value <= max;        
+            => value >= min && value <= max;
 
         /// <summary>
         /// Returns true if the value is in between two values.
@@ -750,7 +750,7 @@ namespace Ara3D
         }
 
         public static bool SequenceEqual<T>(T[] buffer1, T[] buffer2) where T : IEquatable<T>
-            => (buffer1 == buffer2) || !(buffer1 != null && buffer2 != null) || buffer1.AsSpan().SequenceEqual(buffer2.AsSpan());        
+            => (buffer1 == buffer2) || !(buffer1 != null && buffer2 != null) || buffer1.AsSpan().SequenceEqual(buffer2.AsSpan());
 
         // Improved answer over: 
         // https://stackoverflow.com/questions/211008/c-sharp-file-management
@@ -791,13 +791,13 @@ namespace Ara3D
         }
 
         public static bool NaiveCompareFiles(string filePath1, string filePath2)
-            => SequenceEqual(File.ReadAllBytes(filePath1), File.ReadAllBytes(filePath2));        
+            => SequenceEqual(File.ReadAllBytes(filePath1), File.ReadAllBytes(filePath2));
 
         public static byte[] FileSHA256(string filePath)
-            => SHA256.Create().ComputeHash(File.OpenRead(filePath));        
+            => SHA256.Create().ComputeHash(File.OpenRead(filePath));
 
         public static bool HashCompareFiles(string filePath1, string filePath2)
-            => SequenceEqual(FileSHA256(filePath1), FileSHA256(filePath2));        
+            => SequenceEqual(FileSHA256(filePath1), FileSHA256(filePath2));
 
         /// <summary>
         /// Executes an action capturing the console output.
@@ -843,7 +843,7 @@ namespace Ara3D
         /// Given a memory mapped file, creates a buffere, and reads data into it.
         /// </summary>
         public static byte[] ReadBytes(this MemoryMappedFile mmf, long offset, int count)
-            => mmf.ReadBytes(offset, new byte[count]);        
+            => mmf.ReadBytes(offset, new byte[count]);
 
         /// <summary>
         /// Given a memory mapped file and a buffer fills it with data from the given offset. 
@@ -876,7 +876,7 @@ namespace Ara3D
         }
 
         public static T ToStruct<T>(this byte[] bytes) where T : struct
-            => bytes.ToStructs<T>()[0];        
+            => bytes.ToStructs<T>()[0];
 
         public static T ToStruct<T>(this Span<byte> span) where T : struct
             => span.ToStructs<T>()[0];
@@ -885,7 +885,7 @@ namespace Ara3D
             => new Memory<T>(span.ToArray());
 
         public static Span<T> Cast<T>(this Span<byte> span) where T : struct
-            => MemoryMarshal.Cast<byte, T>(span);        
+            => MemoryMarshal.Cast<byte, T>(span);
 
         public static Span<byte> AsByteSpan<T>(this Span<T> span) where T : struct
             => MemoryMarshal.AsBytes(span);
@@ -900,25 +900,25 @@ namespace Ara3D
             => memory.Span.ToBytes();
 
         public static Memory<T> ToMemory<T>(this T[] data) where T : struct
-            => new Memory<T>(data);        
+            => new Memory<T>(data);
 
         public static T[] ToStructs<T>(this Span<byte> span) where T : struct
-            => span.Cast<T>().ToArray();        
+            => span.Cast<T>().ToArray();
 
         public static T[] ToStructs<T>(this byte[] bytes) where T : struct
-            => bytes.AsSpan().ToStructs<T>();        
+            => new Span<byte>(bytes).ToStructs<T>();
 
         public static string ToUtf8(this byte[] bytes)
-            => Encoding.UTF8.GetString(bytes);        
+            => Encoding.UTF8.GetString(bytes);
 
         public static string ToAscii(this byte[] bytes)
-            => Encoding.ASCII.GetString(bytes);        
+            => Encoding.ASCII.GetString(bytes);
 
         public static byte[] ToBytesUtf8(this string s)
-            => Encoding.UTF8.GetBytes(s);        
+            => Encoding.UTF8.GetBytes(s);
 
         public static byte[] ToBytesAscii(this string s)
-            => Encoding.ASCII.GetBytes(s);        
+            => Encoding.ASCII.GetBytes(s);
 
         /// <summary>
         /// Useful quick test to assure that we can create a file in the folder and write to it.
@@ -1392,5 +1392,30 @@ namespace Ara3D
 
         public static DictionaryOfLists<TKey, TValue> ToDictionaryOfLists<TKey, TValue>(this IEnumerable<IGrouping<TKey, TValue>> groups)
             => new DictionaryOfLists<TKey, TValue>(groups);
+
+        public static string[] SplitAtNull(this string s)
+            => s.Split('\0');
+
+        public static IEnumerable<string> ToStrings(this Memory<byte> buffer)
+            => buffer.ToString().SplitAtNull();
+
+        public static string JoinWithNull(this IEnumerable<string> strings)
+            => string.Join("\0", strings);
+
+        public static Memory<byte> ToMemory(this IEnumerable<string> strings)
+            => strings.JoinWithNull().ToBytesAscii().AsMemory();
+
+        // NOTE: this will call the function twice. Calling a function generates additional memory
+        public static long GetMemoryConsumption(Action action)
+        {
+            action();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            var memBefore = GC.GetTotalMemory(true);
+            action();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            return GC.GetTotalMemory(true) - memBefore;
+        }
     }
 }

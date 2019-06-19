@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ara3D
 {
@@ -64,5 +65,8 @@ namespace Ara3D
 
         public static TValue GetOrDefault<TKey, TValue>(this ILookup<TKey, TValue> lookup, TKey key)
             => lookup.Contains(key) ? lookup[key] : default;
+
+        public static IEnumerable<TValue> GetValues<TKey, TValue>(this ILookup<TKey, TValue> lookup)
+            => lookup.Keys.ToEnumerable().Select(k => lookup[k]);
     }
 }

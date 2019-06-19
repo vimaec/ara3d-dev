@@ -75,8 +75,11 @@ namespace Ara3D
                 ? node.Transform * node.Parent.Transform.Inverse()
                 : node.Transform;
 
-        public static IEnumerable<IGeometry> UniqueGeometries(this IScene scene)
-            => scene.AllNodes().Select(n => n.Geometry).WhereNotNull().Distinct();
+        public static IEnumerable<IGeometry> AllDistinctGeometries(this IScene scene)
+            => scene.UntransformedGeometries().WhereNotNull().Distinct();
+
+        public static IndexedSet<IGeometry> GeometryLookup(this IScene scene)
+            => scene.UntransformedGeometries().WhereNotNull().ToIndexedSet();
 
         public static IEnumerable<IGeometry> UntransformedGeometries(this IScene scene)
             => scene.AllNodes().Select(n => n.Geometry);
