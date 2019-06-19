@@ -40,6 +40,7 @@ namespace FbxClrWrapper
 		std::vector<int> mFaceSize;
 
 		InternalMeshAttribute<int> mSmoothingGroupAttribute;
+		InternalMeshAttribute<float> mUVsAttribute;
 		InternalMeshAttribute<float> mNormalsAttribute;
 		InternalMeshAttribute<float> mTangentsAttribute;
 		InternalMeshAttribute<float> mBinormalsAttribute;
@@ -58,11 +59,16 @@ namespace FbxClrWrapper
 	public ref class FBXMeshData
 	{
 	public:
-		Ara3D::IArray<int32_t> ^ mIndices;
-		Ara3D::IArray<float>^ mVertices;
-		Ara3D::IArray<int>^ mFaceSize;
+	//	Ara3D::IArray<int32_t> ^ mIndices;
+	//	Ara3D::IArray<float>^ mVertices;
+	//	Ara3D::IArray<int>^ mFaceSize;
+
+		Ara3D::IAttribute^ mIndicesAttribute;
+		Ara3D::IAttribute^ mVerticesAttribute;
+		Ara3D::IAttribute^ mFaceSizeAttribute;
 
 		Ara3D::IAttribute^ mSmoothingGroupAttribute;
+		Ara3D::IAttribute^ mUVsAttribute;
 		Ara3D::IAttribute^ mNormalsAttribute;
 		Ara3D::IAttribute^ mTangentsAttribute;
 		Ara3D::IAttribute^ mBinormalsAttribute;

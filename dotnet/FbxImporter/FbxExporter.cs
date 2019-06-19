@@ -45,9 +45,9 @@ namespace Ara3D
                     {
                         var mesh = new FBXMeshData();
 
-                        mesh.mIndices = node.Geometry.Indices;
-                        mesh.mVertices = node.Geometry.Vertices.ToFloats();
-                        mesh.mFaceSize = node.Geometry.FaceSizes;
+                        mesh.mIndicesAttribute = node.Geometry.IndexAttribute;
+                        mesh.mVerticesAttribute = node.Geometry.VertexAttribute;
+                        mesh.mFaceSizeAttribute = node.Geometry.FaceSizeAttribute;
 
                         var meshIndex = meshList.Count;
 
@@ -63,11 +63,7 @@ namespace Ara3D
                     nodeMeshIndexList.Add(-1);
                 }
 
-                //var trans = Matrix4x4.Transpose(node.Transform);
-                var trans = node.Transform;
-                //var trans = Matrix4x4.Identity;
-
-                nodeTransformList.AddRange(trans.ToFloats());
+                nodeTransformList.AddRange(node.Transform.ToFloats());
             }
 
             SceneData.mNodeNameList = nodeNameList.ToArray();

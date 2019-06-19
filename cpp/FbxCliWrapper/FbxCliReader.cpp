@@ -196,6 +196,7 @@ namespace FbxClrWrapper
 		}
 
 		GetElementInfo(pMesh->GetElementSmoothing(), internalMesh->mSmoothingGroupAttribute);
+		GetElementInfo(pMesh->GetElementUV(), internalMesh->mUVsAttribute);
 		GetElementInfo(pMesh->GetElementNormal(), internalMesh->mNormalsAttribute);
 		GetElementInfo(pMesh->GetElementBinormal(), internalMesh->mBinormalsAttribute);
 		GetElementInfo(pMesh->GetElementTangent(), internalMesh->mTangentsAttribute);

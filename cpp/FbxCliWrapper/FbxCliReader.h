@@ -34,6 +34,13 @@ namespace FbxClrWrapper
 		DataArray.push_back(Data[1]);
 		DataArray.push_back(Data[2]);
 //		DataArray.push_back(Data[3]); TODO: Check if we need proper vec4 support - need to change the arity calculation
+	}
+
+	template <typename tData>
+	void PushFbxData(std::vector<tData>& DataArray, FbxVector2& Data)
+	{
+		DataArray.push_back(Data[0]);
+		DataArray.push_back(Data[1]);
 	}	
 	
 	template <typename tData>
@@ -54,7 +61,7 @@ namespace FbxClrWrapper
 
 			for (int i = 0; i < indexArray.GetCount(); i++)
 			{
-				Attribute.mIndexArray.push_back(indexArray[i]);
+				PushFbxData(Attribute.mIndexArray, indexArray[i]);
 			}
 
 			for (int i = 0; i < dataArray.GetCount(); i++)

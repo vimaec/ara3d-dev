@@ -103,9 +103,6 @@ namespace Ara3D
         public static IAttribute ToUvwAttribute(this IArray<Vector3> data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_uv, index);
 
-        public static IAttribute ToVertexNormalAttribute(this Vector3[] data, int index = 0)
-            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
-
         public static IAttribute ToMaterialIdsAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_face, AttributeType.attr_materialid, index);
 
@@ -117,7 +114,8 @@ namespace Ara3D
 
         public static IAttribute ToGroupObjectIdsAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_group, AttributeType.attr_object_id, index);
-
+        public static IAttribute ToVertexNormalAttribute(this Vector3[] data, int index = 0)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
         public static IAttribute ToVertexNormalAttribute(this IArray<Vector3> data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
         public static IAttribute ToVertexNormalAttribute(this IArray<float> data, int index = 0)

@@ -47,7 +47,7 @@ namespace FbxClrWrapper
 				Ara3D::Association::assoc_corner,	// eByPolygonVertex,
 				Ara3D::Association::assoc_face,		// eByPolygon,
 				Ara3D::Association::assoc_edge,		// eByEdge,
-				Ara3D::Association::assoc_group,	// eAllSame
+				Ara3D::Association::assoc_object,	// eAllSame
 			};
 
 			return associationTable[MappingMode];

@@ -6,7 +6,7 @@ namespace Ara3D
     public static class FbxExtentions
     {
         public static G3D ToG3D(this FBXMeshData mesh)
-            => new G3D(mesh.mFaceSize.ToFaceSizeAttribute(Association.assoc_face), mesh.mVertices.ToVertexAttribute(), mesh.mIndices.ToIndexAttribute());
+            => new G3D(mesh.mFaceSizeAttribute, mesh.mVerticesAttribute, mesh.mIndicesAttribute);
 
         public static IGeometry ToIGeometry(this FBXMeshData mesh)
             => mesh.ToG3D().ToIGeometry();

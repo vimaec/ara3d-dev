@@ -5,21 +5,25 @@ namespace FbxClrWrapper
 {
 	FBXMeshDataInternal::FBXMeshDataInternal(FBXMeshData^ SrcData)
 	{
-		mIndices.resize(SrcData->mIndices->Count);
-		mVertices.resize(SrcData->mVertices->Count);
-		mFaceSize.resize(SrcData->mFaceSize->Count);
+		auto indicesArray = SrcData->mIndicesAttribute->ToInts();
+		auto verticesArray = SrcData->mVerticesAttribute->ToFloats();
+		auto faceSizeArray = SrcData->mFaceSizeAttribute->ToInts();
 
-		for (int i = 0; i < SrcData->mIndices->Count; i++)
+		mIndices.resize(indicesArray->Count);
+		mVertices.resize(verticesArray->Count);
+		mFaceSize.resize(faceSizeArray->Count);
+
+		for (int i = 0; i < indicesArray->Count; i++)
 		{
-			mIndices[i] = SrcData->mIndices[i];
+			mIndices[i] = indicesArray[i];
 		}
-		for (int i = 0; i < SrcData->mVertices->Count; i++)
+		for (int i = 0; i < verticesArray->Count; i++)
 		{
-			mVertices[i] = SrcData->mVertices[i];
+			mVertices[i] = verticesArray[i];
 		}
-		for (int i = 0; i < SrcData->mFaceSize->Count; i++)
+		for (int i = 0; i < faceSizeArray->Count; i++)
 		{
-			mFaceSize[i] = SrcData->mFaceSize[i];
+			mFaceSize[i] = faceSizeArray[i];
 		}
 	}
 
@@ -48,19 +52,24 @@ namespace FbxClrWrapper
 
 	FBXMeshData::FBXMeshData(FBXMeshDataInternal* SrcData)
 	{
-		mIndices = 	CreateFunctionalArray(SrcData->mIndices);
-		mVertices =	CreateFunctionalArray(SrcData->mVertices);
-		mFaceSize =	CreateFunctionalArray(SrcData->mFaceSize);
+		auto indicesArray = 	CreateFunctionalArray(SrcData->mIndices);
+		auto verticesArray =	CreateFunctionalArray(SrcData->mVertices);
+		auto faceSizeArray =	CreateFunctionalArray(SrcData->mFaceSize);
 
 		auto smoothingGroupArray = CreateFunctionalArray(SrcData->mSmoothingGroupAttribute.mDataArray);
 		auto normalsArray = CreateFunctionalArray(SrcData->mNormalsAttribute.mDataArray);
 		auto tangentsArray = CreateFunctionalArray(SrcData->mTangentsAttribute.mDataArray);
 		auto binormalsArray = CreateFunctionalArray(SrcData->mBinormalsAttribute.mDataArray);
 
+		// TODO: map smoothing groups
 //		mSmoothingGroupAttribute	= Ara3D::G3DExtensions::(normalsArray, 0);
-		mNormalsAttribute			= Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
-		mTangentsAttribute			= Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
-		mBinormalsAttribute			= Ara3D::G3DExtensions::ToVertexNormalAttribute(normalsArray, 0);
+		mIndicesAttribute			= Ara3D::G3DExtensions::ToIndexAttribute(indicesArray);
+		mVerticesAttribute			= Ara3D::G3DExtensions::ToVertexAttribute(verticesArray);
+		mFaceSizeAttribute			= Ara3D::G3DExtensions::ToFaceSizeAttribute(faceSizeArray, Ara3D::Association::assoc_face);
+
+		mNormalsAttribute			= Ara3D::G3DExtensions::ToAttribute(normalsArray, Ara3D::Association::assoc_vertex, Ara3D::AttributeType::attr_normal, 0, 3);
+		mTangentsAttribute			= Ara3D::G3DExtensions::ToAttribute(tangentsArray, Ara3D::Association::assoc_vertex, Ara3D::AttributeType::attr_tangent, 0, 3);
+		mBinormalsAttribute			= Ara3D::G3DExtensions::ToAttribute(binormalsArray, Ara3D::Association::assoc_vertex, Ara3D::AttributeType::attr_binormal, 0, 3);
 	}
 
 }
