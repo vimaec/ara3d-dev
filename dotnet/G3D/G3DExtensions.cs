@@ -42,8 +42,8 @@ namespace Ara3D
         public static IAttribute ToAttribute<T>(this T[] data, Association assoc, AttributeType at, int index = 0, int data_arity = 1) where T : struct
             => data.ToAttribute(Descriptor<T>(assoc, at, index, data_arity));
 
-        public static IAttribute ToAttribute<T>(this IArray<T> data, Association assoc, AttributeType at, int index = 0) where T : struct
-            => data.ToAttribute(Descriptor<T>(assoc, at, index));
+        public static IAttribute ToAttribute<T>(this IArray<T> data, Association assoc, AttributeType at, int index = 0, int data_arity = 1) where T : struct
+            => data.ToAttribute(Descriptor<T>(assoc, at, index, data_arity));
 
         public static IAttribute ToFaceSizeAttribute(this int data, Association association = Association.assoc_object)
             => new[] {data}.ToAttribute(association, AttributeType.attr_facesize);
@@ -58,6 +58,10 @@ namespace Ara3D
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex);
 
         public static IAttribute ToVertexAttribute(this float[] data)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex, 0, 3);
+        public static IAttribute ToVertexAttribute(this IArray<float> data)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex, 0, 3);
+        public static IAttribute ToVertexAttribute(this IArray<double> data)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_vertex, 0, 3);
 
         public static IAttribute ToVertexAttribute(this IArray<Vector3> data)
@@ -99,9 +103,6 @@ namespace Ara3D
         public static IAttribute ToUvwAttribute(this IArray<Vector3> data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_uv, index);
 
-        public static IAttribute ToVertexNormalAttribute(this Vector3[] data, int index = 0)
-            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
-
         public static IAttribute ToMaterialIdsAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_face, AttributeType.attr_materialid, index);
 
@@ -113,9 +114,14 @@ namespace Ara3D
 
         public static IAttribute ToGroupObjectIdsAttribute(this IArray<int> data, int index = 0)
             => data.ToAttribute(Association.assoc_group, AttributeType.attr_object_id, index);
-
+        public static IAttribute ToVertexNormalAttribute(this Vector3[] data, int index = 0)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
         public static IAttribute ToVertexNormalAttribute(this IArray<Vector3> data, int index = 0)
             => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index);
+        public static IAttribute ToVertexNormalAttribute(this IArray<float> data, int index = 0)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index, 3);
+        public static IAttribute ToVertexNormalAttribute(this IArray<double> data, int index = 0)
+            => data.ToAttribute(Association.assoc_vertex, AttributeType.attr_normal, index, 3);
 
         public static IAttribute ToInstanceTransformAttribute(this IArray<Matrix4x4> data, int index = 0)
             => data.ToAttribute(Association.assoc_instance, AttributeType.attr_instance_transform, index);

@@ -20,7 +20,7 @@ namespace FbxClrWrapper
 		std::vector<FbxDouble4x4> mNodeTransformList;
 		std::vector<int32_t> mNodeMeshIndexList;
 
-		std::vector<FBXMeshDataInternal> mMeshList;
+		std::vector<FBXMeshDataInternal*> mMeshList;
 		std::vector<std::string> mMeshIdList;
 
 		std::map<FbxMesh*, int> mMeshMap; // Used to gather information about instancing in the fbx file

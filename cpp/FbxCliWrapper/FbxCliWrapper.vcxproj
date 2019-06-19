@@ -24,7 +24,7 @@
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>FbxCliWrapper</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -132,14 +132,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="FbxCliWrapper.h" />
+    <ClInclude Include="FbxCliBase.h" />
+    <ClInclude Include="FbxCliReader.h" />
+    <ClInclude Include="FbxCliWriter.h" />
     <ClInclude Include="FBXMeshData.h" />
     <ClInclude Include="FBXSceneData.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
-    <ClCompile Include="FbxCliWrapper.cpp" />
+    <ClCompile Include="FbxCliBase.cpp" />
+    <ClCompile Include="FbxCliReader.cpp" />
+    <ClCompile Include="FbxCliWriter.cpp" />
     <ClCompile Include="FBXMeshData.cpp" />
     <ClCompile Include="FBXSceneData.cpp" />
   </ItemGroup>
@@ -150,6 +154,12 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Math3D\src\Ara3D.Math3D.csproj">
+      <Project>{f9430261-9426-4d6b-a1b8-9d3f2bfbb501}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dotnet\G3D\Ara3D.G3D.csproj">
+      <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dotnet\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
     </ProjectReference>
