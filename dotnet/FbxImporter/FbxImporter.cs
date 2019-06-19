@@ -75,7 +75,7 @@ namespace Ara3D
                 var geometryArray = sceneData.mMeshList.CreateIGeometyArray();
                 var sceneNodeArray = CreateISceneNodeArray(sceneData, geometryArray);
 
-                var scene = new Scene(new SceneProperties(), sceneNodeArray[0]);
+                var scene = new Scene(sceneNodeArray[0], new EmptyLookup<string, IPropertiesLookup>());
                 return scene;
             }
 

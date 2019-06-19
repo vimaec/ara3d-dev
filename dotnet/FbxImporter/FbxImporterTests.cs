@@ -23,7 +23,7 @@ namespace Ara3D
             //            var scene = FbxImporter.LoadFBX(filePath);
             //            scene.ToIGeometry().WriteObj(outputFilePath);
 
-            var scene = CreateTextIScene();
+            var scene = CreateTestIScene();
             FbxExporter exporter = new FbxExporter();
             exporter.SaveFBX(scene, @"test.fbx");
 
@@ -42,7 +42,7 @@ namespace Ara3D
             });
         }
 
-        public static IScene CreateTextIScene()
+        public static IScene CreateTestIScene()
         {
             Vector3 vertex0 = new Vector3(-50, 0, 50);
             Vector3 vertex1 = new Vector3(50, 0, 50);
@@ -60,7 +60,7 @@ namespace Ara3D
             rootNode._AddChild(child1);
             rootNode._AddChild(child2);
 
-            return new Scene(new SceneProperties(), rootNode);
+            return new Scene(rootNode, new EmptyLookup<string, IPropertiesLookup>());
         }
 
         public static void CompareScenes(IScene Scene1, IScene Scene2)
