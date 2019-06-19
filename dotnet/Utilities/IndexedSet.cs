@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Ara3D
@@ -7,7 +8,7 @@ namespace Ara3D
     /// This class is similar to a hash set, but it allows us to create an ordered
     /// list for each value added in the order it was first seen. 
     /// </summary>
-    public class IndexedSet<K> : Dictionary<K, int>
+    public class IndexedSet<K> : ConcurrentDictionary<K, int>
     {
         public IndexedSet()
         { }
@@ -20,9 +21,7 @@ namespace Ara3D
 
         public int Add(K k)
         {
-            if (!ContainsKey(k))
-                Add(k, Count);
-            return this[k];
+            return GetOrAdd(k, (k2) => Count);
         }
 
         public IEnumerable<K> OrderedKeys()

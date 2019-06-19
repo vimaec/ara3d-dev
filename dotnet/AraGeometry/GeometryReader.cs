@@ -27,7 +27,7 @@ namespace Ara3D
         }
 
         public static List<IGeometry> LoadGeometries(this Stream stream)
-            => stream.ReadAllBytes().LoadBFast().LoadGeometries();
+            => stream.ReadAllBytes().ToBFastBuffers().LoadGeometries();
 
         public static List<IGeometry> LoadGeometries(string filePath)
             => File.OpenRead(filePath).LoadGeometries();

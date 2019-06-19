@@ -133,6 +133,11 @@ namespace Ara3D
             }, level, exceptionLevel);
         }
 
+        public static void LogException(this ILogger logger, Exception e)
+        {
+            logger.Log($"Exception occurred {e.Message}", LogLevel.Error);
+        }
+
         public static string LogFileCreation(this ILogger logger, Func<string> function)
         {
             var start = DateTime.Now;

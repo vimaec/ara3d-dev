@@ -38,7 +38,6 @@
         assoc_none,
         assoc_invalid,
     };
-
     // The type of the attribute
     public enum AttributeType
     {

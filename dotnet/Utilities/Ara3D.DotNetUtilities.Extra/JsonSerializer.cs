@@ -8,7 +8,7 @@ namespace Ara3D
 {
     public class WrappedJsonSerializer : JsonSerializer, IJsonSerializer {}
 
-    public static class JsonSerializationExtensions
+    public static class JsonUtil
     {
         public static JObject ToJObject(this object o)
             => JObject.FromObject(o);
@@ -38,6 +38,9 @@ namespace Ara3D
 
         public static JObject LoadJson(string filePath)
             => JObject.Parse(File.ReadAllText(filePath));
+
+        public static T LoadJson<T>(string filePath)
+            => LoadJson(filePath).ToObject<T>();
 
         public static JArray LoadJsonArray(string filePath)
             => JArray.Parse(File.ReadAllText(filePath));

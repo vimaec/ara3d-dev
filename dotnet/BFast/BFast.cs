@@ -3,10 +3,17 @@
     Copyright 2018, Ara 3D, Inc.
     Usage licensed under terms of MIT License
 
-    The BAST format is a simple, generic, and efficient representation of arrays of binary array data.     
+    The BFAST format is a simple, generic, and efficient representation of arrays of binary data (bytes).
+    It can be used in place of a zip when compression is not required, or when a simple protocol
+    is required for transmitting data to/from disk, between processes, or over a network. 
+    The BFAST is designed to detect when the endianness of the producer and the consumer application
+    is different. Each BFAST array is aligned on 32-byte boundaries. The beginning and end of each 
+    data buffer is stored in a table near the beginning of a BFAST file. 
 
-    From a C# stand-point it is a method of concatenating an array of byte arrays in such 
-    a way it can be read and loaded efficiently from disk, or over a network.  
+    The BFAST has the following structure:
+        * header - BFAST magic number, beginning and end index of data block (in bytes), and number of arrays  
+        * ranges - An array of structs each containing the beginning and end indcex of the data block. 
+        * data - The raw data-block, containing the concatenated (and aligned) data for all buffers. 
 */
 
 using System;
@@ -20,9 +27,9 @@ namespace Ara3D
 {
     public static class BFastConstants
     {
-        public const ushort Magic = 0xBFA5;
-        public const ushort SameEndian = Magic;
-        public const ushort SwappedEndian = 0x5AFB;
+        public const long Magic = 0xBFA5;
+        public const long SameEndian = Magic;
+        public const long SwappedEndian = 0x5AFB << 16;
     }
 
     /// <summary>
@@ -76,79 +83,150 @@ namespace Ara3D
     /// </summary>
     public static class BFast
     {
-        public const int Alignment = 32;
+        public const int ALIGNMENT = 32;
 
+        /// <summary>
+        /// Given a position in the stream, tells us where the the next aligned position will be, if it the current position is not aligned.
+        /// </summary>
         public static long ComputeNextAlignment(long n)
-            => IsAligned(n) ? n : n + Alignment - (n % Alignment);        
+            => IsAligned(n) ? n : n + ALIGNMENT - (n % ALIGNMENT);
 
+        /// <summary>
+        /// Given a position in the stream, computes how much padding is required to bring the value to an algitned point. 
+        /// </summary>
         public static long ComputePadding(long n)
-            => ComputeNextAlignment(n) - n;        
+            => ComputeNextAlignment(n) - n;
 
+        /// <summary>
+        /// Given a position in the stream, tells us whether the position is aligned.
+        /// </summary>
         public static bool IsAligned(long n)
-            => n % Alignment == 0;
+            => n % ALIGNMENT == 0;
 
+        /// <summary>
+        /// Write enough padding bytes to bring the current stream position to an aligned position
+        /// </summary>
         public static void WritePadding(BinaryWriter bw)
         {
             var padding = ComputePadding(bw.BaseStream.Position);
             for (var i = 0; i < padding; ++i)
                 bw.Write((byte) 0);
+            Debug.Assert(IsAligned(bw.BaseStream.Position));
         }
 
-        public static FileHeader GetHeader(Memory<byte> bytes)
+        /// <summary>
+        /// Extracts the BFast header from the first bytes of a span.
+        /// </summary>
+        public static FileHeader GetHeader(Span<byte> bytes)
         {
             // Assure that the data is of sufficient size to get the header 
             if (FileHeader.Size > bytes.Length)
                 throw new Exception($"Data length ({bytes.Length}) is smaller than size of FileHeader ({FileHeader.Size})");
 
-            // Get the header
-            var header = bytes.Slice(0, FileHeader.Size).Span.ToStruct<FileHeader>();
+            // Get the values that make up the header
+            var values = MemoryMarshal.Cast<byte, long>(bytes).Slice(0, 4).ToArray();
+            var header = new FileHeader
+            {
+                Magic = values[0],
+                DataStart = values[1],
+                DataEnd = values[2],
+                NumArrays = values[3],
+            };
             ValidateHeader(header);
             return header;
         }
 
-        public static Range[] GetRanges(FileHeader header, Memory<byte> bytes)
+        /// <summary>
+        /// Extracts the data range structs from a byte span given the file header. Also performs basic validation.
+        /// </summary>
+        public static Range[] GetRanges(FileHeader header, Span<byte> bytes)
         {
-            var ranges = bytes.Slice(FileHeader.Size, Range.Size * (int)header.NumArrays).Span.ToStructs<Range>();
+            var rangeByteSpan = bytes.Slice(FileHeader.Size, Range.Size * (int)header.NumArrays);
+            var rangeSpan = MemoryMarshal.Cast<byte, Range>(rangeByteSpan);
+            var ranges = rangeSpan.ToArray();
             ValidateRanges(header, ranges);
             return ranges;
         }
 
-        public static IList<Memory<byte>> LoadBFast(this byte[] bytes)
-            => new Memory<byte>(bytes).LoadBFast();        
+        /// <summary>
+        /// Given an array of bytes representing a BFast file, returns the array of data buffers. 
+        /// </summary>
+        public static IList<Memory<byte>> ToBFastBuffers(this byte[] bytes)
+            => new Memory<byte>(bytes).ToBFastBuffers();        
 
-        public static IList<Memory<byte>> LoadBFast(this Memory<byte> bytes)
+        /// <summary>
+        /// Given a memory block of bytes representing a BFast file, returns the array of data buffers,
+        /// </summary>
+        public static IList<Memory<byte>> ToBFastBuffers(this Memory<byte> bytes)
         {
-            var header = GetHeader(bytes);
-            var ranges = GetRanges(header, bytes);
+            var header = GetHeader(bytes.Span);
+            var ranges = GetRanges(header, bytes.Span);
             return ranges.Select(r => bytes.Slice((int)r.Begin, (int)r.Count)).ToList();
         }
 
+        /// <summary>
+        /// Helper function that converts an array of structs into an array of bytes using the MemoryMarshal class
+        /// </summary>
+        public static byte[] ToBytes<T>(T[] xs) where T: struct
+            => MemoryMarshal.Cast<T, byte>(xs).ToArray();
+
+        /// <summary>
+        /// Helper function that converts a struct into an array of bytes using the MemoryMarshal class
+        /// </summary>
+        public static byte[] ToBytes<T>(T x) where T : struct
+            => ToBytes(new[] { x });
+
+        /// <summary>
+        /// Writes a BFast using the provided BinaryWriter
+        /// </summary>
         public static BinaryWriter Write(BinaryWriter bw, FileHeader header, Range[] ranges, IList<Memory<byte>> buffers)
         {
-            bw.Write(header);
-            WritePadding(bw);
+            bw.Write(header.Magic);
+            bw.Write(header.DataStart);
+            bw.Write(header.DataEnd);
+            bw.Write(header.NumArrays);
             foreach (var r in ranges)
-                bw.Write(r);
+                bw.Write(ToBytes(r));
             WritePadding(bw);
             foreach (var b in buffers)
             {
                 WritePadding(bw);
-                bw.Write(b.ToBytes());
+                bw.Write(b.ToArray());
             }
             return bw;
         }
 
+        /// <summary>
+        /// Converts an array of byte arrays to a BFAST file format in memory. 
+        /// </summary>
         public static byte[] ToBFastBytes(this IEnumerable<byte[]> buffers)
             => ToBFastBytes(buffers.Select(b => new Memory<byte>(b)));
 
+        /// <summary>
+        /// Converts an array of data buffers to a BFAST file format in memory. 
+        /// </summary>
         public static byte[] ToBFastBytes(this IEnumerable<Memory<byte>> buffers)
-            => Write(new MemoryStream(), buffers.ToList()).ToArray();
+            => Write(buffers.ToList(), new MemoryStream()).ToArray();
 
+        /// <summary>
+        /// Writes an array of data buffers to the given file. 
+        /// </summary>
         public static void ToBFastFile(this IEnumerable<Memory<byte>> buffers, string filePath)
-            => Write(File.OpenWrite(filePath), buffers.ToList());
+            => Write(buffers, File.OpenWrite(filePath));
 
-        public static T Write<T>(T stream, IList<Memory<byte>> buffers) where T: Stream
+        /// <summary>
+        /// Writes an array of data buffers to the given file. 
+        /// </summary>
+        public static void ToBFastFile(this IEnumerable<byte[]> buffers, string filePath)
+            => Write(buffers.Select(buffer => buffer.AsMemory()), File.OpenWrite(filePath));
+
+        /// <summary>
+        /// Writes an array of data buffers to the given data stream 
+        /// </summary>
+        public static T Write<T>(this IEnumerable<Memory<byte>> enumBuffers, T stream) where T: Stream
         {
+            var buffers = enumBuffers.ToList();
+
             var header = new FileHeader();
             header.Magic = BFastConstants.Magic;
             header.NumArrays = buffers.Count;
