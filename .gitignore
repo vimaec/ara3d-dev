@@ -335,8 +335,5 @@ ASALocalRun/
 # These are typically binaries and other files too big to manage in Git.
 dependencies/
 
-# These are test files and other files not appropriate to store in Git 
-assets/ 
-
 # Omit any Nuget-generated MigrationBackup folders.
 /MigrationBackup/

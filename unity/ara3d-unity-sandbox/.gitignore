@@ -60,3 +60,9 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
+
+# All DLLs are going to be generated automatically. And the meta files for those DLLs as well.
+*.dll
+*.dll.meta
+*.dll.config
+*.dll.config.meta
