@@ -12,7 +12,7 @@ namespace Ara3D
     {
         [NonSerialized] public ProceduralMesh ProcMesh;
 
-        public abstract IGeometry Deform(IGeometry geometry);
+        public abstract UnityEngine.Vector3 Deform(UnityEngine.Vector3 v, int i);
 
         public virtual void Update()
         {
