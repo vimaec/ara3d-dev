@@ -177,8 +177,38 @@ namespace Ara3D
             scene.Assets.ToBFastFile(Path.Combine(folder, SectionNameAssetsBfast));
         }
 
-        public static IScene2 Read(string filePath)
+        public static IScene2 ReadFromFolder(string folder)
         {
+            var metaJson = File.ReadAllText(Path.Combine(folder, SectionNameMetaJson));
+
+            var serializedNodes = Util.ReadFixedLayoutClassList<SerializableNode>(Path.Combine(folder, SectionNameNodesArray));
+
+            var g3dBFastFile = Path.Combine(folder, SectionNameGeometriesBfast);
+            var g3dBFast = BFast.Read(g3dBFastFile);
+
+            // TODO: extract the geometries (with names) from the g3DBFast 
+
+            // surfaces.array - An array serializable surfaces
+            var surfaceFileName = Path.Combine(folder, SectionNameSurfacesArray);
+            var serializableSurfaces = Util.ReadFixedLayoutClassList<SerializableSurface>(surfaceFileName);
+
+            // Create a new string table
+            var localStrings = new IndexedSet<string>();
+
+            // Read all properties 
+            var propsBFast = Util.ReadFixedLayoutClassList<SerializableProperty>(Path.Combine(folder, SectionNamePropertiesBFast));
+            
+            // TODO: get the dictionary out of the propsBFast. Note that each propertySet is going to be an array of props, so I will have to cast it.
+
+            // Read the string data 
+            var rawStringData = File.ReadAllText(Path.Combine(folder, SectionNameStringData));
+            var stringTable = rawStringData.SplitAtNull();
+
+            // Read the assets 
+            var assetsFilePath = Path.Combine(folder, SectionNameAssetsBfast);
+            var assets = BFast.Read(assetsFilePath);
+
+
             throw new NotImplementedException();
         }
 

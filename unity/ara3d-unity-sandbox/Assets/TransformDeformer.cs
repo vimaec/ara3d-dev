@@ -1,26 +1,6 @@
 ﻿using UnityEngine;
 using System;
-using UnityEditor;
-using UnityEngine.UIElements;
-using UnityEditor.UIElements;
 
-/*
-[CustomPropertyDrawer(typeof(Translation))]
-public class TranslationDrawerUIE : PropertyDrawer
-{
-    public override VisualElement CreatePropertyGUI(SerializedProperty property)
-    {
-        // Create property container element.
-        var container = new VisualElement();
-
-        // Create property fields.
-        container.Add(new PropertyField(property.FindPropertyRelative("X")));
-        container.Add(new PropertyField(property.FindPropertyRelative("Y")));
-        container.Add(new PropertyField(property.FindPropertyRelative("Z")));
-
-        return container;
-    }
-}*/
 
 [Serializable]
 public class Translation
@@ -81,6 +61,6 @@ public class TransformDeformer : Ara3D.Deformer
         base.Reset();
     }
 
-    public override IGeometry Deform(Ara3D.IGeometry g)
-        => g.SetVertices(g.Vertices, )s    
+    public override Vector3 Deform(Vector3 v, int i)
+        => Matrix.MultiplyPoint(v);
 }

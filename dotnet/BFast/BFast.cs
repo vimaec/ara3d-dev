@@ -6,14 +6,19 @@
     The BFAST format is a simple, generic, and efficient representation of arrays of binary data (bytes).
     It can be used in place of a zip when compression is not required, or when a simple protocol
     is required for transmitting data to/from disk, between processes, or over a network. 
+
     The BFAST is designed to detect when the endianness of the producer and the consumer application
     is different. Each BFAST array is aligned on 32-byte boundaries. The beginning and end of each 
     data buffer is stored in a table near the beginning of a BFAST file. 
+
+    The first buffer in a BFAST is read as a sequence of Utf-8 encoded strings separated by null '\0' 
+    characters each representing the name of each buffer.    
 
     The BFAST has the following structure:
         * header - BFAST magic number, beginning and end index of data block (in bytes), and number of arrays  
         * ranges - An array of structs each containing the beginning and end indcex of the data block. 
         * data - The raw data-block, containing the concatenated (and aligned) data for all buffers. 
+        
 */
 
 using System;
@@ -110,7 +115,7 @@ namespace Ara3D
         {
             var padding = ComputePadding(bw.BaseStream.Position);
             for (var i = 0; i < padding; ++i)
-                bw.Write((byte) 0);
+                bw.Write((byte)0);
             Debug.Assert(IsAligned(bw.BaseStream.Position));
         }
 
@@ -151,18 +156,24 @@ namespace Ara3D
         /// <summary>
         /// Given an array of bytes representing a BFast file, returns the array of data buffers. 
         /// </summary>
-        public static IList<Memory<byte>> ToBFastBuffers(this byte[] bytes)
-            => new Memory<byte>(bytes).ToBFastBuffers();        
+        public static IList<IBuffer> ToBFastRawBuffers(this byte[] bytes)
+            => new Memory<byte>(bytes).ToBFastRawBuffers();
 
         /// <summary>
         /// Given a memory block of bytes representing a BFast file, returns the array of data buffers,
         /// </summary>
-        public static IList<Memory<byte>> ToBFastBuffers(this Memory<byte> bytes)
+        public static IList<IBuffer> ToBFastRawBuffers(this Memory<byte> bytes)
         {
             var header = GetHeader(bytes.Span);
             var ranges = GetRanges(header, bytes.Span);
-            return ranges.Select(r => bytes.Slice((int)r.Begin, (int)r.Count)).ToList();
+            return ranges.Select(r => bytes.Slice((int)r.Begin, (int)r.Count).ToBuffer()).ToList();
         }
+
+        /// <summary>
+        /// Loads a BFast file from the given path 
+        /// </summary>
+        public static IList<IBuffer> ReadRawBFast(string filePath)
+            => ToBFastRawBuffers(File.ReadAllBytes(filePath));
 
         /// <summary>
         /// Helper function that converts an array of structs into an array of bytes using the MemoryMarshal class
@@ -199,19 +210,19 @@ namespace Ara3D
         /// <summary>
         /// Converts an array of byte arrays to a BFAST file format in memory. 
         /// </summary>
-        public static byte[] ToBFastBytes(this IEnumerable<byte[]> buffers)
+        public static byte[] ToBFastBytes(this IEnumerable<IBuffer> buffers)
             => ToBFastBytes(buffers.Select(b => new Memory<byte>(b)));
 
         /// <summary>
         /// Converts an array of data buffers to a BFAST file format in memory. 
         /// </summary>
-        public static byte[] ToBFastBytes(this IEnumerable<Memory<byte>> buffers)
+        public static byte[] ToBFastBytes(this IEnumerable<IBuffer> buffers)
             => Write(buffers.ToList(), new MemoryStream()).ToArray();
 
         /// <summary>
         /// Writes an array of data buffers to the given file. 
         /// </summary>
-        public static void ToBFastFile(this IEnumerable<Memory<byte>> buffers, string filePath)
+        public static void ToBFastFile(this IEnumerable<IBuffer> buffers, string filePath)
             => Write(buffers, File.OpenWrite(filePath));
 
         /// <summary>
@@ -223,7 +234,7 @@ namespace Ara3D
         /// <summary>
         /// Writes an array of data buffers to the given data stream 
         /// </summary>
-        public static T Write<T>(this IEnumerable<Memory<byte>> enumBuffers, T stream) where T: Stream
+        public static T Write<T>(this IEnumerable<IBuffer> enumBuffers, T stream) where T: Stream
         {
             var buffers = enumBuffers.ToList();
 
@@ -308,5 +319,7 @@ namespace Ara3D
                     throw new Exception($"Array offset end {end} is not in valid span of {begin} to {max}");
             }
         }
+
+        public static IEnumerable<Tuple<string, Memory<byte>>> 
     }
 }
