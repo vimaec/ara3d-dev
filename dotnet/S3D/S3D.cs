@@ -47,45 +47,27 @@ namespace Ara3D
     /// </summary>
     public class S3D : IScene
     {
-        public S3D(ILookup<string, string> meta, 
+        public S3D(
+            ILookup<string, string> meta, 
             ISceneNode root, 
             ISceneNode[] nodes, 
             IGeometry[] geometries, 
-            ISurface[] surfaces, 
-            Memory<byte>[] assets, 
+            ISurfaceRelation[] surfaces, 
             ILookup<string, IPropertiesLookup> properties)
         {
             Meta = meta;
             Root = root;
             Nodes = nodes ?? new ISceneNode[0];
             Geometries = geometries ?? new IGeometry[0];
-            Surfaces = surfaces ?? new ISurface[0];
-            Assets = assets ?? new Memory<byte>[0];
-            AllProperties = properties ?? new EmptyLookup<string, IPropertiesLookup>();
-
-            MaterialProperties = AllProperties.GetOrDefault("Material") ?? PropertiesLookup.Empty;
-            SceneProperties = AllProperties.GetOrDefault("Scene") ?? PropertiesLookup.Empty;
-            SurfaceProperties = AllProperties.GetOrDefault("Surface") ?? PropertiesLookup.Empty;
-            NodeProperties = AllProperties.GetOrDefault("Node") ?? PropertiesLookup.Empty;
-            GeometryProperties = AllProperties.GetOrDefault("Geometry") ?? PropertiesLookup.Empty;
-            ObjectProperties = AllProperties.GetOrDefault("Object") ?? PropertiesLookup.Empty;            
+            Surfaces = surfaces ?? new ISurfaceRelation[0];
         }
 
-        public ILookup<string, string> Meta { get; }
         public ISceneNode Root { get; }
         public ISceneNode[] Nodes { get; }
         public IGeometry[] Geometries { get; }
-        public ISurface[] Surfaces { get; }
-        public Memory<byte>[] Assets { get; }
-
-        public ILookup<string, IPropertiesLookup> AllProperties { get; }
-
-        public IPropertiesLookup MaterialProperties { get; }
-        public IPropertiesLookup SceneProperties { get; }
-        public IPropertiesLookup SurfaceProperties { get; }
-        public IPropertiesLookup NodeProperties { get; }
-        public IPropertiesLookup GeometryProperties { get; }
-        public IPropertiesLookup ObjectProperties { get; }
+        public ISurfaceRelation[] Surfaces { get; }
+        public INamedBuffer[] Assets { get; }
+        public ILookup<string, string> Meta { get; }
     }
 
     public static class S3DExtensions
@@ -104,7 +86,7 @@ namespace Ara3D
         public static SerializableNode CreateSerializableNode(int geometry, int parent, Matrix4x4 matrix)
              => new SerializableNode { GeometryIndex = geometry, InstanceIndex = -1, ParentIndex = parent, WorldTransform = matrix };
 
-        public static SerializableSurface ToSerializableSurface(this ISurface surface)
+        public static SerializableSurface ToSerializableSurface(this ISurfaceRelation surface)
             => new SerializableSurface { MaterialId = surface.MaterialId, ObjectId = surface.ObjectId, SurfaceId = surface.SurfaceId };
 
         public static SerializableProperty CreateSerializableProperty(int elementId, string key, string value, IndexedSet<string> strings)
@@ -149,7 +131,7 @@ namespace Ara3D
             Util.WriteFixedLayoutClassList(Path.Combine(folder, SectionNameNodesArray), serializableNodes);
 
             // Get the geometry bytes and write them all to file.
-            var g3ds = geometries.Select(g => g.ToG3D().ToBytes());
+            var g3ds = geometries.Select((g, i) => g.ToG3D().ToBytes().ToNamedBuffer(i.ToString()));
             g3ds.ToBFastFile(Path.Combine(folder, SectionNameGeometriesBfast));
 
             // surfaces.array - An array serializable surfaces
@@ -208,7 +190,7 @@ namespace Ara3D
             var assetsFilePath = Path.Combine(folder, SectionNameAssetsBfast);
             var assets = BFast.Read(assetsFilePath);
 
-
+            // 
             throw new NotImplementedException();
         }
 
@@ -219,8 +201,8 @@ namespace Ara3D
                 { "filetype", "s3d" } }.ToLookup();
             var nodes = scene.AllNodes().ToArray();
             var geometries = scene.AllDistinctGeometries().ToArray();
-            var surfaces = new ISurface[0];
-            var assets = new Memory<byte>[0];
+            var surfaces = new ISurfaceRelation[0];
+            var assets = new INamedBuffer[0];
             var props = scene.AllProperties;
             return new S3D(meta, scene.Root, nodes, geometries, surfaces, assets, props);
         }

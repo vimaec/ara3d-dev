@@ -18,7 +18,6 @@
         * header - BFAST magic number, beginning and end index of data block (in bytes), and number of arrays  
         * ranges - An array of structs each containing the beginning and end indcex of the data block. 
         * data - The raw data-block, containing the concatenated (and aligned) data for all buffers. 
-        
 */
 
 using System;
@@ -156,24 +155,30 @@ namespace Ara3D
         /// <summary>
         /// Given an array of bytes representing a BFast file, returns the array of data buffers. 
         /// </summary>
-        public static IList<IBuffer> ToBFastRawBuffers(this byte[] bytes)
+        public static IEnumerable<IBuffer> ToBFastRawBuffers(this byte[] bytes)
             => new Memory<byte>(bytes).ToBFastRawBuffers();
 
         /// <summary>
         /// Given a memory block of bytes representing a BFast file, returns the array of data buffers,
         /// </summary>
-        public static IList<IBuffer> ToBFastRawBuffers(this Memory<byte> bytes)
+        public static IEnumerable<IBuffer> ToBFastRawBuffers(this Memory<byte> bytes)
         {
             var header = GetHeader(bytes.Span);
             var ranges = GetRanges(header, bytes.Span);
-            return ranges.Select(r => bytes.Slice((int)r.Begin, (int)r.Count).ToBuffer()).ToList();
+            return ranges.Select(r => bytes.Slice((int)r.Begin, (int)r.Count).ToBuffer());
         }
 
         /// <summary>
         /// Loads a BFast file from the given path 
         /// </summary>
-        public static IList<IBuffer> ReadRawBFast(string filePath)
+        public static IEnumerable<IBuffer> ReadRawBuffers(string filePath)
             => ToBFastRawBuffers(File.ReadAllBytes(filePath));
+
+        /// <summary>
+        /// Loads a BFast file from the given path 
+        /// </summary>
+        public static INamedBuffer[] Read(string filePath)
+            => ReadRawBuffers(filePath).ToNamedBuffers().ToArray();
 
         /// <summary>
         /// Helper function that converts an array of structs into an array of bytes using the MemoryMarshal class
@@ -190,7 +195,7 @@ namespace Ara3D
         /// <summary>
         /// Writes a BFast using the provided BinaryWriter
         /// </summary>
-        public static BinaryWriter Write(BinaryWriter bw, FileHeader header, Range[] ranges, IList<Memory<byte>> buffers)
+        public static BinaryWriter WriteRawBuffers(BinaryWriter bw, FileHeader header, Range[] ranges, IList<IBuffer> buffers)
         {
             bw.Write(header.Magic);
             bw.Write(header.DataStart);
@@ -202,7 +207,8 @@ namespace Ara3D
             foreach (var b in buffers)
             {
                 WritePadding(bw);
-                bw.Write(b.ToArray());
+                // TODO: surely this can be optimized, but we should idenitfy whether it is a true prototyp
+                bw.Write(b.Bytes.ToArray());
             }
             return bw;
         }
@@ -210,34 +216,43 @@ namespace Ara3D
         /// <summary>
         /// Converts an array of byte arrays to a BFAST file format in memory. 
         /// </summary>
-        public static byte[] ToBFastBytes(this IEnumerable<IBuffer> buffers)
-            => ToBFastBytes(buffers.Select(b => new Memory<byte>(b)));
+        public static byte[] ToBFastBytes(this IEnumerable<byte[]> buffers, IEnumerable<string> names)
+            => buffers.Select(BufferExtensions.ToBuffer).ToBFastBytes(names);
+
+        /// <summary>
+        /// Converts an array of byte arrays to a BFAST file format in memory. 
+        /// </summary>
+        public static byte[] ToBFastBytes(this IEnumerable<IBuffer> buffers, IEnumerable<string> names)
+            => buffers.ToNamedBuffers(names).ToBFastBytes();
 
         /// <summary>
         /// Converts an array of data buffers to a BFAST file format in memory. 
         /// </summary>
-        public static byte[] ToBFastBytes(this IEnumerable<IBuffer> buffers)
+        public static byte[] ToBFastBytes(this IEnumerable<INamedBuffer> buffers)
             => Write(buffers.ToList(), new MemoryStream()).ToArray();
 
         /// <summary>
         /// Writes an array of data buffers to the given file. 
         /// </summary>
-        public static void ToBFastFile(this IEnumerable<IBuffer> buffers, string filePath)
+        public static void ToBFastFile(this IEnumerable<INamedBuffer> buffers, string filePath)
             => Write(buffers, File.OpenWrite(filePath));
-
-        /// <summary>
-        /// Writes an array of data buffers to the given file. 
-        /// </summary>
-        public static void ToBFastFile(this IEnumerable<byte[]> buffers, string filePath)
-            => Write(buffers.Select(buffer => buffer.AsMemory()), File.OpenWrite(filePath));
 
         /// <summary>
         /// Writes an array of data buffers to the given data stream 
         /// </summary>
-        public static T Write<T>(this IEnumerable<IBuffer> enumBuffers, T stream) where T: Stream
+        public static T Write<T>(this IEnumerable<INamedBuffer> buffers, T stream) where T : Stream
         {
-            var buffers = enumBuffers.ToList();
+            var nameBuffer = buffers.Select(b => b.Name).ToBuffer();
+            var tmp = new List<IBuffer> { nameBuffer };
+            tmp.AddRange(buffers);
+            return tmp.WriteRawBuffers(stream);            
+        }
 
+        /// <summary>
+        /// Writes an array of data buffers to the given data stream 
+        /// </summary>
+        public static T WriteRawBuffers<T>(this IList<IBuffer> buffers, T stream) where T: Stream
+        {
             var header = new FileHeader();
             header.Magic = BFastConstants.Magic;
             header.NumArrays = buffers.Count;
@@ -253,11 +268,11 @@ namespace Ara3D
                 Debug.Assert(IsAligned(curIndex));
 
                 ranges[i].Begin = curIndex;
-                curIndex += buffers[i].Length;
+                curIndex += buffers[i].Bytes.Length;
                 ranges[i].End = curIndex;
                 curIndex = ComputeNextAlignment(curIndex);
 
-                Debug.Assert(ranges[i].Count == buffers[i].Length);
+                Debug.Assert(ranges[i].Count == buffers[i].Bytes.Length);
             }
 
             // Finish with the header
@@ -269,7 +284,7 @@ namespace Ara3D
 
             // Write the data 
             using (var bw = new BinaryWriter(stream))
-                Write(bw, header, ranges, buffers);
+                WriteRawBuffers(bw, header, ranges, buffers);
 
             return stream;
         }
@@ -320,6 +335,7 @@ namespace Ara3D
             }
         }
 
-        public static IEnumerable<Tuple<string, Memory<byte>>> 
+        public static IList<INamedBuffer> ToBFast(this IList<IBuffer> buffers)
+            => buffers.Skip(1).ToNamedBuffers(buffers[0].ToStringArray()).ToList();
     }
 }

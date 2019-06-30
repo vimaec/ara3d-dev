@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Ara3D
@@ -30,14 +32,18 @@ namespace Ara3D
     }
 
     /// <summary>
-    /// A memory buffer with a name which implements INamedBuffer
+    /// Associates a buffer with a name.
     /// </summary>
-    public class NamedMemoryBuffer<T> : MemoryBuffer<T>, INamedBuffer where T : struct
+    public class NamedBuffer : INamedBuffer
     {
-        public NamedMemoryBuffer(Memory<T> memory, string name = "")
-            : base(memory)
-        => Name = name;
+        public NamedBuffer(IBuffer buffer, string name = "")
+        {
+            Buffer = buffer;
+            Name = name;
+        }
 
+        public IBuffer Buffer { get; }
+        public Span<byte> Bytes => Buffer.Bytes;
         public string Name { get; }
     }
 
@@ -46,6 +52,9 @@ namespace Ara3D
     /// </summary>
     public static class BufferExtensions
     {
+        public static IBuffer ToBuffer<T>(this Span<T> span) where T : struct
+            => span.ToArray().ToBuffer();
+
         public static IBuffer ToBuffer<T>(this Memory<T> memory) where T : struct
             => new MemoryBuffer<T>(memory);
 
@@ -55,10 +64,40 @@ namespace Ara3D
         public static Span<T> AsSpan<T>(this IBuffer buffer) where T : struct
             => MemoryMarshal.Cast<byte, T>(buffer.Bytes);
 
-        public static string AsString(this IBuffer buffer)
+        public static string GetString(this IBuffer buffer)
             => System.Text.Encoding.UTF8.GetString(buffer.Bytes.ToArray());
 
-        public static string[] AsStrings(this IBuffer buffer)
-            => buffer.AsString().Split('\0');
+        public static string[] ToStringArray(this IBuffer buffer)
+            => buffer.GetString().Split('\0');
+
+        public static IBuffer ToBuffer(this string self)
+            => System.Text.Encoding.UTF8.GetBytes(self).ToBuffer();
+
+        public static IBuffer ToBuffer(this IEnumerable<string> strings)
+            => string.Join("\0", strings).ToBuffer();
+
+        public static INamedBuffer ToNamedBuffer(this IBuffer buffer, string name)
+            => new NamedBuffer(buffer, name);
+
+        public static INamedBuffer ToNamedBuffer(this byte[] bytes, string name)
+            => bytes.ToBuffer().ToNamedBuffer(name);
+
+        public static IEnumerable<INamedBuffer> ToNamedBuffers(this IEnumerable<IBuffer> buffers)
+            => buffers.Skip(1).Zip(buffers.First().ToStringArray(), ToNamedBuffer);
+
+        public static IEnumerable<INamedBuffer> ToNamedBuffers(this IEnumerable<IBuffer> buffers, IEnumerable<string> names)
+            => buffers.Zip(names, ToNamedBuffer);
+
+        public static IDictionary<string, INamedBuffer> ToDictionary(this IEnumerable<INamedBuffer> buffers)
+            => buffers.ToDictionary(b => b.Name, b => b);
+
+        public static Memory<byte> ToMemory(this IBuffer buffer)
+            => buffer is MemoryBuffer<byte> mb ? mb.Memory : new Memory<byte>(buffer.Bytes.ToArray());
+
+        public static IEnumerable<INamedBuffer> ToNamedBuffers(this IDictionary<string, IBuffer> d)
+            => d.Select(kv => kv.Value.ToNamedBuffer(kv.Key));
+
+        public static IEnumerable<INamedBuffer> ToNamedBuffers(this IDictionary<string, byte[]> d)
+            => d.Select(kv => kv.Value.ToNamedBuffer(kv.Key));
     }
 }

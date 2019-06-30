@@ -1,45 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Ara3D
+﻿namespace Ara3D
 {
     /// <summary>
-    /// A surface or smoothing group is a set of polygons in a mesh that represent a portion of a mesh, usually contiguous.
-    /// In Revit this is called a "Face". This might be identified as a smoothing group in 3ds Max. 
-    /// https://en.wikipedia.org/wiki/Polygon_mesh. A surface will have the same material id. 
-    /// </summary>
-    public interface ISurface
-    {
-        int SurfaceId { get; }
-        int ObjectId { get; }
-        int MaterialId { get; }
-    }
-
-    /// <summary>
     /// An IScene is a generic representation of a 3D scene graph and associated meta-data.
+    /// This is a minimal representation of a scene graph but it is not very efficient. 
+    /// Normally you would use a Scene object. 
     /// </summary>
     public interface IScene
     {
         ISceneNode Root { get; }
-        ILookup<string, IPropertiesLookup> AllProperties { get; }
-    }
-
-    /// <summary>
-    /// This is the next generation of scene graphs
-    /// </summary>
-    public interface IScene2 : IScene
-    {
-        ISceneNode[] Nodes { get; }
-        IGeometry[] Geometries { get; }
-        Memory<byte>[] Assets { get; }
-        ISurface[] Surfaces { get; }
-
-        IPropertiesLookup MaterialProperties { get; }
-        IPropertiesLookup AssetProperties { get; }
-        IPropertiesLookup SurfaceProperties { get; }
-        IPropertiesLookup NodeProperties { get; }
-        IPropertiesLookup GeometryProperties { get; }
-        IPropertiesLookup ObjectProperties { get; }
+        ISceneProperties Properties { get; }
+        IArray<ISceneNode> Nodes { get; }
+        IArray<IGeometry> Geometries { get; }
+        IArray<ISurfaceRelation> Surfaces { get; }
     }
 
     /// <summary>
@@ -68,4 +40,37 @@ namespace Ara3D
     /// </summary>
     public interface IProperties : ILookup<string, string>
     { }
+
+    /// <summary>
+    /// Represents the relationship between a surface and an object and material.
+    /// A surface is a set of polygons in a mesh that represent a portion of a mesh, usually contiguous.
+    /// In Revit this is called a "Face". This might be identified as a smoothing group in 3ds Max. 
+    /// https://en.wikipedia.org/wiki/Polygon_mesh. 
+    /// When combined with the G3D a "Surface IDs" array associated with each face 
+    /// one can omit object id and material id attributes. 
+    /// The mesh of a "surface" is defined as all geometries in a scene with the given surface ID. 
+    /// </summary>
+    public interface ISurfaceRelation
+    {
+        int SurfaceId { get; }
+        int ObjectId { get; }
+        int MaterialId { get; }
+    }
+
+    /// <summary>
+    /// This interface provides accellerated access to common scene properties. 
+    /// There are different types of properties and they are relationships 
+    /// between integers and strings. 
+    /// Properties can be associated with anything, but most commonly
+    /// they are materials, surfaces, nodes, geometries, and objects.
+    /// </summary>
+    public interface ISceneProperties
+    {
+        ILookup<string, IPropertiesLookup> AllProperties { get; }
+        IPropertiesLookup Materials { get; }
+        IPropertiesLookup Surfaces { get; }
+        IPropertiesLookup Nodes { get; }
+        IPropertiesLookup Geometries { get; }
+        IPropertiesLookup Objects { get; }
+    } 
 }

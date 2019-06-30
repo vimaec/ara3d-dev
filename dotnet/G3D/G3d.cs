@@ -4,6 +4,7 @@
     Usage licensed under terms of MIT License
 
     The G3D format is a simple, generic, and efficient representation of geometry data. 
+    It is based on the BFAST container form.
 */
 
 using System;

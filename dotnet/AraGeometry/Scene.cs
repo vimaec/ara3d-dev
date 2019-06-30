@@ -25,7 +25,7 @@ namespace Ara3D
         public IScene Scene { get; set; }
         public int Id { get; set; }
         public IProperties Properties { get; set;}
-
+         
         public Matrix4x4 Transform { get; } 
         public IGeometry Geometry { get; }
         public ISceneNode Parent => _Parent;
@@ -51,16 +51,48 @@ namespace Ara3D
         public int ValueIndex { get; }
     }
 
+    public class SceneProperties : ISceneProperties
+    {
+        public SceneProperties(ILookup<string, IPropertiesLookup> properties)
+        {
+            Materials = AllProperties.GetOrDefault("Material") ?? PropertiesLookup.Empty;
+            Surfaces = AllProperties.GetOrDefault("Surface") ?? PropertiesLookup.Empty;
+            Nodes = AllProperties.GetOrDefault("Node") ?? PropertiesLookup.Empty;
+            Geometries = AllProperties.GetOrDefault("Geometry") ?? PropertiesLookup.Empty;
+            Objects = AllProperties.GetOrDefault("Object") ?? PropertiesLookup.Empty;
+        }
+
+        public ILookup<string, IPropertiesLookup> AllProperties { get; }
+
+        public IPropertiesLookup Materials { get; }
+        public IPropertiesLookup AssetProperties { get; }
+        public IPropertiesLookup Surfaces { get; }
+        public IPropertiesLookup Nodes { get; }
+        public IPropertiesLookup Geometries { get; }
+        public IPropertiesLookup Objects { get; }
+    }
+
     public class Scene : IScene
     {
-        public Scene(ISceneNode root, ILookup<string, IPropertiesLookup> properties)
+        public Scene(
+            ISceneNode root, 
+            IArray<ISceneNode> nodes, 
+            IArray<IGeometry> geometries,
+            IArray<ISurfaceRelation> surfaces,
+            ISceneProperties properties)
         {
             Root = root;
-            AllProperties = properties;
+            Nodes = nodes;
+            Geometries = geometries;
+            Surfaces = surfaces;
+            Properties = properties;
         }
 
         public ISceneNode Root { get; }
-        public ILookup<string, IPropertiesLookup> AllProperties { get; }
+        public ISceneProperties Properties { get; }
+        public IArray<ISceneNode> Nodes { get; }
+        public IArray<IGeometry> Geometries { get; }
+        public IArray<ISurfaceRelation> Surfaces { get; }
     }
 
     public class Properties : LookupFromDictionary<string, string>, IProperties
