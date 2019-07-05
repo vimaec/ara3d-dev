@@ -166,8 +166,14 @@ namespace Ara3D
             if (mono == null || mono.gameObject == null)
                 return null;
             if (renderable)
-                mono.gameObject.AddComponent<MeshRenderer>();
-            return mono.gameObject.AddComponent<MeshFilter>().mesh = new Mesh();
+            {
+                if (mono.gameObject.GetComponent<MeshRenderer>() == null)
+                    mono.gameObject.AddComponent<MeshRenderer>();
+            }
+            var filter = mono.gameObject.GetComponent<MeshFilter>();
+            if (filter == null)
+                return mono.gameObject.AddComponent<MeshFilter>().sharedMesh = new Mesh();
+            return filter.sharedMesh;
         }
 
         public static Mesh GetMesh(this MonoBehaviour mono)

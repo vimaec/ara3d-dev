@@ -12,6 +12,7 @@
         IArray<ISceneNode> Nodes { get; }
         IArray<IGeometry> Geometries { get; }
         IArray<ISurfaceRelation> Surfaces { get; }
+        IArray<INamedBuffer> Assets { get; }
     }
 
     /// <summary>

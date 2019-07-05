@@ -216,13 +216,13 @@ namespace Ara3D
         /// <summary>
         /// Converts an array of byte arrays to a BFAST file format in memory. 
         /// </summary>
-        public static byte[] ToBFastBytes(this IEnumerable<byte[]> buffers, IEnumerable<string> names)
+        public static byte[] ToBFastBytes(this IEnumerable<byte[]> buffers, IEnumerable<string> names = null)
             => buffers.Select(BufferExtensions.ToBuffer).ToBFastBytes(names);
 
         /// <summary>
         /// Converts an array of byte arrays to a BFAST file format in memory. 
         /// </summary>
-        public static byte[] ToBFastBytes(this IEnumerable<IBuffer> buffers, IEnumerable<string> names)
+        public static byte[] ToBFastBytes(this IEnumerable<IBuffer> buffers, IEnumerable<string> names = null)
             => buffers.ToNamedBuffers(names).ToBFastBytes();
 
         /// <summary>

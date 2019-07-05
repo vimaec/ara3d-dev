@@ -131,13 +131,16 @@ $@"{{
             }
         }
 
-        public static G3D Create(IList<Memory<byte>> buffers)
+        public static G3D Create(IEnumerable<IBuffer> buffers)
+            => Create(buffers.ToList());
+
+        public static G3D Create(IList<IBuffer> buffers)
         {
             if (buffers.Count < 2)
                 throw new Exception("Expected at least two data buffers in file: header, and attribute descriptor array");                
 
-            var header = buffers[0].ToBytes().ToUtf8();
-            var descriptors = buffers[1].Span.ToStructs<AttributeDescriptor>().ToArray();
+            var header = buffers[0].Bytes.ToArray().ToUtf8();
+            var descriptors = buffers[1].Bytes.ToStructs<AttributeDescriptor>().ToArray();
             buffers = buffers.Skip(2).ToList();
             if (descriptors.Length != buffers.Count)
                 throw new Exception("Incorrect number of descriptors");
@@ -153,7 +156,7 @@ $@"{{
             => Create(new Memory<byte>(bytes));
 
         public static G3D Create(Memory<byte> bytes)
-            => Create(BFast.ToBFastBuffers(bytes));
+            => Create(BFast.ToBFastRawBuffers(bytes));
 
         public static G3D ReadFile(string filePath)
             => Create(File.ReadAllBytes(filePath));

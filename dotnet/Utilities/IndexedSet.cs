@@ -27,7 +27,10 @@ namespace Ara3D
         public IEnumerable<K> OrderedKeys()
             => this.OrderBy(kv => kv.Value).Select(kv => kv.Key);
 
-        public List<K> ToList()
+        public List<K> ToOrderedList()
             => OrderedKeys().ToList();
+
+        public K[] ToOrderedArray()
+            => OrderedKeys().ToArray();
     }
 }

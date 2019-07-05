@@ -3,8 +3,11 @@
     Copyright 2018, Ara 3D, Inc.
     Usage licensed under terms of MIT License
 
-    The S3D data format is based on the BFAST format. The first BFAST array contains the names of each of the buffers. 
-    The buffers are named as follows, and can occur in any order. 
+    The S3D data format is an efficient and generic data format for representing 3D scene data and associated 
+    assets. 
+    
+    The first BFAST array contains the names of each of the buffers. The buffers are named as follows, 
+    and can occur in any order:
 
     * meta.json - File meta-information. Basic information about the file author and version as a JSON object. 
     * nodes.array - A binary array of serializable node structures. 
@@ -42,36 +45,94 @@ using System.Runtime.InteropServices;
 namespace Ara3D
 {   
     /// <summary>
-    /// Question: does this store information in a more "serializable" format and do the work in the
-    /// constructor, or something else? 
+    /// WIP: Document versioning and meta-information. 
+    /// This should provide enough information to track where a document came from, and given
+    /// a URN we should be able to use a resolver to look up in a database find the S3D and the source documents. 
+    /// Note that an S3D might be exported from a source document (say a RVT) but still be considered 
+    /// a revision of a previous S3D exported from an earlier version of that Revit document. So 
+    /// the previous S3D was used track changes between the RVT and a previous export. 
     /// </summary>
-    public class S3D : IScene
+    public class S3DMetaData
     {
-        public S3D(
-            ILookup<string, string> meta, 
-            ISceneNode root, 
-            ISceneNode[] nodes, 
-            IGeometry[] geometries, 
-            ISurfaceRelation[] surfaces, 
-            ILookup<string, IPropertiesLookup> properties)
-        {
-            Meta = meta;
-            Root = root;
-            Nodes = nodes ?? new ISceneNode[0];
-            Geometries = geometries ?? new IGeometry[0];
-            Surfaces = surfaces ?? new ISurfaceRelation[0];
-        }
+        /// <summary>
+        /// Unique identifier of the current S3D scene
+        /// </summary>
+        public string Guid;
+        
+        /// <summary>
+        /// The date time that the S3D was created. 
+        /// </summary>
+        public DateTime DateTime;
+        
+        /// <summary>
+        /// Version of the S3D document. 
+        /// </summary>
+        public Version DocumentVersion;
+        
+        /// <summary>
+        /// Organization name: should be unique. 
+        /// </summary>
+        public string Organization;
+        
+        /// <summary>
+        /// Project name.
+        /// </summary>
+        public string Project;
+        
+        /// <summary>
+        /// Optional name of the document 
+        /// </summary>
+        public string DocumentName;
+        
+        /// <summary>
+        /// Version of the S3D format 
+        /// </summary>
+        public Version S3DVersion;
 
-        public ISceneNode Root { get; }
-        public ISceneNode[] Nodes { get; }
-        public IGeometry[] Geometries { get; }
-        public ISurfaceRelation[] Surfaces { get; }
-        public INamedBuffer[] Assets { get; }
-        public ILookup<string, string> Meta { get; }
+        /// <summary>
+        /// A computed URN the identifies this document. 
+        /// s3d:filetype:organization:project-name:document-name:date-time:major:minor:revision:guid
+        /// </summary>
+        public string URN;
+
+        /// <summary>
+        /// A URN that identifies the document that was used as a source for this document
+        /// this might be a URN of an S3D, or it might be another file that the S3D 
+        /// was exported from.
+        /// </summary>
+        public string SourceDocumentURN;
+
+        /// <summary>
+        /// If this a revision of an S3D, this URN identifies the S3D that was the parent revision
+        /// </summary>
+        public string S3DParentURN;
+
+        /// <summary>
+        /// If this a revision of an S3D, this URN identifies the S3D that was the original version.
+        /// </summary>
+        public string OriginS3DURN;
+
+        /// <summary>
+        /// Information about who this document belongs to any copyright notice. 
+        /// </summary>
+        public string Attribution;
     }
 
-    public static class S3DExtensions
+    /// <summary>
+    /// An S3D class is a serializable container for scene data and assets.
+    /// </summary>
+    public class S3D 
     {
+        public string Meta { get; set; }
+        public SerializableNode Root { get; set; }
+        public SerializableNode[] Nodes { get; set; } = new SerializableNode[0];
+        public IG3D[] Geometries { get; set; } = new IG3D[0];
+        public SerializableSurface[] Surfaces { get; set; } = new SerializableSurface[0];
+        public SerializableProperty[] Properties { get; set; } = new SerializableProperty[0];
+        public string[] StringData { get; set; } = new string[0];
+        public INamedBuffer[] Assets { get; set; } = new INamedBuffer[0];
+
+        public const string DefaultMeta = "{ \"version\": \"1.0.0\", \"filetype\", \"s3d\" }";
         public const string SectionNameMetaJson = "meta.json";
         public const string SectionNameNodesArray = "nodes.array";
         public const string SectionNameGeometriesBfast = "geometries.bfast";
@@ -79,133 +140,23 @@ namespace Ara3D
         public const string SectionNamePropertiesBFast = "properties.bfast";
         public const string SectionNameStringData = "strings.data";
         public const string SectionNameAssetsBfast = "assets.bfast";
+    }
 
-        public static string ToJsonString(this ILookup<string, string> lookup)
-            => "{" + lookup.Keys.Select(k => $"{k.Quoted()}:{lookup[k].Quoted()}" + "}");
-
-        public static SerializableNode CreateSerializableNode(int geometry, int parent, Matrix4x4 matrix)
-             => new SerializableNode { GeometryIndex = geometry, InstanceIndex = -1, ParentIndex = parent, WorldTransform = matrix };
-
-        public static SerializableSurface ToSerializableSurface(this ISurfaceRelation surface)
-            => new SerializableSurface { MaterialId = surface.MaterialId, ObjectId = surface.ObjectId, SurfaceId = surface.SurfaceId };
-
-        public static SerializableProperty CreateSerializableProperty(int elementId, string key, string value, IndexedSet<string> strings)
-            => new SerializableProperty { ItemId = elementId, KeyStringId = strings.Add(key), ValueStringId = strings.Add(value) };
-
-        public static IEnumerable<SerializableProperty> CreateSerializableProperties(int elementId, IProperties props, IndexedSet<string> strings)
-            => props.Keys.ToEnumerable().Select(k => CreateSerializableProperty(elementId, k, props[k], strings));
-
-        public static IEnumerable<SerializableProperty> ToSerializableProperties(this IPropertiesLookup props, IndexedSet<string> strings)
-            => props.Keys.ToEnumerable().SelectMany(k => CreateSerializableProperties(k, props[k], strings));
-
-        public static List<byte[]> ToBFastBuffers<T>(this Dictionary<string, T[]> dict) where T: struct
+    /// <summary>
+    /// Implements 
+    /// </summary>
+    public class S3DScene: IScene
+    {
+        public S3DScene(S3D data)
         {
-            var r = new List<byte[]>();
-            var names = dict.Keys.JoinWithNull();
-            r.Add(names.ToBytesUtf8());
-            r.AddRange(dict.Values.Select(v => BFast.ToBytes(v)));
-            return r;
+            // TODO:
         }
 
-        public static void WriteToFolder(this S3D scene, string folder)
-        {
-            // Write the meta-data 
-            File.WriteAllText(Path.Combine(folder, SectionNameMetaJson), scene.Meta.ToJsonString());
-
-            // Compute the node lookup and the list of nodes 
-            var nodeLookup = scene.Nodes.ToIndexedSet();
-            var nodes = nodeLookup.ToList();
-
-            // Compute the geomery lookup and the list of geometries 
-            var geometryLookup = scene.GeometryLookup();
-            var geometries = geometryLookup.ToList();
-
-            // Compute the list of serializable nodes
-            var serializableNodes = nodes.Select(n =>
-                CreateSerializableNode(
-                    n.Geometry == null ? -1 : geometryLookup[n.Geometry],
-                    n.Parent == null ? -1 : nodeLookup[n.Parent],
-                    n.Transform)).ToArray();
-                        
-            // Write the nodes 
-            Util.WriteFixedLayoutClassList(Path.Combine(folder, SectionNameNodesArray), serializableNodes);
-
-            // Get the geometry bytes and write them all to file.
-            var g3ds = geometries.Select((g, i) => g.ToG3D().ToBytes().ToNamedBuffer(i.ToString()));
-            g3ds.ToBFastFile(Path.Combine(folder, SectionNameGeometriesBfast));
-
-            // surfaces.array - An array serializable surfaces
-            var serializableSurfaces = scene.Surfaces.Select(ToSerializableSurface).ToArray();
-            Util.WriteFixedLayoutClassList(Path.Combine(folder, SectionNameSurfacesArray), serializableSurfaces);
-            
-            // Create a new string table
-            var localStrings = new IndexedSet<string>();
-
-            // Get all properties 
-            var propsDictionary = new Dictionary<string, SerializableProperty[]>();
-            foreach (var k in scene.AllProperties.Keys.ToEnumerable())
-            {
-                var props = scene.AllProperties[k].ToSerializableProperties(localStrings);
-                propsDictionary.Add(k, props.ToArray());                          
-            }
-            
-            // TODO: write the props
-
-            // Write the string data 
-            var stringData = string.Join("\0", localStrings.Values);
-            File.WriteAllText(Path.Combine(folder, SectionNameStringData), stringData);
-
-            // Write the assets 
-            scene.Assets.ToBFastFile(Path.Combine(folder, SectionNameAssetsBfast));
-        }
-
-        public static IScene2 ReadFromFolder(string folder)
-        {
-            var metaJson = File.ReadAllText(Path.Combine(folder, SectionNameMetaJson));
-
-            var serializedNodes = Util.ReadFixedLayoutClassList<SerializableNode>(Path.Combine(folder, SectionNameNodesArray));
-
-            var g3dBFastFile = Path.Combine(folder, SectionNameGeometriesBfast);
-            var g3dBFast = BFast.Read(g3dBFastFile);
-
-            // TODO: extract the geometries (with names) from the g3DBFast 
-
-            // surfaces.array - An array serializable surfaces
-            var surfaceFileName = Path.Combine(folder, SectionNameSurfacesArray);
-            var serializableSurfaces = Util.ReadFixedLayoutClassList<SerializableSurface>(surfaceFileName);
-
-            // Create a new string table
-            var localStrings = new IndexedSet<string>();
-
-            // Read all properties 
-            var propsBFast = Util.ReadFixedLayoutClassList<SerializableProperty>(Path.Combine(folder, SectionNamePropertiesBFast));
-            
-            // TODO: get the dictionary out of the propsBFast. Note that each propertySet is going to be an array of props, so I will have to cast it.
-
-            // Read the string data 
-            var rawStringData = File.ReadAllText(Path.Combine(folder, SectionNameStringData));
-            var stringTable = rawStringData.SplitAtNull();
-
-            // Read the assets 
-            var assetsFilePath = Path.Combine(folder, SectionNameAssetsBfast);
-            var assets = BFast.Read(assetsFilePath);
-
-            // 
-            throw new NotImplementedException();
-        }
-
-        public static S3D ToS3D(this IScene scene)
-        {
-            var meta = new Dictionary<string, string> {
-                { "version", "1.0.0" },
-                { "filetype", "s3d" } }.ToLookup();
-            var nodes = scene.AllNodes().ToArray();
-            var geometries = scene.AllDistinctGeometries().ToArray();
-            var surfaces = new ISurfaceRelation[0];
-            var assets = new INamedBuffer[0];
-            var props = scene.AllProperties;
-            return new S3D(meta, scene.Root, nodes, geometries, surfaces, assets, props);
-        }
+        public ISceneNode Root => throw new NotImplementedException();
+        public ISceneProperties Properties => throw new NotImplementedException();
+        public IArray<ISceneNode> Nodes => throw new NotImplementedException();
+        public IArray<IGeometry> Geometries => throw new NotImplementedException();
+        public IArray<ISurfaceRelation> Surfaces => throw new NotImplementedException();
     }
 
     [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -224,12 +175,162 @@ namespace Ara3D
         public int MaterialId;
         public int ObjectId;
     }
-
+    
     [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class SerializableProperty
     {
         public int ItemId;
         public int KeyStringId;
         public int ValueStringId;
+    }
+
+    public static class S3DExtensions
+    {
+        /*
+        ILookup<string, string> lookup)
+            => "{" + lookup.Keys.Select(k => $"{k.Quoted()}:{lookup[k].Quoted()}" + "}");
+        */
+
+        public static SerializableNode CreateSerializableNode(int geometry, int parent, Matrix4x4 matrix)
+
+             => new SerializableNode { GeometryIndex = geometry, InstanceIndex = -1, ParentIndex = parent, WorldTransform = matrix };
+
+        public static SerializableSurface ToSerializableSurface(this ISurfaceRelation surface)
+            => new SerializableSurface { MaterialId = surface.MaterialId, ObjectId = surface.ObjectId, SurfaceId = surface.SurfaceId };
+
+        public static SerializableProperty CreateSerializableProperty(int elementId, string key, string value, IndexedSet<string> strings)
+            => new SerializableProperty { ItemId = elementId, KeyStringId = strings.Add(key), ValueStringId = strings.Add(value) };
+
+        public static IEnumerable<SerializableProperty> CreateSerializableProperties(int elementId, IProperties props, IndexedSet<string> strings)
+            => props.Keys.ToEnumerable().Select(k => CreateSerializableProperty(elementId, k, props[k], strings));
+
+        public static IEnumerable<SerializableProperty> ToSerializableProperties(this IPropertiesLookup props, IndexedSet<string> strings)
+            => props.Keys.ToEnumerable().SelectMany(k => CreateSerializableProperties(k, props[k], strings));
+
+        public static List<byte[]> ToBFastBuffers<T>(this Dictionary<string, T[]> dict) where T : struct
+        {
+            var r = new List<byte[]>();
+            var names = dict.Keys.JoinWithNull();
+            r.Add(names.ToBytesUtf8());
+            r.AddRange(dict.Values.Select(v => BFast.ToBytes(v)));
+            return r;
+        }
+
+        public static S3D ToS3D(this IScene scene, INamedBuffer[] assets)
+        {
+            var r = new S3D();
+
+            // Compute the node lookup and the list of nodes 
+            var nodeLookup = scene.Nodes.ToEnumerable().ToIndexedSet();
+            var nodes = nodeLookup.ToOrderedList();
+
+            // Compute the geomery lookup and the list of geometries 
+            var geometryLookup = scene.GeometryLookup();
+            var geometries = geometryLookup.ToOrderedList();
+
+            // Compute the list of serializable nodes
+            r.Nodes = nodes.Select(n =>
+               CreateSerializableNode(
+                    n.Geometry == null ? -1 : geometryLookup[n.Geometry],
+                    n.Parent == null ? -1 : nodeLookup[n.Parent],
+                    n.Transform)).ToArray();
+
+            // Get the geometry bytes and write them all to file.
+            r.Geometries = geometries.Select((g, i) => g.ToG3D()).ToArray();
+
+            // surfaces.array - An array serializable surfaces
+            r.Surfaces = scene.Surfaces.Select(ToSerializableSurface).ToArray();
+
+            // Create a new string table
+            var localStrings = new IndexedSet<string>();
+
+            // Get all properties 
+            var allSceneProps = scene.Properties.AllProperties;
+            var allProps = new List<SerializableProperty>();
+            foreach (var k in allSceneProps.Keys.ToEnumerable())
+            {
+                var localProps = allSceneProps[k].ToSerializableProperties(localStrings);
+                allProps.AddRange(localProps);
+            }
+            r.Properties = allProps.ToArray();
+
+            // TODO: write the props
+            r.StringData = localStrings.ToOrderedArray();
+
+            r.Assets = assets;
+            return r;
+        }
+
+        public static INamedBuffer ToNamedBuffer(this IG3D g, int i)
+            => g.ToBytes().ToNamedBuffer(i.ToString());
+
+        public static void WriteToFolder(this S3D scene, string folder)
+        {
+            // Write the nodes 
+            Util.WriteFixedLayoutClassList(Path.Combine(folder, S3D.SectionNameNodesArray), scene.Nodes);
+
+            // Get the geometry bytes and write them all to file.            
+            scene.Geometries.Select(ToNamedBuffer).ToBFastFile(Path.Combine(folder, S3D.SectionNameGeometriesBfast));
+
+            // surfaces.array - An array serializable surfaces
+            Util.WriteFixedLayoutClassList(Path.Combine(folder, S3D.SectionNameSurfacesArray), scene.Surfaces);
+
+            // WRite the properties 
+
+            // Write the string data 
+            var stringData = string.Join("\0", scene.StringData);
+            File.WriteAllText(Path.Combine(folder, S3D.SectionNameStringData), stringData);
+
+            // Wri{{3.231te the assets 
+            scene.Assets.ToBFastFile(Path.Combine(folder, S3D.SectionNameAssetsBfast));
+        }
+
+        public static IScene ReadFromFolder(string folder)
+        {
+            var metaJson = File.ReadAllText(Path.Combine(folder, S3D.SectionNameMetaJson));
+
+            var serializedNodes = Util.ReadFixedLayoutClassList<SerializableNode>(Path.Combine(folder, S3D.SectionNameNodesArray));
+
+            var g3dBFastFile = Path.Combine(folder, S3D.SectionNameGeometriesBfast);
+            var g3dBFast = BFast.Read(g3dBFastFile);
+
+            // TODO: extract the geometries (with names) from the g3DBFast 
+
+            // surfaces.array - An array serializable surfaces
+            var surfaceFileName = Path.Combine(folder, S3D.SectionNameSurfacesArray);
+            var serializableSurfaces = Util.ReadFixedLayoutClassList<SerializableSurface>(surfaceFileName);
+
+            // Create a new string table
+            var localStrings = new IndexedSet<string>();
+
+            // Read all properties 
+            var propsBFast = Util.ReadFixedLayoutClassList<SerializableProperty>(Path.Combine(folder, S3D.SectionNamePropertiesBFast));
+
+            // TODO: get the dictionary out of the propsBFast. Note that each propertySet is going to be an array of props, so I will have to cast it.
+
+            // Read the string data 
+            var rawStringData = File.ReadAllText(Path.Combine(folder, S3D.SectionNameStringData));
+            var stringTable = rawStringData.SplitAtNull();
+
+            // Read the assets 
+            var assetsFilePath = Path.Combine(folder, S3D.SectionNameAssetsBfast);
+            var assets = BFast.Read(assetsFilePath);
+
+            // 
+            throw new NotImplementedException();
+        }
+
+        public static S3D ToS3D(this IScene scene)
+        {
+            var meta = "{ \"version\": \"1.0.0\", \"filetype\", \"s3d\" }";
+            var nodes = scene.AllNodes().ToArray();
+            var geometries = scene.AllDistinctGeometries().ToArray();
+            var surfaces = new ISurfaceRelation[0];
+            var assets = new INamedBuffer[0];
+            var props = scene.Properties;
+            return new S3D {
+                Meta = meta,
+                Root = scene.Root, nodes, geometries, surfaces, assets, props };
+        }
     }
 }

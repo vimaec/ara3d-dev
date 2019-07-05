@@ -13,6 +13,7 @@ namespace Ara3D.UnityBridge
         public UnityEngine.Vector3[] Vertices;
         public UnityEngine.Vector3[] Normals;
         public UnityEngine.Vector4[] Tangents;
+        public int[] Indices;
         public Color32[] Colors;
 
         public MeshClone(MeshClone other)
@@ -22,6 +23,7 @@ namespace Ara3D.UnityBridge
 
         public void CopyFrom(MeshClone other)
         {
+            Indices = other.Indices;
             UVs = other.UVs?.ToArray();
             Vertices = other.Vertices?.ToArray();
             Colors = other.Colors?.ToArray();
@@ -31,6 +33,7 @@ namespace Ara3D.UnityBridge
 
         public void CopyFrom(Mesh mesh)
         {
+            Indices = mesh.triangles;
             UVs = mesh.uv?.ToArray();
             Vertices = mesh.vertices?.ToArray();
             Colors = mesh.colors32?.ToArray();
@@ -46,6 +49,8 @@ namespace Ara3D.UnityBridge
         public void AssignToMesh(Mesh mesh)
         {
             // NOTE: maybe this could be optimized, so that only changed data is copied over 
+            mesh.Clear();
+            if (Indices != null) mesh.triangles = Indices;
             if (Vertices != null) mesh.vertices = Vertices;
             if (UVs != null) mesh.uv = UVs;
             if (Colors != null) mesh.colors32 = Colors;

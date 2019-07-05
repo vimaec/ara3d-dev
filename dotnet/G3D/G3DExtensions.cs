@@ -10,22 +10,25 @@ namespace Ara3D
         public static int ElementCount(this IAttribute x)
             => x.DataCount / x.Descriptor.DataArity;
 
-        public static IAttribute ToAttribute(this Memory<byte> data, AttributeDescriptor desc)
+        public static IAttribute ToAttribute(this IBuffer buffer, AttributeDescriptor desc)
+            => buffer.Bytes.ToAttribute(desc);
+
+        public static IAttribute ToAttribute(this Span<byte> data, AttributeDescriptor desc)
         { 
             switch (desc.DataType)
             {
                 case DataType.dt_int8:
-                    return data.Span.Cast<byte>().ToAttribute(desc);
+                    return data.Cast<byte>().ToAttribute(desc);
                 case DataType.dt_int16:
-                    return data.Span.Cast<short>().ToAttribute(desc);
+                    return data.Cast<short>().ToAttribute(desc);
                 case DataType.dt_int32:
-                    return data.Span.Cast<int>().ToAttribute(desc);
+                    return data.Cast<int>().ToAttribute(desc);
                 case DataType.dt_int64:
-                    return data.Span.Cast<long>().ToAttribute(desc);
+                    return data.Cast<long>().ToAttribute(desc);
                 case DataType.dt_float32:
-                    return data.Span.Cast<float>().ToAttribute(desc);
+                    return data.Cast<float>().ToAttribute(desc);
                 case DataType.dt_float64:
-                    return data.Span.Cast<double>().ToAttribute(desc);
+                    return data.Cast<double>().ToAttribute(desc);
             }
             throw new Exception($"{desc.DataType} is not a valid data type");
         }
@@ -268,14 +271,14 @@ namespace Ara3D
         public static G3D ReadFromStream(Stream stream)
             => G3D.Create(stream.ReadAllBytes());
 
-        public static IList<Memory<byte>> ToBuffers(this IG3D g3D)
+        public static IList<INamedBuffer> ToBuffers(this IG3D g3D)
         {
-            var buffers = new List<Memory<byte>>();
-            buffers.Add(G3D.DefaultHeader.ToBytesAscii().ToMemory());
+            var buffers = new List<INamedBuffer>();
+            buffers.Add(G3D.DefaultHeader.ToBytesAscii().ToNamedBuffer("header"));
             var descriptors = g3D.Descriptors().ToArray();
-            buffers.Add(descriptors.AsMemory().ToBytes());
+            buffers.Add(descriptors.ToNamedBuffer("descriptors"));
             foreach (var attr in g3D.Attributes)
-                buffers.Add(attr.Bytes);
+                buffers.Add(attr.Bytes.ToNamedBuffer(attr.Descriptor.ToString()));
             return buffers;
         }
              

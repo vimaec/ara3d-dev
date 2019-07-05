@@ -97,7 +97,7 @@ namespace Ara3D
         public static IScene ToScene(this IEnumerable<ISceneNode> nodes)
         {
             var scene = nodes.FirstOrDefault()?.Scene;
-            var props = scene?.AllProperties;
+            var props = scene?.Properties;
             Debug.Assert(nodes.All(n => n.Scene == scene));
 
             var newNodes = new List<ISceneNode> {new SceneNode(null)};
@@ -160,7 +160,7 @@ namespace Ara3D
         public static int NumNodes(this IScene scene)
             => scene.AllNodes().Count();
 
-        public static IScene SetProperties(this IScene scene, ILookup<string, IPropertiesLookup> properties)
+        public static IScene SetProperties(this IScene scene, ISceneProperties properties)
             => new Scene(scene.Root, properties);
 
         public static Dictionary<IGeometry, int> GeometryCounts(this IScene scene)

@@ -18,6 +18,7 @@ namespace Ara3D
         public static List<byte[]> twoSmallBuffers = smallBuffer.Repeat(2).ToList();
         public static List<byte[]> fiveBigBuffers = bigBuffer.Repeat(5).ToList();
 
+
         public static void TestBFast(IEnumerable<byte[]> buffers)
         {
             var total = buffers.Sum(b => b.Length);
@@ -25,13 +26,13 @@ namespace Ara3D
             Console.WriteLine($"Testing BFAST with {count} buffers and a total of {total} bytes");
             var bfastBytes = buffers.ToBFastBytes();
             Console.WriteLine($"Generated a BFAST with {bfastBytes.Length} bytes");
-            var buffers2 = bfastBytes.ToBFastBuffers();
+            var buffers2 = bfastBytes.ToBFastRawBuffers().ToList();
             Assert.IsTrue(bfastBytes.Length > total);
             Assert.AreEqual(count, buffers2.Count);
             var i = 0;
             foreach (var buffer in buffers)
             {
-                var buffer2 = buffers2[i++].ToBytes();
+                var buffer2 = buffers2[i++].Bytes.ToArray();
                 Assert.AreEqual(buffer, buffer2);
             }
             var bfastBytes2 = buffers.ToBFastBytes();

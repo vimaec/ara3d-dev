@@ -45,9 +45,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ara3DCustomProperties.cs" />
     <Compile Include="Deformer.cs" />
     <Compile Include="DeformerEditor.cs" />
-    <Compile Include="ProceduralGeometry.cs" />
+    <Compile Include="ProceduralGeometryObject.cs" />
     <Compile Include="ProceduralMesh.cs" />
     <Compile Include="UnityConverters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -50,7 +50,6 @@
       <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="Geometry.cs" />
-    <Compile Include="GeometryReader.cs" />
     <Compile Include="IScene.cs" />
     <Compile Include="PointsExtensions.cs" />
     <Compile Include="Primitives.cs" />

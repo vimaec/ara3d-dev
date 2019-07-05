@@ -55,6 +55,7 @@ namespace Ara3D
     {
         public SceneProperties(ILookup<string, IPropertiesLookup> properties)
         {
+            Scene = AllProperties.GetOrDefault("Scene") ?? PropertiesLookup.Empty;
             Materials = AllProperties.GetOrDefault("Material") ?? PropertiesLookup.Empty;
             Surfaces = AllProperties.GetOrDefault("Surface") ?? PropertiesLookup.Empty;
             Nodes = AllProperties.GetOrDefault("Node") ?? PropertiesLookup.Empty;
@@ -64,28 +65,34 @@ namespace Ara3D
 
         public ILookup<string, IPropertiesLookup> AllProperties { get; }
 
+        public IPropertiesLookup Scene { get; }
         public IPropertiesLookup Materials { get; }
         public IPropertiesLookup AssetProperties { get; }
         public IPropertiesLookup Surfaces { get; }
         public IPropertiesLookup Nodes { get; }
         public IPropertiesLookup Geometries { get; }
         public IPropertiesLookup Objects { get; }
+
+        public static SceneProperties Empty = new SceneProperties(new EmptyLookup<string, IPropertiesLookup>());
     }
 
     public class Scene : IScene
     {
         public Scene(
-            ISceneNode root, 
-            IArray<ISceneNode> nodes, 
-            IArray<IGeometry> geometries,
-            IArray<ISurfaceRelation> surfaces,
-            ISceneProperties properties)
+            ISceneNode root,
+            ISceneProperties properties,
+            IArray<ISceneNode> nodes = null, 
+            IArray<IGeometry> geometries = null,
+            IArray<ISurfaceRelation> surfaces = null
+            )
         {
             Root = root;
             Nodes = nodes;
             Geometries = geometries;
             Surfaces = surfaces;
             Properties = properties;
+
+            // TODO: compute the nodes, geometries and surfaces if absent
         }
 
         public ISceneNode Root { get; }

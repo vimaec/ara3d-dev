@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BFast.cs" />
+    <Compile Include="Buffers.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Memory">
