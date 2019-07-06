@@ -782,7 +782,7 @@ namespace Ara3D
             => new G3DAdapter(g);
 
         public static IG3D ToG3D(this IGeometry g)
-            => g.Attributes.ToG3D();
+            => g is IG3D g3d ? g3d : g.Attributes.ToG3D();
 
         public static bool Planar(this IGeometry g, float tolerance = Constants.Tolerance)
         {

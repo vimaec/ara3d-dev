@@ -157,6 +157,7 @@ namespace Ara3D
         public IArray<ISceneNode> Nodes => throw new NotImplementedException();
         public IArray<IGeometry> Geometries => throw new NotImplementedException();
         public IArray<ISurfaceRelation> Surfaces => throw new NotImplementedException();
+        public IArray<INamedBuffer> Assets => throw new NotImplementedException();
     }
 
     [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -216,7 +217,7 @@ namespace Ara3D
             return r;
         }
 
-        public static S3D ToS3D(this IScene scene, INamedBuffer[] assets)
+        public static S3D ToS3D(this IScene scene, INamedBuffer[] assets = null)
         {
             var r = new S3D();
 
@@ -235,7 +236,7 @@ namespace Ara3D
                     n.Parent == null ? -1 : nodeLookup[n.Parent],
                     n.Transform)).ToArray();
 
-            // Get the geometry bytes and write them all to file.
+            // Get the geometries as G3D 
             r.Geometries = geometries.Select((g, i) => g.ToG3D()).ToArray();
 
             // surfaces.array - An array serializable surfaces
@@ -257,7 +258,7 @@ namespace Ara3D
             // TODO: write the props
             r.StringData = localStrings.ToOrderedArray();
 
-            r.Assets = assets;
+            r.Assets = assets ?? new INamedBuffer[0];
             return r;
         }
 
@@ -318,19 +319,6 @@ namespace Ara3D
 
             // 
             throw new NotImplementedException();
-        }
-
-        public static S3D ToS3D(this IScene scene)
-        {
-            var meta = "{ \"version\": \"1.0.0\", \"filetype\", \"s3d\" }";
-            var nodes = scene.AllNodes().ToArray();
-            var geometries = scene.AllDistinctGeometries().ToArray();
-            var surfaces = new ISurfaceRelation[0];
-            var assets = new INamedBuffer[0];
-            var props = scene.Properties;
-            return new S3D {
-                Meta = meta,
-                Root = scene.Root, nodes, geometries, surfaces, assets, props };
         }
     }
 }
