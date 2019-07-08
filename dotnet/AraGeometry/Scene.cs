@@ -81,16 +81,18 @@ namespace Ara3D
         public Scene(
             ISceneNode root,
             ISceneProperties properties,
-            IArray<ISceneNode> nodes = null, 
+            IArray<ISceneNode> nodes = null,
             IArray<IGeometry> geometries = null,
-            IArray<ISurfaceRelation> surfaces = null
+            IArray<ISurfaceRelation> surfaces = null,
+            IArray<INamedBuffer> assets = null
             )
         {
             Root = root;
+            Properties = properties;
             Nodes = nodes;
             Geometries = geometries;
             Surfaces = surfaces;
-            Properties = properties;
+            Assets = assets;
 
             // TODO: compute the nodes, geometries and surfaces if absent
         }
@@ -100,6 +102,7 @@ namespace Ara3D
         public IArray<ISceneNode> Nodes { get; }
         public IArray<IGeometry> Geometries { get; }
         public IArray<ISurfaceRelation> Surfaces { get; }
+        public IArray<INamedBuffer> Assets { get; }
     }
 
     public class Properties : LookupFromDictionary<string, string>, IProperties
