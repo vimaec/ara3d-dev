@@ -46,8 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ara3DCustomProperties.cs" />
+    <Compile Include="CustomProperties.cs" />
     <Compile Include="Deformer.cs" />
     <Compile Include="DeformerEditor.cs" />
+    <Compile Include="MeshClone.cs" />
+    <Compile Include="MeshCloneGeometry.cs" />
     <Compile Include="ProceduralGeometryObject.cs" />
     <Compile Include="ProceduralMesh.cs" />
     <Compile Include="UnityConverters.cs" />

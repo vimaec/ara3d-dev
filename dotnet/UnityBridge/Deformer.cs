@@ -10,8 +10,10 @@ namespace Ara3D
     public abstract class Deformer : MonoBehaviour
     {
         [NonSerialized] public ProceduralMesh ProcMesh;
+        [NonSerialized] public IGeometry SourceGeometry;
+        [NonSerialized] public IGeometry NewGeometry;
 
-        public abstract UnityEngine.Vector3 Deform(UnityEngine.Vector3 v, int i);
+        public abstract IGeometry Deform(IGeometry g);
 
         public virtual void Update()
         {
@@ -19,9 +21,9 @@ namespace Ara3D
             if (ProcMesh != null)
             {
                 //Debug.Log("Updating mesh");
-                for (var i = 0; i < ProcMesh.Original.Vertices.Length; ++i)
-                    ProcMesh.Buffer.Vertices[i] = Deform(ProcMesh.Original.Vertices[i], i);
-                ProcMesh.UpdateTarget();
+                //ProcMesh.NewGeometry = NewGeometry();
+                //ProcMesh.UpdateTarget();
+                throw new NotImplementedException();
             }
             else
             {

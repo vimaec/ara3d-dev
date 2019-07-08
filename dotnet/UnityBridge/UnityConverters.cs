@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 // Explicitly specify math types to make it clear what each function does
+using UVector4 = UnityEngine.Vector4;
 using UVector3 = UnityEngine.Vector3;
 using UVector2 = UnityEngine.Vector2;
 using UQuaternion = UnityEngine.Quaternion;
@@ -196,5 +197,29 @@ namespace Ara3D
             transform.rotation = RotationToUnity(rot);
             transform.localScale = ScaleToUnity(scl);
         }
+
+        public static Vector2 ToAra3D(this UVector2 v)
+            => new Vector2(v.x, v.y);
+
+        public static Vector3 ToAra3D(this UVector3 v)
+            => new Vector3(v.x, v.y, v.z);
+
+        public static Vector4 ToAra3D(this UVector4 v)
+            => new Vector4(v.x, v.y, v.z, v.w);
+
+        public static Quaternion ToAra3D(this UQuaternion q)
+            => new Quaternion(q.x, q.y, q.z, q.w);
+
+        public static IArray<Vector2> ToAra3D(this UVector2[] xs)
+            => xs.ToIArray().Select(x => x.ToAra3D());
+
+        public static IArray<Vector3> ToAra3D(this UVector3[] xs)
+            => xs.ToIArray().Select(x => x.ToAra3D());
+
+        public static IArray<Vector4> ToAra3D(this UVector4[] xs)
+            => xs.ToIArray().Select(x => x.ToAra3D());
+
+        public static IArray<Quaternion> ToAra3D(this UQuaternion[] xs)
+            => xs.ToIArray().Select(x => x.ToAra3D());
     }
 }
