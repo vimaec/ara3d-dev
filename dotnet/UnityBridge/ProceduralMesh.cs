@@ -11,9 +11,6 @@ namespace Ara3D.UnityBridge
         public MeshClone Buffer { get; private set; }
         public Mesh Target { get; private set; }
 
-        public IGeometry OrginalGeometry;
-        public IGeometry NewGeometry;
-
         public ProceduralMesh(Mesh mesh)
         {
             Target = mesh;

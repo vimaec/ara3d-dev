@@ -23,6 +23,7 @@ namespace Ara3D
                 //Debug.Log("Updating mesh");
                 //ProcMesh.NewGeometry = NewGeometry();
                 //ProcMesh.UpdateTarget();
+                // TODO: give the ProceMesh the NewGeometry 
                 throw new NotImplementedException();
             }
             else
