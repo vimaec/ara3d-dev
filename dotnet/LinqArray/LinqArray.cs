@@ -25,12 +25,23 @@ namespace Ara3D
     /// <summary>
     /// Implements an IArray via a function and a count. 
     /// </summary>
-    public struct FunctionalArray<T> : IArray<T>
+    public class FunctionalArray<T> : IArray<T>
     {
         public Func<int, T> Function { get; }
         public int Count { get; }
         public T this[int n] => Function(n);
         public FunctionalArray(int count, Func<int, T> function) { Count = count; Function = function; }
+    }
+
+    /// <summary>
+    /// Implements an IArray from a System.Array.
+    /// </summary>
+    public class ArrayAdapter<T> : IArray<T>
+    {
+        public T[] Array { get; }
+        public int Count { get; }
+        public T this[int n] => Array[n];
+        public ArrayAdapter(T[] xs) { Count = xs.Length; Array = xs; }
     }
 
     /// <summary>
@@ -69,6 +80,12 @@ namespace Ara3D
         /// </summary>
         public static IArray<T> ToIArray<T>(this IList<T> self)
             => self.Count.Select(i => self[i]);
+
+        /// <summary>
+        /// Converts any implementation of IList (e.g. Array/List) to an IArray.
+        /// </summary>
+        public static IArray<T> ToIArray<T>(this T[] self)
+            => new ArrayAdapter<T>(self);
 
         /// <summary>
         /// Converts any implementation of IEnumerable to an IArray
