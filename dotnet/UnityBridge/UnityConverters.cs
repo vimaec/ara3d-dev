@@ -221,5 +221,9 @@ namespace Ara3D
 
         public static IArray<Quaternion> ToAra3D(this UQuaternion[] xs)
             => xs.ToIArray().Select(x => x.ToAra3D());
+
+        public static UVector4 ToUnity(this Vector4 v)
+            => new UVector4(v.X, v.Y, v.Z, v.W);
+
     }
 }

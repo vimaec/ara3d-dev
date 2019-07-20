@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
+using Autodesk.Geometry3D;
+using System;
 
 namespace Ara3D.UnityBridge
 {
@@ -14,6 +17,32 @@ namespace Ara3D.UnityBridge
         public UnityEngine.Vector4[] UnityTangents;
         public int[] UnityIndices;
         public Color32[] UnityColors;
+
+        // TODO: this needs to be improved (assumes TriMesh, etc.)
+        public void FromGeometry(IGeometry g)
+        {
+            if (g.PointsPerFace != 3) throw new Exception("Only triangle meshes are handled");
+            UnityIndices = g.Indices.ToArray();
+            UnityVertices = g.Vertices.Select(UnityConverters.ToUnity).ToArray();
+        }
+
+        // TODO: this needs to be improved: doesn't handle colors, normals, tangents, etc. 
+        public IGeometry ToGeometry()
+            => UnityVertices.ToAra3D().TriMesh(UnityIndices.ToIArray(), UnityUVs.ToAra3D());
+
+        /*
+        public IArray<int> Indices => UnityIndices.ToIArray();
+        public IArray<int> FaceSizes => 3.Repeat(NumFaces);
+        public IArray<Vector2> UVs => UnityUVs.ToAra3D();
+        private Topology _topo;
+        public Topology Topology => _topo ?? (_topo = new Topology(this));
+        public IEnumerable<IAttribute> Attributes => throw new System.NotImplementedException();
+        public IAttribute VertexAttribute => throw new System.NotImplementedException();
+        public IAttribute IndexAttribute => throw new System.NotImplementedException();
+        public IAttribute FaceSizeAttribute => throw new System.NotImplementedException();
+        public IAttribute FaceIndexAttribute => throw new System.NotImplementedException();
+        public IAttribute MaterialIdAttribute => throw new System.NotImplementedException();
+        */
 
         public MeshClone(MeshClone other)
         {

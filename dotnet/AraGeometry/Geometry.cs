@@ -498,8 +498,14 @@ namespace Ara3D
             return Mesh(self.PointsPerFace, verts.Keys.ToIArray(), indices.ToIArray());
         }
 
+        public static IGeometry SetVertices(this IGeometry self, IArray<Vector3> vertices)
+            => self?.ReplaceAttribute(vertices.ToVertexAttribute())?.ToIGeometry();
+
         public static IGeometry Deform(this IGeometry self, Func<Vector3, Vector3> f)
-            => self?.ReplaceAttribute(self.Vertices.Select(f).ToVertexAttribute())?.ToIGeometry();
+            => self.SetVertices(self.Vertices.Select(f));
+
+        public static IGeometry Deform(this IGeometry self, Func<Vector3, Vector3> f, Func<Vector3, float> weight)
+            => self.SetVertices(self.Vertices.Select(v => v.Lerp(f(v), weight(v))));
 
         public static IGeometry Transform(this IGeometry self, Matrix4x4 m)
             => self.Deform(v => v.Transform(m));

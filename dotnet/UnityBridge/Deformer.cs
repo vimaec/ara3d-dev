@@ -20,11 +20,10 @@ namespace Ara3D
             //Debug.Log("Update called");
             if (ProcMesh != null)
             {
-                //Debug.Log("Updating mesh");
-                //ProcMesh.NewGeometry = NewGeometry();
-                //ProcMesh.UpdateTarget();
-                // TODO: give the ProceMesh the NewGeometry 
-                throw new NotImplementedException();
+                SourceGeometry = ProcMesh.Original.ToGeometry();
+                NewGeometry = Deform(SourceGeometry);
+                ProcMesh.Buffer.FromGeometry(NewGeometry);
+                ProcMesh.UpdateTarget();    
             }
             else
             {
