@@ -35,12 +35,12 @@ namespace Ara3D
     [Serializable]
     public class Rotation
     {
-        [Range(-180, 180)] public float X;
-        [Range(-180, 180)] public float Y;
-        [Range(-180, 180)] public float Z;
+        [Range(-360, 360)] public float X;
+        [Range(-360, 360)] public float Y;
+        [Range(-360, 360)] public float Z;
 
-        public Vector3 Vector => new Vector3(X, Y, Z);
-        public Quaternion Quaternion => Quaternion.CreateFromYawPitchRoll(Vector);
+        public Vector3 EulerDegrees => new Vector3(X, Y, Z);
+        public Quaternion Quaternion => Quaternion.CreateFromYawPitchRoll(EulerDegrees.ToRadians());
     }
 
 }
