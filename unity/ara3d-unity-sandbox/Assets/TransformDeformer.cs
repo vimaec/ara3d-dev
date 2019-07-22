@@ -14,7 +14,7 @@ namespace Ara3D
         public bool FlipDirection;
         public bool UseAxis = true;
 
-        public TransformProperty Transform;        
+        public TransformProperty Transform; 
 
         public override void Reset()
         {
@@ -24,7 +24,7 @@ namespace Ara3D
 
         public override IGeometry Deform(IGeometry g)
         {
-            var matrix = Transform.Matrix;
+            var matrix = Transform?.Matrix ?? Matrix4x4.Identity;
             if (!UseAxis)
                 return g.Deform(v => v.Transform(matrix));
             var box = g.BoundingBox();

@@ -73,6 +73,10 @@
       <Project>{4007804a-598f-495f-84f3-f2cf3136797d}</Project>
       <Name>Ara3D.G3D</Name>
     </ProjectReference>
+    <ProjectReference Include="..\G3SharpBridge\Ara3D.G3SharpBridge.csproj">
+      <Project>{82182a4d-2acc-4f5f-b490-aee4308d3719}</Project>
+      <Name>Ara3D.G3SharpBridge</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LinqArray\Ara3D.LinqArray.csproj">
       <Project>{81718218-f3e7-4d54-8552-2a65fbebee85}</Project>
       <Name>Ara3D.LinqArray</Name>
@@ -80,6 +84,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="geometry3Sharp">
+      <Version>1.0.324</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

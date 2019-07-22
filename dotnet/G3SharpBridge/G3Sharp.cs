@@ -9,12 +9,10 @@ namespace Ara3D
     public static class G3Sharp
     {
         // https://github.com/gradientspace/geometry3Sharp/issues/3
-        public static DMesh3 Compact(this DMesh3 mesh)
-        {
-            return new DMesh3(mesh, true);
-        }
+        public static DMesh3 Compact(this DMesh3 mesh, bool compactFlag = true)
+            => compactFlag ? new DMesh3(mesh, true) : mesh;    
 
-        public static DMesh3 Slice(this DMesh3 self, Plane plane)
+        public static DMesh3 Slice(this DMesh3 self, Plane plane, bool compact = true)
         {
             var normal = plane.Normal;
             var origin = normal * -plane.D;
@@ -24,30 +22,35 @@ namespace Ara3D
             Console.WriteLine($"Cut loops = {cutter.CutLoops.Count}");
             Console.WriteLine($"Cut spans = {cutter.CutSpans.Count}");
             Console.WriteLine($"Cut faces = {cutter.CutFaceSet?.Count ?? 0}");
-            return cutter.Mesh;
+            return cutter.Mesh.Compact(compact);
         }
 
-        public static DMesh3 Reduce(this DMesh3 mesh, float percent, bool project = true)
+        public static DMesh3 ReduceWithProjection(this DMesh3 mesh, float percent, bool compactResult = true)
+            => mesh.Reduce(percent, compactResult, mesh.AABBTree());
+
+        public static DMesh3 Reduce(this DMesh3 mesh, float percent, bool compactResult = true, ISpatial target = null)
         {
-            if (!mesh.CheckValidity(eFailMode: FailMode.ReturnOnly))
-                return mesh;
+            // TODO: not sure what triggers this
+            //if (!mesh.CheckValidity(eFailMode: FailMode.ReturnOnly)) return mesh;
+
             var r = new Reducer(mesh);
-            if (project)
+
+            if (target != null)
             {
-                var tree = mesh.AABBTree();
-                r.SetProjectionTarget(new MeshProjectionTarget(tree.Mesh, tree));
+                r.SetProjectionTarget(new MeshProjectionTarget(mesh, target));
 
                 // http://www.gradientspace.com/tutorials/2017/8/30/mesh-simplification
                 // r.ProjectionMode = Reducer.TargetProjectionMode.Inline;
             }
 
-            var target = mesh.VertexCount * percent / 100.0f;
-            r.ReduceToVertexCount((int) target);
-            var newMesh = r.Mesh.Compact();
-            var g = newMesh.ToIGeometry();
-            Debug.Assert(g.AreAllIndicesValid());
-            //Debug.Assert(g.AreAllVerticesUsed());
-            return newMesh;
+            return r.Reduce((int)(mesh.VertexCount * percent / 100.0), compactResult);
+        }
+
+
+        public static DMesh3 Reduce(this Reducer reducer, int newVertexCount, bool compactResult = true)
+        {
+            reducer.ReduceToVertexCount(newVertexCount);
+            return reducer.Mesh.Compact(compactResult);
         }
 
         public static DMeshAABBTree3 AABBTree(this DMesh3 mesh)
@@ -133,14 +136,10 @@ namespace Ara3D
         }
 
         public static Vector3d ToVector3D(this Vector3 self)
-        {
-            return new Vector3d(self.X, self.Y, self.Z);
-        }
+            => new Vector3d(self.X, self.Y, self.Z);        
 
         public static Vector3d ToG3Sharp(this Vector3 self)
-        {
-            return new Vector3d(self.X, self.Y, self.Z);
-        }
+            => new Vector3d(self.X, self.Y, self.Z);        
 
         public static DMesh3 ToG3Sharp(this IGeometry self)
         {
@@ -160,12 +159,11 @@ namespace Ara3D
                     throw new Exception("Unknown error creating mesh");
                 }
             }
+            Debug.Assert(r.CheckValidity(false, FailMode.DebugAssert));
             return r;
         }
 
         public static IGeometry Reduce(this IGeometry self, float percent)
-        {
-            return self.ToG3Sharp().Reduce(percent).ToIGeometry();
-        }
+            => self.ToG3Sharp().Reduce(percent).ToIGeometry();        
     }
 }

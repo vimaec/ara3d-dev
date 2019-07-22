@@ -193,7 +193,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1e-45, y: 0, z: 9.1e-44, w: 0.0625}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -392,20 +392,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2015352556}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7cca9c4eae60ff143bda1f48fad4ec27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Translation:
-    X: -3.1
-    Y: 0
-    Z: 0
-  Scale:
-    X: 1
-    Y: 4.41
-    Z: 1
-  Rotation:
-    X: -15
-    Y: 180
-    Z: 43
+  Axis: 0
+  FlipDirection: 0
+  UseAxis: 1
+  Transform:
+    Translation:
+      X: 0
+      Y: 0
+      Z: 0
+    Scale:
+      X: 1
+      Y: 1
+      Z: 1
+    Rotation:
+      X: 0
+      Y: 0
+      Z: 0
