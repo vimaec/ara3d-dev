@@ -9,82 +9,72 @@ namespace Ara3D
     /// </summary>
     public abstract class Deformer : MonoBehaviour
     {
-        [NonSerialized] public ProceduralMesh ProcMesh;
-        [NonSerialized] public IGeometry SourceGeometry;
-        [NonSerialized] public IGeometry NewGeometry;
+        private MeshClone _sourceMeshCopy;
+
+        private readonly MemoizedFunction<MeshClone, IGeometry>
+            MeshCloneToIGeometry = new MemoizedFunction<MeshClone, IGeometry>((mc) => mc.ToIGeometry());
+
+        public IGeometry SourceGeometry => 
+            _sourceMeshCopy != null ? MeshCloneToIGeometry.Call(_sourceMeshCopy) : Geometry.EmptyTriMesh;
+
+        public IGeometry CachedOutputGeometry;
 
         public abstract IGeometry Deform(IGeometry g);
 
         public virtual void Update()
         {
             //Debug.Log("Update called");
-            if (ProcMesh != null)
-            {
-                SourceGeometry = ProcMesh.Original.ToGeometry();
-                NewGeometry = Deform(SourceGeometry);
-                ProcMesh.Buffer.FromGeometry(NewGeometry);
-                ProcMesh.UpdateTarget();    
-            }
-            else
-            {
-                //Debug.Log("No ProcMesh present");
-            }
-        }
+            var mesh = this.GetMesh();
+            if (mesh == null) return;
+            _sourceMeshCopy = _sourceMeshCopy ?? (_sourceMeshCopy = new MeshClone(mesh));
 
-        public virtual void Start()
-        {
-            //Debug.Log("Started");
-            Update();
-        }
+            if (_sourceMeshCopy != null)
+            {
+                var g = Deform(SourceGeometry);
 
-        public virtual void Awake()
-        {
-            //Debug.Log("Awaken");
-            Enable();
+                // TODO: support different geometry types
+                if (g.PointsPerFace != 3)
+                    throw new Exception("Only triangle meshes supported for now");
+
+                if (g == CachedOutputGeometry)
+                    return;
+
+                CachedOutputGeometry = g;
+
+                // TODO: support more types
+                mesh.Clear();
+                mesh.vertices = g.Vertices.ToUnity();
+                mesh.triangles = g.Indices.ToUnityIndexBuffer();
+                mesh.RecalculateNormals();
+            }
         }
 
         public virtual void Reset()
         {
             //Debug.Log("Reset");
             Disable();
-            Enable();
         }
 
         public void Enable()
         {
             //Debug.Log("Enabling");
-            if (ProcMesh != null)
-                return;
-            var mesh = this.GetMesh();
-            if (mesh != null)
-                ProcMesh = new ProceduralMesh(mesh);
         }
 
         public void Disable()
         {
             //Debug.Log("Disabling");
-            if (ProcMesh != null)
-            {
-                ProcMesh.ResetTarget();
-                ProcMesh = null;
-            }
-        }
-
-        public virtual void OnEnable()
-        {
-            //Debug.Log("OnEnable");
-            Enable();
+            // Restore the original mesh
+            _sourceMeshCopy?.AssignToMesh(this.GetMesh());
+            _sourceMeshCopy = null;
         }
 
         public virtual void OnDisable()
         {
-            //Debug.Log("OnDisable");
             Disable();
         }
 
         public virtual void OnDestroy()
         {
-            //Debug.Log("OnDestroy");
             Disable();
         }
     }

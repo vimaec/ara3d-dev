@@ -27,7 +27,7 @@ namespace Ara3D.UnityBridge
         }
 
         // TODO: this needs to be improved: doesn't handle colors, normals, tangents, etc. 
-        public IGeometry ToGeometry()
+        public IGeometry ToIGeometry()
             => UnityVertices.ToAra3D().TriMesh(UnityIndices.ToIArray(), UnityUVs.ToAra3D());
 
         /*

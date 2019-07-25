@@ -15,7 +15,7 @@ public class MeshStats : MonoBehaviour
 
     public void Update()
     {
-        //OnValidate();
+        OnValidate();
     }
 
     public void OnValidate()

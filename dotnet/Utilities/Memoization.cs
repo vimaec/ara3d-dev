@@ -1,35 +1,56 @@
 ﻿using System;
-using System.Collections.Concurrent;
 
 namespace Ara3D
 {
-    public interface IMemoizer
+    /// <summary>
+    /// This class performs a simple memoization over one argument value. 
+    /// </summary>
+    public class MemoizedFunction<TInput, TOutput>
+        where TInput : class
+        where TOutput : class
     {
-        ConcurrentDictionary<object, object> Cache { get; }
-    }
+        TInput _input;
+        TOutput _output;
+        Func<TInput, TOutput> _compute;
 
-    public static class Memoization
-    {
-        public static U Memoize<U>(this IMemoizer memo, Func<U> f) where U : class
+        public MemoizedFunction(Func<TInput, TOutput> func)
+            => _compute = func;
+
+        /// <summary>
+        /// When setting the input to a new value, the output is cleared. This indicated that the cache is dirty 
+        /// </summary>
+        public TInput Input
         {
-            return memo.Memoize(memo, x => f());
+            get { return _input; }
+            set { if (_input != value) { _input = value; Reset(); } }
         }
 
-        public static U Memoize<T, U>(this IMemoizer memo, T args, Func<T, U> f) where U: class
+        /// <summary>
+        /// Forces a recompute the next time data is requested. 
+        /// </summary>
+        public void Reset()
         {
-            var key = Tuple.Create(args, f);
-            if (memo.Cache.TryGetValue(key, out object r))
-            {
-                return r as U;
-            }
-            else
-            {
-                var obj = new object();
-                lock (obj)
-                {
-                    return memo.Cache.GetOrAdd(key, f(args)) as U;
-                }
-            }
+            _output = null;
         }
+
+        /// <summary>
+        /// Lazy evaluation of the output only when necessary. 
+        /// </summary>
+        public TOutput Output => _output ?? (_input != null ? _output = _compute(_input) : null);
+
+        /// <summary>
+        /// Treat this class as a function 
+        /// </summary>
+        public Func<TInput, TOutput> Call
+            => (input) => { Input = input; return Output; };
     }
+
+    public static class Memoizer
+    {
+        public static Func<TInput, TOutput> Memoize<TInput, TOutput>(this Func<TInput, TOutput> f)
+            where TInput : class
+            where TOutput : class
+            => new MemoizedFunction<TInput, TOutput>(f).Call;
+    }
+
 }

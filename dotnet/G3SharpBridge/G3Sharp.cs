@@ -129,7 +129,7 @@ namespace Ara3D
 
         public static IGeometry ToIGeometry(this DMesh3 self)
         {
-            self.CompactInPlace();
+            // TODO: this can be optimized. 
             var verts = self.Vertices().Select(ToNumerics).ToIArray();
             var indices = self.TrianglesBuffer.ToIArray();
             return verts.TriMesh(indices);

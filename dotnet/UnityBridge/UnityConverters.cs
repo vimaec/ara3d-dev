@@ -67,6 +67,13 @@ namespace Ara3D
             return mesh;
         }
 
+        public static int[] ToUnityIndexBuffer(this IArray<int> indices)
+            => indices.ReverseTriangleIndexOrder().ToArray();
+
+        // 0, 1, 2, 3, 4, 5 ... => 2, 1, 0, 5, 4, 3 ...
+        public static IArray<int> ReverseTriangleIndexOrder(this IArray<int> indices)
+            => indices.SelectByIndex(indices.Count.Select(i => ((i / 3) + 1) * 3 - 1 - (i % 3)));
+
         public static MeshTopology FaceSizeToMeshTopology(int faceSize)
         {
             switch (faceSize)
